@@ -1,5 +1,15 @@
 const express = require("express");
 
+const authMiddleware =
+require(
+"../middlewares/auth.middleware"
+);
+
+const roleMiddleware =
+require(
+"../middlewares/role.middleware"
+);
+
 const router = express.Router();
 
 const {
@@ -12,7 +22,19 @@ const {
     deleteTeacher
 } = require("../controllers/teacher.controller");
 
-router.post("/add", createTeacher);
+router.post(
+
+    "/add",
+
+    authMiddleware,
+
+    roleMiddleware(
+        "admin"
+    ),
+
+    createTeacher
+
+);
 
 router.get("/all", getAllTeachers);
 
@@ -34,8 +56,16 @@ router.put(
 );
 
 router.delete(
-    "/:id",
-    deleteTeacher
-);
 
+    "/:id",
+
+    authMiddleware,
+
+    roleMiddleware(
+        "admin"
+    ),
+
+    deleteTeacher
+
+);
 module.exports = router;

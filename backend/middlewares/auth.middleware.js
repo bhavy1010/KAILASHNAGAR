@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
-const authMiddleware = async (
+const authMiddleware = (
     req,
     res,
     next
@@ -9,7 +9,7 @@ const authMiddleware = async (
     try {
 
         const authHeader =
-            req.headers.authorization
+        req.headers.authorization;
 
         if (
             !authHeader ||
@@ -17,36 +17,43 @@ const authMiddleware = async (
         ) {
 
             return res.status(401).json({
+
                 success: false,
-                message: "No Token"
-            })
+
+                message:
+                "Unauthorized"
+
+            });
 
         }
 
         const token =
-            authHeader.split(" ")[1]
+        authHeader.split(" ")[1];
 
         const decoded =
-            jwt.verify(
-                token,
-                process.env.JWT_SECRET
-            )
+        jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
 
-        req.user = decoded
+        req.user = decoded;
 
-        next()
+        next();
 
     } catch (error) {
 
-        return res.status(401).json({
+        res.status(401).json({
 
             success: false,
-            message: "Invalid Token"
 
-        })
+            message:
+            "Invalid Token"
+
+        });
 
     }
 
-}
+};
 
-module.exports = authMiddleware
+module.exports =
+authMiddleware;

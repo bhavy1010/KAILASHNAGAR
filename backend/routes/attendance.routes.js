@@ -1,10 +1,18 @@
-// routes/attendance.routes.js
-
 const express =
 require("express");
 
 const router =
 express.Router();
+
+const authMiddleware =
+require(
+"../middlewares/auth.middleware"
+);
+
+const roleMiddleware =
+require(
+"../middlewares/role.middleware"
+);
 
 const {
     markClassAttendance
@@ -13,8 +21,18 @@ const {
 );
 
 router.post(
+
     "/class",
+
+    authMiddleware,
+
+    roleMiddleware(
+        "admin",
+        "teacher"
+    ),
+
     markClassAttendance
+
 );
 
 module.exports = router;

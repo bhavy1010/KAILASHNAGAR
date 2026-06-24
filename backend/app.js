@@ -7,6 +7,14 @@ const teacherRoutes = require("./routes/teacher.routes");
 const attendanceRoutes = require("./routes/attendance.routes");
 const noticeRoutes = require("./routes/notice.routes");
 const classRoutes = require("./routes/class.routes");
+const homeworkRoutes = require("./routes/homework.routes");
+const timetableRoutes = require("./routes/timetable.routes");
+const examRoutes = require("./routes/exam.routes");
+const resultRoutes = require("./routes/result.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
+const homeworkSubmissionRoutes = require("./routes/homeworkSubmission.routes");
+const subjectRoutes = require("./routes/subject.routes");
 
 
 const app = express();
@@ -44,6 +52,46 @@ app.use(
 app.use(
     "/api/classes",
     classRoutes
+);
+
+app.use(
+    "/api/subjects",
+    subjectRoutes
+);
+
+app.use(
+    "/api/homework",
+    homeworkRoutes
+);
+
+app.use(
+    "/api/timetable",
+    timetableRoutes
+);
+
+app.use(
+    "/api/exams",
+    examRoutes
+);
+
+app.use(
+    "/api/results",
+    resultRoutes
+);
+
+app.use(
+    "/api/analytics",
+    analyticsRoutes
+);
+
+app.use(
+    "/api/dashboard",
+    dashboardRoutes
+);
+
+app.use(
+    "/api/homework-submission",
+    homeworkSubmissionRoutes
 );
 
 app.get("/", (req, res) => {

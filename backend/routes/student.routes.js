@@ -1,5 +1,15 @@
 const express = require("express");
 
+const authMiddleware =
+require(
+"../middlewares/auth.middleware"
+);
+
+const roleMiddleware =
+require(
+"../middlewares/role.middleware"
+);
+
 const router = express.Router();
 
 const {
@@ -21,8 +31,19 @@ const {
 } = require(
     "../controllers/student.controller"
 );
+router.post(
 
-router.post("/add", createStudent);
+    "/add",
+
+    authMiddleware,
+
+    roleMiddleware(
+        "admin"
+    ),
+
+    createStudent
+
+);
 
 router.get("/all", getAllStudents);
 
