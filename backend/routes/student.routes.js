@@ -1,14 +1,8 @@
 const express = require("express");
 
-const authMiddleware =
-require(
-"../middlewares/auth.middleware"
-);
+const authMiddleware = require("../middlewares/auth.middleware");
 
-const roleMiddleware =
-require(
-"../middlewares/role.middleware"
-);
+const roleMiddleware = require("../middlewares/role.middleware");
 
 const router = express.Router();
 
@@ -17,6 +11,8 @@ const {
     createStudent,
 
     getAllStudents,
+
+    getStudentById,
 
     getStudentByGR,
 
@@ -28,33 +24,92 @@ const {
 
     getStudentsPagination
 
-} = require(
-    "../controllers/student.controller"
-);
+} = require("../controllers/student.controller");
+
 router.post(
 
     "/add",
 
     authMiddleware,
 
-    roleMiddleware(
-        "admin"
-    ),
+    roleMiddleware("admin", "teacher"),
 
     createStudent
 
 );
 
-router.get("/all", getAllStudents);
+router.get(
 
-router.get("/search", searchStudents);
+    "/all",
 
-router.get("/pagination", getStudentsPagination);
+    authMiddleware,
 
-router.get("/:grNumber", getStudentByGR);
+    getAllStudents
 
-router.put("/:id", updateStudent);
+);
 
-router.delete("/:id", deleteStudent);
+router.get(
+
+    "/search",
+
+    authMiddleware,
+
+    searchStudents
+
+);
+
+router.get(
+
+    "/pagination",
+
+    authMiddleware,
+
+    getStudentsPagination
+
+);
+
+router.get(
+
+    "/:id",
+
+    authMiddleware,
+
+    getStudentById
+
+);
+
+router.put(
+
+    "/:id",
+
+    authMiddleware,
+
+    roleMiddleware("admin", "teacher"),
+
+    updateStudent
+
+);
+
+router.delete(
+
+    "/:id",
+
+    authMiddleware,
+
+    roleMiddleware("admin"),
+
+    deleteStudent
+
+);
+
+router.get(
+
+    "/gr/:grNumber",
+
+    authMiddleware,
+
+    getStudentByGR
+
+);
 
 module.exports = router;

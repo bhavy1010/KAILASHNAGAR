@@ -1,47 +1,74 @@
 const Student = require("../models/Student");
 const Teacher = require("../models/Teacher");
+const Class = require("../models/Class");
 
-const getDashboardStats = async (
-    req,
-    res
-) => {
+const getDashboardStats = async (req, res) => {
 
     try {
 
-        const totalStudents =
-        await Student.countDocuments();
+        const totalStudents = await Student.countDocuments();
 
-        const activeStudents =
-        await Student.countDocuments({
+        const totalTeachers = await Teacher.countDocuments();
+
+        const totalClasses = await Class.countDocuments();
+
+        const activeStudents = await Student.countDocuments({
+
             status: "Active"
+
         });
 
-        const totalTeachers =
-        await Teacher.countDocuments();
+        const inactiveStudents = await Student.countDocuments({
 
-        const boysCount =
-        await Student.countDocuments({
-            gender: "Male"
+            status: "Inactive"
+
         });
 
-        const girlsCount =
-        await Student.countDocuments({
-            gender: "Female"
-        });
+        const recentStudents = await Student.find()
+
+            .sort({
+
+                createdAt: -1
+
+            })
+
+            .limit(5)
+
+            .select("fullName grNumber standard division");
+
+        const recentTeachers = await Teacher.find()
+
+            .sort({
+
+                createdAt: -1
+
+            })
+
+            .limit(5)
+
+            .select("fullName subject mobile");
 
         res.status(200).json({
 
             success: true,
 
-            totalStudents,
+            stats: {
 
-            activeStudents,
+                totalStudents,
 
-            totalTeachers,
+                totalTeachers,
 
-            boysCount,
+                totalClasses,
 
-            girlsCount
+                activeStudents,
+
+                inactiveStudents
+
+            },
+
+            recentStudents,
+
+            recentTeachers
 
         });
 
@@ -60,5 +87,7 @@ const getDashboardStats = async (
 };
 
 module.exports = {
+
     getDashboardStats
+
 };

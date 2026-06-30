@@ -32,7 +32,12 @@ const resultSchema = new mongoose.Schema({
     remarks: {
         type: String,
         default: ""
-    }
+    },
+    academicYearId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AcademicYear",
+        required: true
+    },
 
 }, {
     timestamps: true

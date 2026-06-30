@@ -6,13 +6,13 @@ const registerUser = async (req, res) => {
 
         const {
             name,
-            email,
+            mobile,
             password,
             role
         } = req.body;
 
         const existingUser =
-            await User.findOne({ email });
+            await User.findOne({ mobile });
 
         if (existingUser) {
             return res.status(400).json({
@@ -23,7 +23,7 @@ const registerUser = async (req, res) => {
 
         const user = await User.create({
             name,
-            email,
+            mobile,
             password,
             role
         });
@@ -48,15 +48,26 @@ const loginUser = async (req, res) => {
 
     try {
 
-        const { email, password } = req.body
+        const { mobile, identifier, password } = req.body
 
-        const user = await User.findOne({ email })
+        const loginMobile = mobile || identifier
+
+        if (!loginMobile) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Mobile Number"
+            })
+
+        }
+
+        const user = await User.findOne({ mobile: loginMobile })
 
         if (!user) {
 
             return res.status(400).json({
                 success: false,
-                message: "Invalid Email"
+                message: "Invalid Mobile Number"
             })
 
         }
@@ -86,7 +97,7 @@ const loginUser = async (req, res) => {
 
                 id: user._id,
                 name: user.name,
-                email: user.email,
+                mobile: user.mobile,
                 role: user.role
 
             }

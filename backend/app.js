@@ -15,7 +15,15 @@ const analyticsRoutes = require("./routes/analytics.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const homeworkSubmissionRoutes = require("./routes/homeworkSubmission.routes");
 const subjectRoutes = require("./routes/subject.routes");
+const uploadRoutes = require("./routes/upload.routes");
+const promotionRoutes = require("./routes/promotion.routes");
+const leaveRoutes = require("./routes/leave.routes");
+const academicYearRoutes = require("./routes/academicYear.routes");
 
+
+
+
+const path = require("path");
 
 const app = express();
 
@@ -34,10 +42,7 @@ app.use(
     teacherRoutes
 );
 
-app.use(
-"/api/students",
-studentRoutes
-);
+
 
 app.use(
     "/api/attendance",
@@ -92,6 +97,41 @@ app.use(
 app.use(
     "/api/homework-submission",
     homeworkSubmissionRoutes
+);
+
+app.use(
+
+    "/uploads",
+
+    express.static(
+
+        path.join(
+            __dirname,
+            "uploads"
+        )
+
+    )
+
+);
+
+app.use(
+    "/api/upload",
+    uploadRoutes
+);
+
+app.use(
+    "/api/promotion",
+    promotionRoutes
+);
+
+app.use(
+    "/api/leaves",
+    leaveRoutes
+);
+
+app.use(
+    "/api/academic-years",
+    academicYearRoutes
 );
 
 app.get("/", (req, res) => {

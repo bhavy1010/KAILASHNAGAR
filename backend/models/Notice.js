@@ -25,7 +25,10 @@ const noticeSchema = new mongoose.Schema({
     publishedBy: {
         type: String,
         default: "Admin"
-    }
+    },
+    image: {
+        type: String
+    },
 
 }, {
     timestamps: true

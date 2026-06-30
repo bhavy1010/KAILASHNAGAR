@@ -38,7 +38,15 @@ const homeworkSchema = new mongoose.Schema({
         type: String,
         enum: ["Active", "Closed"],
         default: "Active"
-    }
+    },
+    attachment: {
+        type: String
+    },
+    academicYearId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AcademicYear",
+        required: true
+    },
 
 }, {
     timestamps: true

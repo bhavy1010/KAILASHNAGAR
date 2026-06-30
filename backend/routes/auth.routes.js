@@ -1,14 +1,35 @@
-const express = require("express")
+const express = require("express");
 
-const router = express.Router()
+const router = express.Router();
 
 const {
+
     registerUser,
+
     loginUser
-} = require("../controllers/auth.controller")
 
-router.post("/register", registerUser)
+} = require("../controllers/auth.controller");
 
-router.post("/login", loginUser)
+// ======================================================
+// Admin Registration
+// Only used for first admin or protected admin creation
+// ======================================================
 
-module.exports = router
+router.post(
+    "/register",
+    registerUser
+);
+
+// ======================================================
+// Login
+// Admin  -> Mobile + Password
+// Teacher -> Mobile + Password
+// Student -> GR Number + Password
+// ======================================================
+
+router.post(
+    "/login",
+    loginUser
+);
+
+module.exports = router;

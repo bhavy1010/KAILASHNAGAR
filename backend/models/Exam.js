@@ -26,7 +26,12 @@ const examSchema = new mongoose.Schema({
     examDate: {
         type: Date,
         required: true
-    }
+    },
+    academicYearId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AcademicYear",
+        required: true
+    },
 
 }, {
     timestamps: true

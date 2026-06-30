@@ -4,52 +4,75 @@ const createStudent = async (req, res) => {
 
     try {
 
-        const existingStudent =
-        await Student.findOne({
+        const existingStudent = await Student.findOne({
+
             grNumber: req.body.grNumber
+
         });
 
         if (existingStudent) {
 
             return res.status(400).json({
+
                 success: false,
                 message: "GR Number Already Exists"
+
             });
 
         }
 
-        const student =
-        await Student.create(req.body);
+        const student = await Student.create({
+
+            ...req.body,
+
+            password: req.body.password || req.body.grNumber
+
+        });
 
         res.status(201).json({
+
             success: true,
+            message: "Student Added Successfully",
             student
+
         });
 
     } catch (error) {
 
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+    console.log("UPDATE STUDENT ERROR:");
+    console.log(error);
 
-    }
+    res.status(500).json({
+
+        success: false,
+
+        message: error.message,
+
+        stack: error.stack
+
+    });
+
+}
 
 };
 
-const getAllStudents = async (
-    req,
-    res
-) => {
+const getAllStudents = async (req, res) => {
 
     try {
 
-        const students =
-            await Student.find()
+        const students = await Student.find()
+
             .populate(
                 "classId",
                 "className roomNumber"
-            );
+            )
+
+            .sort({
+
+                createdAt: -1
+
+            });
+
         res.status(200).json({
 
             success: true,
@@ -60,17 +83,22 @@ const getAllStudents = async (
 
         });
 
-    } catch (error) {
+    }catch (error) {
 
-        res.status(500).json({
+    console.log("UPDATE STUDENT ERROR:");
+    console.log(error);
 
-            success: false,
-            message: error.message
+    res.status(500).json({
 
-        });
+        success: false,
 
-    }
+        message: error.message,
 
+        stack: error.stack
+
+    });
+
+}
 };
 
 const getStudentByGR = async (
@@ -108,9 +136,60 @@ const getStudentByGR = async (
 
     } catch (error) {
 
+    console.log("UPDATE STUDENT ERROR:");
+    console.log(error);
+
+    res.status(500).json({
+
+        success: false,
+
+        message: error.message,
+
+        stack: error.stack
+
+    });
+
+}
+
+};
+
+const getStudentById = async (req, res) => {
+
+    try {
+
+        const student = await Student.findById(req.params.id)
+
+            .populate(
+                "classId",
+                "className roomNumber"
+            );
+
+        if (!student) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Student Not Found"
+
+            });
+
+        }
+
+        res.status(200).json({
+
+            success: true,
+
+            student
+
+        });
+
+    } catch (error) {
+
         res.status(500).json({
 
             success: false,
+
             message: error.message
 
         });
@@ -206,14 +285,20 @@ const updateStudent = async (
 
     } catch (error) {
 
-        res.status(500).json({
+    console.log("UPDATE STUDENT ERROR:");
+    console.log(error);
 
-            success: false,
-            message: error.message
+    res.status(500).json({
 
-        });
+        success: false,
 
-    }
+        message: error.message,
+
+        stack: error.stack
+
+    });
+
+}
 
 };
 
@@ -318,6 +403,8 @@ module.exports = {
     createStudent,
 
     getAllStudents,
+
+    getStudentById,
 
     getStudentByGR,
 

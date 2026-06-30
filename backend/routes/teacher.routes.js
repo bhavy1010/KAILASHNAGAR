@@ -1,20 +1,14 @@
 const express = require("express");
 
-const authMiddleware =
-require(
-"../middlewares/auth.middleware"
-);
-
-const roleMiddleware =
-require(
-"../middlewares/role.middleware"
-);
+const authMiddleware = require("../middlewares/auth.middleware");
+const roleMiddleware = require("../middlewares/role.middleware");
 
 const router = express.Router();
 
 const {
     createTeacher,
     getAllTeachers,
+    getTeacherById,
     getTeacherByMobile,
     searchTeachers,
     getTeachersPagination,
@@ -28,31 +22,52 @@ router.post(
 
     authMiddleware,
 
-    roleMiddleware(
-        "admin"
-    ),
+    roleMiddleware("admin"),
 
     createTeacher
 
 );
 
-router.get("/all", getAllTeachers);
-
-router.get("/:mobile", getTeacherByMobile);
+router.get(
+    "/all",
+    authMiddleware,
+    getAllTeachers
+);
 
 router.get(
     "/search",
+    authMiddleware,
     searchTeachers
 );
 
 router.get(
     "/pagination",
+    authMiddleware,
     getTeachersPagination
 );
 
-router.put(
+router.get(
+    "/mobile/:mobile",
+    authMiddleware,
+    getTeacherByMobile
+);
+
+router.get(
     "/:id",
+    authMiddleware,
+    getTeacherById
+);
+
+router.put(
+
+    "/:id",
+
+    authMiddleware,
+
+    roleMiddleware("admin"),
+
     updateTeacher
+
 );
 
 router.delete(
@@ -61,11 +76,10 @@ router.delete(
 
     authMiddleware,
 
-    roleMiddleware(
-        "admin"
-    ),
+    roleMiddleware("admin"),
 
     deleteTeacher
 
 );
+
 module.exports = router;

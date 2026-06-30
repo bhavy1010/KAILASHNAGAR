@@ -1,26 +1,32 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const studentSchema = new mongoose.Schema({
 
     grNumber: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true
     },
 
     fullName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     fatherName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     motherName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     gender: {
@@ -36,17 +42,27 @@ const studentSchema = new mongoose.Schema({
 
     parentMobile: {
         type: String,
-        required: true
+        required: true,
+        trim: true
+    },
+
+    password: {
+        type: String,
+        required: true,
+        minlength: 6
     },
 
     standard: {
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        max: 12
     },
 
     division: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     classId: {
@@ -57,7 +73,8 @@ const studentSchema = new mongoose.Schema({
 
     address: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     admissionDate: {
@@ -69,13 +86,65 @@ const studentSchema = new mongoose.Schema({
         type: String,
         enum: ["Active", "Inactive"],
         default: "Active"
+    },
+
+    photo: {
+        type: String,
+        default: ""
     }
 
 }, {
     timestamps: true
 });
 
-module.exports = mongoose.model(
-    "Student",
-    studentSchema
-);
+// ======================================================
+// Hash Password
+// ======================================================
+
+studentSchema.pre("save", async function () {
+
+    if (!this.isModified("password")) {
+        return;
+    }
+
+    this.password = await bcrypt.hash(this.password, 10);
+
+});
+
+// ======================================================
+// Compare Password
+// ======================================================
+
+studentSchema.methods.comparePassword = async function (password) {
+
+    return await bcrypt.compare(
+        password,
+        this.password
+    );
+
+};
+
+// ======================================================
+// Generate JWT
+// ======================================================
+
+studentSchema.methods.generateAuthToken = function () {
+
+    return jwt.sign(
+
+        {
+            id: this._id,
+            role: "student"
+        },
+
+        process.env.JWT_SECRET,
+
+        {
+            expiresIn: "7d"
+        }
+
+    );
+
+};
+
+module.exports = mongoose.model("Student", studentSchema);

@@ -4,21 +4,55 @@ const createTeacher = async (req, res) => {
 
     try {
 
-        const teacher = await Teacher.create(req.body);
+        const existingTeacher = await Teacher.findOne({
+
+            mobile: req.body.mobile
+
+        });
+
+        if (existingTeacher) {
+
+            return res.status(400).json({
+
+                success: false,
+                message: "Mobile Number Already Exists"
+
+            });
+
+        }
+
+        const teacher = await Teacher.create({
+
+            ...req.body,
+
+            password: req.body.password || req.body.mobile
+
+        });
 
         res.status(201).json({
+
             success: true,
+            message: "Teacher Added Successfully",
             teacher
+
         });
 
     } catch (error) {
 
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+    console.log("CREATE TEACHER ERROR:");
+    console.log(error);
 
-    }
+    res.status(500).json({
+
+        success: false,
+
+        message: error.message,
+
+        stack: error.stack
+
+    });
+
+}
 
 };
 
@@ -26,12 +60,57 @@ const getAllTeachers = async (req, res) => {
 
     try {
 
-        const teachers = await Teacher.find();
+        const teachers = await Teacher.find()
+
+            .sort({
+
+                createdAt: -1
+
+            });
 
         res.status(200).json({
             success: true,
             count: teachers.length,
             teachers
+        });
+
+    } catch (error) {
+
+    console.log("GET ALL TEACHERS ERROR:");
+    console.log(error);
+
+    res.status(500).json({
+
+        success: false,
+
+        message: error.message,
+
+        stack: error.stack
+
+    });
+
+}
+
+};
+
+const getTeacherById = async (req, res) => {
+
+    try {
+
+        const teacher = await Teacher.findById(req.params.id);
+
+        if (!teacher) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Teacher Not Found"
+            });
+
+        }
+
+        res.status(200).json({
+            success: true,
+            teacher
         });
 
     } catch (error) {
@@ -110,12 +189,20 @@ const updateTeacher = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+    console.log("UPDATE TEACHER ERROR:");
+    console.log(error);
 
-    }
+    res.status(500).json({
+
+        success: false,
+
+        message: error.message,
+
+        stack: error.stack
+
+    });
+
+}
 
 };
 
@@ -209,6 +296,7 @@ const getTeachersPagination = async (
 
         const teachers =
         await Teacher.find()
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -247,6 +335,7 @@ module.exports = {
 
     createTeacher,
     getAllTeachers,
+    getTeacherById,
     getTeacherByMobile,
 
     updateTeacher,
