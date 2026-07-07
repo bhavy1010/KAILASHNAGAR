@@ -2,10 +2,16 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Factory: creates a multer instance for a given uploads subfolder
-const createUploader = (folderName) => {
+// ======================================================
+// Factory — creates a multer uploader for any subfolder
+// ======================================================
 
-    const uploadPath = path.join(__dirname, `../uploads/${folderName}`);
+const createUploader = (folderName, allowedTypes, maxSizeMB) => {
+
+    const uploadPath = path.join(
+        __dirname,
+        `../uploads/${folderName}`
+    );
 
     if (!fs.existsSync(uploadPath)) {
 
@@ -37,22 +43,21 @@ const createUploader = (folderName) => {
 
     const fileFilter = (req, file, cb) => {
 
-        const allowed = [
-
-            "image/jpeg",
-            "image/jpg",
-            "image/png",
-            "image/webp"
-
-        ];
-
-        if (allowed.includes(file.mimetype)) {
+        if (allowedTypes.includes(file.mimetype)) {
 
             cb(null, true);
 
         } else {
 
-            cb(new Error("Only JPG, PNG and WEBP images are allowed."));
+            cb(
+
+                new Error(
+
+                    `Invalid file type. Allowed: ${allowedTypes.join(", ")}`
+
+                )
+
+            );
 
         }
 
@@ -66,7 +71,7 @@ const createUploader = (folderName) => {
 
         limits: {
 
-            fileSize: 2 * 1024 * 1024
+            fileSize: maxSizeMB * 1024 * 1024
 
         }
 
@@ -74,11 +79,51 @@ const createUploader = (folderName) => {
 
 };
 
-// Existing student upload (kept for backward compatibility)
-const upload = createUploader("students");
+// ======================================================
+// Image types shorthand
+// ======================================================
 
-// New teacher upload
-const uploadTeacher = createUploader("teachers");
+const IMAGE_TYPES = [
+
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp"
+
+];
+
+// ======================================================
+// Document + image types (for homework attachments)
+// ======================================================
+
+const DOC_TYPES = [
+
+    ...IMAGE_TYPES,
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+];
+
+// ======================================================
+// Uploader instances
+// ======================================================
+
+// Student photos (2 MB, images only) — backward compatible default export
+const upload = createUploader("students", IMAGE_TYPES, 2);
+
+// Teacher photos
+const uploadTeacher = createUploader("teachers", IMAGE_TYPES, 2);
+
+// Homework attachments — teacher uploads question sheet (10 MB, docs + images)
+const uploadHomework = createUploader("homework/questions", DOC_TYPES, 10);
+
+// Homework submissions — student uploads answer file (10 MB, docs + images)
+const uploadSubmission = createUploader("homework/submissions", DOC_TYPES, 10);
 
 module.exports = upload;
 module.exports.uploadTeacher = uploadTeacher;
+module.exports.uploadHomework = uploadHomework;
+module.exports.uploadSubmission = uploadSubmission;

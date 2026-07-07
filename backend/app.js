@@ -22,7 +22,6 @@ const academicYearRoutes = require("./routes/academicYear.routes");
 
 
 
-
 const path = require("path");
 
 const app = express();
@@ -134,8 +133,13 @@ app.use(
     academicYearRoutes
 );
 
+app.use("/api/homework", homeworkRoutes);
+app.use("/api/homework-submission", homeworkSubmissionRoutes);
+
 app.get("/", (req, res) => {
     res.send("School Management API Running");
 });
+
+
 
 module.exports = app;

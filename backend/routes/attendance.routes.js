@@ -1,24 +1,21 @@
-const express =
-require("express");
+const express = require("express");
 
-const router =
-express.Router();
+const router = express.Router();
 
-const authMiddleware =
-require(
-"../middlewares/auth.middleware"
-);
-
-const roleMiddleware =
-require(
-"../middlewares/role.middleware"
-);
+const authMiddleware = require("../middlewares/auth.middleware");
+const roleMiddleware = require("../middlewares/role.middleware");
 
 const {
-    markClassAttendance
-} = require(
-    "../controllers/attendance.controller"
-);
+    markClassAttendance,
+    getClassAttendance,
+    getDashboardStats,
+    getTodayAttendance,
+    getAttendanceHistory,
+    getStudentAttendanceReport,
+    getClassAttendanceReport,
+    getCalendarAttendance,
+    getAttendanceAnalytics
+} = require("../controllers/attendance.controller");
 
 router.post(
 
@@ -26,12 +23,93 @@ router.post(
 
     authMiddleware,
 
-    roleMiddleware(
-        "admin",
-        "teacher"
-    ),
+    roleMiddleware("admin", "teacher"),
 
     markClassAttendance
+
+);
+
+router.get(
+
+    "/class",
+
+    authMiddleware,
+
+    roleMiddleware("admin", "teacher"),
+
+    getClassAttendance
+
+);
+
+router.get(
+
+    "/dashboard",
+
+    authMiddleware,
+
+    getDashboardStats
+
+);
+
+router.get(
+
+    "/today",
+
+    authMiddleware,
+
+    getTodayAttendance
+
+);
+
+router.get(
+
+    "/history",
+
+    authMiddleware,
+
+    getAttendanceHistory
+
+);
+
+router.get(
+
+    "/class-report",
+
+    authMiddleware,
+
+    getClassAttendanceReport
+
+);
+
+router.get(
+
+    "/calendar",
+
+    authMiddleware,
+
+    getCalendarAttendance
+
+);
+
+router.get(
+
+    "/analytics",
+
+    authMiddleware,
+
+    roleMiddleware("admin", "teacher"),
+
+    getAttendanceAnalytics
+
+);
+
+router.get(
+
+    "/student/:studentId",
+
+    authMiddleware,
+
+    getStudentAttendanceReport
 
 );
 

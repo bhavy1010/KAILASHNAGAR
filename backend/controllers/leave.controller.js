@@ -1,20 +1,25 @@
-const Leave =
-require("../models/Leave");
+const Leave = require("../models/Leave");
 
-const applyLeave =
-async (req, res) => {
+// ======================================================
+// Apply For Leave
+// ======================================================
+
+const createLeave = async (req, res) => {
 
     try {
 
-        const leave =
-        await Leave.create(
-            req.body
-        );
+        const leave = await Leave.create({
+
+            ...req.body,
+
+            appliedBy: req.user.id
+
+        });
 
         res.status(201).json({
 
             success: true,
-
+            message: "Leave Request Submitted",
             leave
 
         });
@@ -22,38 +27,46 @@ async (req, res) => {
     } catch (error) {
 
         res.status(500).json({
-
             success: false,
-
-            message:
-            error.message
-
+            message: error.message
         });
 
     }
 
 };
 
-const getAllLeaves =
-async (req, res) => {
+// ======================================================
+// Get All Leaves (filterable by status)
+// ======================================================
+
+const getLeaves = async (req, res) => {
 
     try {
 
-        const leaves =
-        await Leave.find()
+        const filter = {};
 
-        .populate(
-            "teacherId",
-            "fullName mobile"
-        );
+        if (req.query.status) {
+
+            filter.status = req.query.status;
+
+        }
+
+        if (req.query.studentId) {
+
+            filter.studentId = req.query.studentId;
+
+        }
+
+        const leaves = await Leave.find(filter)
+
+            .populate("studentId", "fullName grNumber standard division")
+
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
 
             success: true,
-
-            count:
-            leaves.length,
-
+            count: leaves.length,
             leaves
 
         });
@@ -61,53 +74,53 @@ async (req, res) => {
     } catch (error) {
 
         res.status(500).json({
-
             success: false,
-
-            message:
-            error.message
-
+            message: error.message
         });
 
     }
 
 };
 
-const updateLeaveStatus =
-async (req, res) => {
+// ======================================================
+// Approve / Reject Leave
+// ======================================================
+
+const updateLeaveStatus = async (req, res) => {
 
     try {
 
-        const leave =
-        await Leave.findByIdAndUpdate(
+        const { status } = req.body;
+
+        if (!["Approved", "Rejected"].includes(status)) {
+
+            return res.status(400).json({
+
+                success: false,
+                message: "Invalid Status"
+
+            });
+
+        }
+
+        const leave = await Leave.findByIdAndUpdate(
 
             req.params.id,
 
             {
-
-                status:
-                req.body.status,
-
-                adminRemark:
-                req.body.adminRemark
-
+                status,
+                approvedBy: req.user.id
             },
 
-            {
-                new: true
-            }
+            { new: true }
 
         );
 
         if (!leave) {
 
             return res.status(404).json({
-
                 success: false,
-
-                message:
-                "Leave Not Found"
-
+                message: "Leave Request Not Found"
             });
 
         }
@@ -115,7 +128,7 @@ async (req, res) => {
         res.status(200).json({
 
             success: true,
-
+            message: `Leave ${status}`,
             leave
 
         });
@@ -123,48 +136,8 @@ async (req, res) => {
     } catch (error) {
 
         res.status(500).json({
-
             success: false,
-
-            message:
-            error.message
-
-        });
-
-    }
-
-};
-
-const getTeacherLeaves =
-async (req, res) => {
-
-    try {
-
-        const leaves =
-        await Leave.find({
-
-            teacherId:
-            req.params.teacherId
-
-        });
-
-        res.status(200).json({
-
-            success: true,
-
-            leaves
-
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-
-            success: false,
-
-            message:
-            error.message
-
+            message: error.message
         });
 
     }
@@ -172,13 +145,7 @@ async (req, res) => {
 };
 
 module.exports = {
-
-    applyLeave,
-
-    getAllLeaves,
-
-    updateLeaveStatus,
-
-    getTeacherLeaves
-
+    createLeave,
+    getLeaves,
+    updateLeaveStatus
 };

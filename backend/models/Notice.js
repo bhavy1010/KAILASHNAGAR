@@ -1,41 +1,52 @@
 const mongoose = require("mongoose");
 
-const noticeSchema = new mongoose.Schema({
+const leaveSchema = new mongoose.Schema({
 
-    title: {
-        type: String,
+    studentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Student",
         required: true
     },
 
-    description: {
+    reason: {
         type: String,
+        required: true,
+        trim: true
+    },
+
+    fromDate: {
+        type: Date,
         required: true
     },
 
-    noticeFor: {
-        type: String,
-        enum: [
-            "All",
-            "Teachers",
-            "Students"
-        ],
-        default: "All"
+    toDate: {
+        type: Date,
+        required: true
     },
 
-    publishedBy: {
+    status: {
         type: String,
-        default: "Admin"
+        enum: ["Pending", "Approved", "Rejected"],
+        default: "Pending"
     },
-    image: {
-        type: String
+
+    appliedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
     },
+
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
+
+    remarks: {
+        type: String,
+        default: ""
+    }
 
 }, {
     timestamps: true
 });
 
-module.exports =
-mongoose.model(
-    "Notice",
-    noticeSchema
-);
+module.exports = mongoose.model("Leave", leaveSchema);

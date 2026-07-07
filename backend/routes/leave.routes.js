@@ -1,44 +1,23 @@
-const express =
-require("express");
+const express = require("express");
 
-const router =
-express.Router();
+const router = express.Router();
+
+const authMiddleware = require("../middlewares/auth.middleware");
+const roleMiddleware = require("../middlewares/role.middleware");
 
 const {
-
-    applyLeave,
-
-    getAllLeaves,
-
-    updateLeaveStatus,
-
-    getTeacherLeaves
-
-} = require(
-    "../controllers/leave.controller"
-);
-
-const authMiddleware =
-require(
-    "../middlewares/auth.middleware"
-);
-
-const roleMiddleware =
-require(
-    "../middlewares/role.middleware"
-);
+    createLeave,
+    getLeaves,
+    updateLeaveStatus
+} = require("../controllers/leave.controller");
 
 router.post(
 
-    "/apply",
+    "/add",
 
     authMiddleware,
 
-    roleMiddleware(
-        "teacher"
-    ),
-
-    applyLeave
+    createLeave
 
 );
 
@@ -48,37 +27,20 @@ router.get(
 
     authMiddleware,
 
-    roleMiddleware(
-        "admin"
-    ),
-
-    getAllLeaves
+    getLeaves
 
 );
 
 router.put(
 
-    "/status/:id",
+    "/:id/status",
 
     authMiddleware,
 
-    roleMiddleware(
-        "admin"
-    ),
+    roleMiddleware("admin", "teacher"),
 
     updateLeaveStatus
 
 );
 
-router.get(
-
-    "/teacher/:teacherId",
-
-    authMiddleware,
-
-    getTeacherLeaves
-
-);
-
-module.exports =
-router;
+module.exports = router;
