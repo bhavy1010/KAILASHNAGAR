@@ -1,52 +1,92 @@
 const mongoose = require("mongoose");
 
-const leaveSchema = new mongoose.Schema({
+const noticeSchema = new mongoose.Schema({
 
-    studentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Student",
-        required: true
-    },
-
-    reason: {
+    title: {
         type: String,
         required: true,
         trim: true
     },
 
-    fromDate: {
-        type: Date,
-        required: true
-    },
-
-    toDate: {
-        type: Date,
-        required: true
-    },
-
-    status: {
+    description: {
         type: String,
-        enum: ["Pending", "Approved", "Rejected"],
-        default: "Pending"
+        required: true,
+        trim: true
     },
 
-    appliedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
+    category: {
+        type: String,
+        enum: [
+            "General",
+            "Academic",
+            "Exam",
+            "Holiday",
+            "Event",
+            "Sports",
+            "Fee",
+            "Urgent",
+            "Other"
+        ],
+        default: "General"
     },
 
-    approvedBy: {
+    priority: {
+        type: String,
+        enum: ["Low", "Medium", "High", "Urgent"],
+        default: "Medium"
+    },
+
+    audience: {
+        type: String,
+        enum: ["All", "Teachers", "Students", "Parents"],
+        default: "All"
+    },
+
+    publishedBy: {
+        type: String,
+        default: "Admin"
+    },
+
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         default: null
     },
 
-    remarks: {
+    attachment: {
         type: String,
         default: ""
+    },
+
+    attachmentOriginalName: {
+        type: String,
+        default: ""
+    },
+
+    publishDate: {
+        type: Date,
+        default: Date.now
+    },
+
+    expiryDate: {
+        type: Date,
+        default: null
+    },
+
+    isArchived: {
+        type: Boolean,
+        default: false
+    },
+
+    views: {
+        type: Number,
+        default: 0
     }
 
 }, {
     timestamps: true
 });
 
-module.exports = mongoose.model("Leave", leaveSchema);
+noticeSchema.index({ audience: 1, isArchived: 1, publishDate: -1 });
+noticeSchema.index({ category: 1 });
+
+module.exports = mongoose.model("Notice", noticeSchema);

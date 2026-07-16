@@ -5,21 +5,15 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
 
-const upload = require("../middlewares/upload.middleware");
-// (keep your existing require lines for express, auth, role, upload as-is)
-const { uploadTeacher } = require("../middlewares/upload.middleware");
-
-
-// const {
-//     uploadStudentPhoto
-// } = require("../controllers/upload.controller");
-
+const {
+    upload,
+    uploadTeacher
+} = require("../middlewares/upload.middleware");
 
 const {
     uploadStudentPhoto,
     uploadTeacherPhoto
 } = require("../controllers/upload.controller");
-
 
 // ======================================================
 // Upload Student Photo
@@ -39,7 +33,6 @@ router.post(
     uploadStudentPhoto
 
 );
-
 
 // ======================================================
 // Upload Teacher Photo

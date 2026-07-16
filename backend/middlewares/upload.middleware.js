@@ -3,36 +3,44 @@ const path = require("path");
 const fs = require("fs");
 
 // ======================================================
-// Factory — creates a multer uploader for any subfolder
+// Create Upload Folder if not exists
 // ======================================================
 
-const createUploader = (folderName, allowedTypes, maxSizeMB) => {
+const createUploader = (
+    folderName,
+    allowedTypes,
+    maxSizeMB
+) => {
 
     const uploadPath = path.join(
         __dirname,
-        `../uploads/${folderName}`
+        "..",
+        "uploads",
+        folderName
     );
 
     if (!fs.existsSync(uploadPath)) {
 
-        fs.mkdirSync(uploadPath, { recursive: true });
+        fs.mkdirSync(uploadPath, {
+            recursive: true
+        });
 
     }
 
     const storage = multer.diskStorage({
 
-        destination: function (req, file, cb) {
+        destination: (req, file, cb) => {
 
             cb(null, uploadPath);
 
         },
 
-        filename: function (req, file, cb) {
+        filename: (req, file, cb) => {
 
             const uniqueName =
                 Date.now() +
                 "-" +
-                Math.round(Math.random() * 1e9) +
+                Math.round(Math.random() * 1E9) +
                 path.extname(file.originalname);
 
             cb(null, uniqueName);
@@ -43,20 +51,19 @@ const createUploader = (folderName, allowedTypes, maxSizeMB) => {
 
     const fileFilter = (req, file, cb) => {
 
-        if (allowedTypes.includes(file.mimetype)) {
+        if (
+            allowedTypes.includes(file.mimetype)
+        ) {
 
             cb(null, true);
 
         } else {
 
             cb(
-
                 new Error(
-
-                    `Invalid file type. Allowed: ${allowedTypes.join(", ")}`
-
-                )
-
+                    `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`
+                ),
+                false
             );
 
         }
@@ -71,7 +78,10 @@ const createUploader = (folderName, allowedTypes, maxSizeMB) => {
 
         limits: {
 
-            fileSize: maxSizeMB * 1024 * 1024
+            fileSize:
+                maxSizeMB *
+                1024 *
+                1024
 
         }
 
@@ -80,7 +90,7 @@ const createUploader = (folderName, allowedTypes, maxSizeMB) => {
 };
 
 // ======================================================
-// Image types shorthand
+// Image Types
 // ======================================================
 
 const IMAGE_TYPES = [
@@ -93,37 +103,98 @@ const IMAGE_TYPES = [
 ];
 
 // ======================================================
-// Document + image types (for homework attachments)
+// Document Types
 // ======================================================
 
 const DOC_TYPES = [
 
     ...IMAGE_TYPES,
+
     "application/pdf",
+
     "application/msword",
+
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
     "application/vnd.ms-excel",
+
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 ];
 
 // ======================================================
-// Uploader instances
+// Uploaders
 // ======================================================
 
-// Student photos (2 MB, images only) — backward compatible default export
-const upload = createUploader("students", IMAGE_TYPES, 2);
+// Student Photo
+const upload = createUploader(
 
-// Teacher photos
-const uploadTeacher = createUploader("teachers", IMAGE_TYPES, 2);
+    "students",
 
-// Homework attachments — teacher uploads question sheet (10 MB, docs + images)
-const uploadHomework = createUploader("homework/questions", DOC_TYPES, 10);
+    IMAGE_TYPES,
 
-// Homework submissions — student uploads answer file (10 MB, docs + images)
-const uploadSubmission = createUploader("homework/submissions", DOC_TYPES, 10);
+    2
 
-module.exports = upload;
-module.exports.uploadTeacher = uploadTeacher;
-module.exports.uploadHomework = uploadHomework;
-module.exports.uploadSubmission = uploadSubmission;
+);
+
+// Teacher Photo
+const uploadTeacher = createUploader(
+
+    "teachers",
+
+    IMAGE_TYPES,
+
+    2
+
+);
+
+// Homework Question Upload
+const uploadHomework = createUploader(
+
+    "homework/questions",
+
+    DOC_TYPES,
+
+    10
+
+);
+
+// Homework Submission Upload
+const uploadSubmission = createUploader(
+
+    "homework/submissions",
+
+    DOC_TYPES,
+
+    10
+
+);
+
+// Notice Attachment Upload
+const uploadNotice = createUploader(
+
+    "notices",
+
+    DOC_TYPES,
+
+    10
+
+);
+
+// ======================================================
+// Export All Uploaders
+// ======================================================
+
+module.exports = {
+
+    upload,
+
+    uploadTeacher,
+
+    uploadHomework,
+
+    uploadSubmission,
+
+    uploadNotice
+
+};
