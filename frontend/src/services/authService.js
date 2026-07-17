@@ -1,43 +1,45 @@
-// ======================================================
-// Imports
-// ======================================================
-
 import api from "../config/axios";
 
 // ======================================================
-// Login
+// Login: Admin / Teacher / Student
 // ======================================================
 
 export const loginUser = async (loginData) => {
-
     const response = await api.post(
-
         "/auth/login",
-
         loginData
-
     );
 
     return response.data;
-
 };
 
 // ======================================================
-// Register Admin
+// Create Admin Account
 // ======================================================
 
-export const registerUser = async (registerData) => {
-
+export const registerAdmin = async (registerData) => {
     const response = await api.post(
-
-        "/auth/register",
-
+        "/auth/register-admin",
         registerData
-
     );
 
     return response.data;
+};
 
+// Keeps existing AuthContext working
+export const registerUser = registerAdmin;
+
+// ======================================================
+// Reset Admin Password
+// ======================================================
+
+export const resetAdminPassword = async (resetData) => {
+    const response = await api.post(
+        "/auth/reset-admin-password",
+        resetData
+    );
+
+    return response.data;
 };
 
 // ======================================================
@@ -45,17 +47,12 @@ export const registerUser = async (registerData) => {
 // ======================================================
 
 export const saveAuth = (token, user) => {
-
     localStorage.setItem("token", token);
 
     localStorage.setItem(
-
         "user",
-
         JSON.stringify(user)
-
     );
-
 };
 
 // ======================================================
@@ -63,11 +60,9 @@ export const saveAuth = (token, user) => {
 // ======================================================
 
 export const getCurrentUser = () => {
-
     const user = localStorage.getItem("user");
 
     return user ? JSON.parse(user) : null;
-
 };
 
 // ======================================================
@@ -75,9 +70,7 @@ export const getCurrentUser = () => {
 // ======================================================
 
 export const getToken = () => {
-
     return localStorage.getItem("token");
-
 };
 
 // ======================================================
@@ -85,9 +78,7 @@ export const getToken = () => {
 // ======================================================
 
 export const isAuthenticated = () => {
-
     return !!localStorage.getItem("token");
-
 };
 
 // ======================================================
@@ -95,9 +86,6 @@ export const isAuthenticated = () => {
 // ======================================================
 
 export const logoutUser = () => {
-
     localStorage.removeItem("token");
-
     localStorage.removeItem("user");
-
 };

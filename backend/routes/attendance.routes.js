@@ -14,7 +14,8 @@ const {
     getStudentAttendanceReport,
     getClassAttendanceReport,
     getCalendarAttendance,
-    getAttendanceAnalytics
+    getAttendanceAnalytics,
+    exportAttendanceExcel
 } = require("../controllers/attendance.controller");
 
 router.post(
@@ -111,6 +112,15 @@ router.get(
 
     getStudentAttendanceReport
 
+);
+
+// Download attendance report as Excel
+// Admin and Teacher only
+router.get(
+    "/export/excel",
+    authMiddleware,
+    roleMiddleware("admin", "teacher"),
+    exportAttendanceExcel
 );
 
 module.exports = router;

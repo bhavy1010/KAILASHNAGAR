@@ -21,6 +21,7 @@ const uploadRoutes = require("./routes/upload.routes");
 const promotionRoutes = require("./routes/promotion.routes");
 const leaveRoutes = require("./routes/leave.routes");
 const academicYearRoutes = require("./routes/academicYear.routes");
+const homeRoutes = require("./routes/home.routes");
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/promotion", promotionRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/academic-years", academicYearRoutes);
+app.use("/api/home", homeRoutes);
 
 app.use(
     "/uploads",

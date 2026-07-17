@@ -217,3 +217,38 @@ export const getAttendanceAnalytics = async (month, year) => {
     return response.data;
 
 };
+
+// ======================================================
+// Download Attendance Excel Report
+// ======================================================
+
+export const downloadAttendanceExcel = async (filters = {}) => {
+    const response = await api.get(
+        "/attendance/export/excel",
+        {
+            params: filters,
+            responseType: "blob"
+        }
+    );
+
+    const fileUrl = window.URL.createObjectURL(
+        new Blob([response.data])
+    );
+
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = fileUrl;
+
+    downloadLink.setAttribute(
+        "download",
+        `attendance-report-${Date.now()}.xlsx`
+    );
+
+    document.body.appendChild(downloadLink);
+
+    downloadLink.click();
+
+    downloadLink.remove();
+
+    window.URL.revokeObjectURL(fileUrl);
+};

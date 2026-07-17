@@ -2,7 +2,7 @@
 
 const Attendance = require("../models/Attendance");
 const Student = require("../models/Student");
-
+const XLSX = require("xlsx");
 // ======================================================
 // Mark / Update Class Attendance (Upsert)
 // POST /api/attendance/class
@@ -734,6 +734,146 @@ const getAttendanceAnalytics = async (req, res) => {
 
 };
 
+// ======================================================
+// Export Attendance Report to Excel
+// Admin and Teacher only
+// ======================================================
+
+const exportAttendanceExcel = async (req, res) => {
+    try {
+        const {
+            standard,
+            division,
+            month,
+            year,
+            status
+        } = req.query;
+
+        const filter = {};
+
+        if (standard) {
+            filter.standard = Number(standard);
+        }
+
+        if (division) {
+            filter.division = division;
+        }
+
+        if (month && year) {
+            const start = new Date(
+                Number(year),
+                Number(month) - 1,
+                1
+            );
+
+            const end = new Date(
+                Number(year),
+                Number(month),
+                1
+            );
+
+            filter.attendanceDate = {
+                $gte: start,
+                $lt: end
+            };
+
+        } else if (year) {
+            const start = new Date(Number(year), 0, 1);
+            const end = new Date(Number(year) + 1, 0, 1);
+
+            filter.attendanceDate = {
+                $gte: start,
+                $lt: end
+            };
+        }
+
+        const attendanceDocs = await Attendance.find(filter)
+            .sort({
+                attendanceDate: -1
+            });
+
+        let excelRows = [];
+
+        attendanceDocs.forEach((doc) => {
+            doc.records.forEach((record) => {
+                excelRows.push({
+                    Date: new Date(
+                        doc.attendanceDate
+                    ).toLocaleDateString("en-IN"),
+
+                    "Student Name": record.fullName || "",
+
+                    "GR Number": record.grNumber || "",
+
+                    Standard: doc.standard || "",
+
+                    Division: doc.division || "",
+
+                    Status: record.status || "",
+
+                    Remarks: record.remarks || ""
+                });
+            });
+        });
+
+        if (status) {
+            excelRows = excelRows.filter(
+                (row) => row.Status === status
+            );
+        }
+
+        const workbook = XLSX.utils.book_new();
+
+        const worksheet = XLSX.utils.json_to_sheet(
+            excelRows
+        );
+
+        worksheet["!cols"] = [
+            { wch: 14 },
+            { wch: 28 },
+            { wch: 16 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 14 },
+            { wch: 35 }
+        ];
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Attendance Report"
+        );
+
+        const excelBuffer = XLSX.write(workbook, {
+            bookType: "xlsx",
+            type: "buffer"
+        });
+
+        const fileName =
+            `attendance-report-${Date.now()}.xlsx`;
+
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${fileName}"`
+        );
+
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        res.send(excelBuffer);
+
+    } catch (error) {
+        console.log("ATTENDANCE EXCEL EXPORT ERROR:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
 
     markClassAttendance,
@@ -744,6 +884,7 @@ module.exports = {
     getStudentAttendanceReport,
     getClassAttendanceReport,
     getCalendarAttendance,
+    exportAttendanceExcel,
     getAttendanceAnalytics
 
 };

@@ -43,7 +43,9 @@ const EditTeacher = () => {
 
         address: "",
 
-        status: "Active"
+        status: "Active",
+
+        password: "",
 
     };
 
@@ -89,14 +91,16 @@ const EditTeacher = () => {
 
                     address: teacher.address || "",
 
-                    status: teacher.status || "Active"
+                    status: teacher.status || "Active",
+
+                    password: "",
 
                 });
 
                 setPreview(
                     teacher.photo
-                        ? `http://localhost:5000/uploads/teachers/${teacher.photo}`
-                        : ""
+                    ? `${(import.meta.env.VITE_API_URL || "").replace("/api", "")}/uploads/teachers/${teacher.photo}`
+                    : ""
                 );
 
             }
@@ -497,6 +501,26 @@ const EditTeacher = () => {
                                 className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
                             />
 
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block font-medium">
+                                Reset Teacher Password
+                            </label>
+
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Enter new password only if resetting"
+                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                            />
+
+                            <p className="mt-2 text-xs text-[#5B2EFF]">
+                                Leave this field empty to keep the current password.
+                                Enter a new password to reset the teacher account password.
+                            </p>
                         </div>
 
                         <div className="col-span-2">

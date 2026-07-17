@@ -1,38 +1,27 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import Login from "./pages/auth/Login";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 import Layout from "./components/layout/Layout";
 
-// ======================================================
-// Dashboard
-// ======================================================
+import Home from "./pages/home/Home";
+
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotAdminPassword from "./pages/auth/ForgotAdminPassword";
 
 import Dashboard from "./pages/dashboard/Dashboard";
-
-// ======================================================
-// Students
-// ======================================================
 
 import Students from "./pages/students/Students";
 import AddStudent from "./pages/students/AddStudent";
 import EditStudent from "./pages/students/EditStudent";
 import StudentProfile from "./pages/students/StudentProfile";
 
-// ======================================================
-// Teachers
-// ======================================================
-
 import Teachers from "./pages/teachers/Teachers";
 import AddTeacher from "./pages/teachers/AddTeacher";
 import EditTeacher from "./pages/teachers/EditTeacher";
 import TeacherProfile from "./pages/teachers/TeacherProfile";
-
-// ======================================================
-// Attendance
-// ======================================================
 
 import Attendance from "./pages/attendance/Attendance";
 import AttendanceDashboard from "./pages/attendance/AttendanceDashboard";
@@ -44,10 +33,6 @@ import ClassAttendanceReport from "./pages/attendance/ClassAttendanceReport";
 import LeaveManagement from "./pages/attendance/LeaveManagement";
 import AttendanceAnalytics from "./pages/attendance/AttendanceAnalytics";
 
-// ======================================================
-// Homework
-// ======================================================
-
 import Homework from "./pages/homework/Homework";
 import HomeworkDashboard from "./pages/homework/HomeworkDashboard";
 import HomeworkList from "./pages/homework/HomeworkList";
@@ -56,10 +41,6 @@ import EditHomework from "./pages/homework/EditHomework";
 import HomeworkDetails from "./pages/homework/HomeworkDetails";
 import StudentHomework from "./pages/homework/StudentHomework";
 import SubmitHomework from "./pages/homework/SubmitHomework";
-
-// ======================================================
-// Exam Modules
-// ======================================================
 
 import Exams from "./pages/exams/Exams";
 import ExamDashboard from "./pages/exams/ExamDashboard";
@@ -71,11 +52,6 @@ import MarksEntry from "./pages/exams/MarksEntry";
 import ResultList from "./pages/exams/ResultList";
 import StudentResult from "./pages/exams/StudentResult";
 
-// ======================================================
-// Other Modules
-// ======================================================
-
-
 import Notices from "./pages/notices/Notices";
 import NoticeDashboard from "./pages/notices/NoticeDashboard";
 import NoticeList from "./pages/notices/NoticeList";
@@ -84,22 +60,18 @@ import EditNotice from "./pages/notices/EditNotice";
 import NoticeDetails from "./pages/notices/NoticeDetails";
 import StudentNoticeBoard from "./pages/notices/StudentNoticeBoard";
 
+import HomeManagement from "./pages/home/HomeManagement";
 
 import Settings from "./pages/settings/Settings";
 
-
-
 const App = () => {
-
     return (
-
         <Routes>
-
-            {/* ============================== Public Routes ============================== */}
+            {/* Public Pages */}
 
             <Route
                 path="/"
-                element={<Navigate to="/login" replace />}
+                element={<Home />}
             />
 
             <Route
@@ -107,7 +79,17 @@ const App = () => {
                 element={<Login />}
             />
 
-            {/* ============================== Protected Layout ============================== */}
+            <Route
+                path="/register"
+                element={<Register />}
+            />
+
+            <Route
+                path="/admin/forgot-password"
+                element={<ForgotAdminPassword />}
+            />
+
+            {/* Protected Pages */}
 
             <Route
                 element={
@@ -116,19 +98,18 @@ const App = () => {
                     </ProtectedRoute>
                 }
             >
-
-                {/* Dashboard */}
-
                 <Route
                     path="/dashboard"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <Dashboard />
                         </RoleRoute>
                     }
                 />
 
-                {/* ==================== Students ==================== */}
+                {/* Student Management */}
 
                 <Route
                     path="/students"
@@ -166,7 +147,7 @@ const App = () => {
                     }
                 />
 
-                {/* ==================== Teachers ==================== */}
+                {/* Teacher Management */}
 
                 <Route
                     path="/teachers"
@@ -204,12 +185,14 @@ const App = () => {
                     }
                 />
 
-                {/* ==================== Attendance ==================== */}
+                {/* Attendance */}
 
                 <Route
                     path="/attendance"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <Attendance />
                         </RoleRoute>
                     }
@@ -236,7 +219,9 @@ const App = () => {
                 <Route
                     path="/attendance/today"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <TodayAttendance />
                         </RoleRoute>
                     }
@@ -254,7 +239,9 @@ const App = () => {
                 <Route
                     path="/attendance/student/:studentId"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <StudentAttendanceReport />
                         </RoleRoute>
                     }
@@ -272,7 +259,9 @@ const App = () => {
                 <Route
                     path="/attendance/leaves"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <LeaveManagement />
                         </RoleRoute>
                     }
@@ -287,12 +276,14 @@ const App = () => {
                     }
                 />
 
-                {/* ==================== Homework ==================== */}
+                {/* Homework */}
 
                 <Route
                     path="/homework"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <Homework />
                         </RoleRoute>
                     }
@@ -326,6 +317,15 @@ const App = () => {
                 />
 
                 <Route
+                    path="/homework/edit/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <EditHomework />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
                     path="/homework/my"
                     element={
                         <RoleRoute roles={["student"]}>
@@ -344,46 +344,215 @@ const App = () => {
                 />
 
                 <Route
-                    path="/homework/edit/:id"
-                    element={
-                        <RoleRoute roles={["admin", "teacher"]}>
-                            <EditHomework />
-                        </RoleRoute>
-                    }
-                />
-
-                <Route
                     path="/homework/:id"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <HomeworkDetails />
                         </RoleRoute>
                     }
                 />
 
-                {/* ==================== Exams ==================== */}
+                {/* Exams */}
 
                 <Route
                     path="/exams"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <Exams />
                         </RoleRoute>
                     }
                 />
 
-                {/* ==================== Notices ==================== */}
+                <Route
+                    path="/exams/dashboard"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <ExamDashboard />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/list"
+                    element={
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
+                            <ExamList />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/create"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <CreateExam />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/edit/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <EditExam />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/schedule/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <ExamSchedule />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/marks/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <MarksEntry />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/results/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <ResultList />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/report/:studentId/:examId"
+                    element={
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
+                            <StudentResult />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/my-results"
+                    element={
+                        <RoleRoute roles={["student"]}>
+                            <ExamList />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/analytics"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <ExamDashboard />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/exams/:id"
+                    element={
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
+                            <ExamList />
+                        </RoleRoute>
+                    }
+                />
+
+                {/* Notice Module */}
 
                 <Route
                     path="/notices"
                     element={
-                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
                             <Notices />
                         </RoleRoute>
                     }
                 />
 
-                {/* ==================== Settings ==================== */}
+                <Route
+                    path="/notices/dashboard"
+                    element={
+                        <RoleRoute roles={["admin"]}>
+                            <NoticeDashboard />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/notices/list"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <NoticeList />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/notices/create"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <CreateNotice />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/notices/edit/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <EditNotice />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/notices/board"
+                    element={
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
+                            <StudentNoticeBoard />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/notices/archived"
+                    element={
+                        <RoleRoute roles={["admin"]}>
+                            <NoticeList />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/notices/:id"
+                    element={
+                        <RoleRoute
+                            roles={["admin", "teacher", "student"]}
+                        >
+                            <NoticeDetails />
+                        </RoleRoute>
+                    }
+                />
+
+                {/* Settings: will be replaced later by Home Content Management */}
 
                 <Route
                     path="/settings"
@@ -393,217 +562,23 @@ const App = () => {
                         </RoleRoute>
                     }
                 />
-
             </Route>
 
-                        // Exam Hub
-            
-            
-            // Dashboard
             <Route
-                path="/exams/dashboard"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <ExamDashboard />
-                    </RoleRoute>
-                }
-            />
-            
-            // Exam List
-            <Route
-                path="/exams/list"
-                element={
-                    <RoleRoute roles={["admin", "teacher", "student"]}>
-                        <ExamList />
-                    </RoleRoute>
-                }
-            />
-            
-            // Create Exam
-            <Route
-                path="/exams/create"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <CreateExam />
-                    </RoleRoute>
-                }
-            />
-            
-            // Edit Exam — must be before /exams/:id
-            <Route
-                path="/exams/edit/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <EditExam />
-                    </RoleRoute>
-                }
-            />
-            
-            // Exam Schedule — must be before /exams/:id
-            <Route
-                path="/exams/schedule/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <ExamSchedule />
-                    </RoleRoute>
-                }
-            />
-            
-            // Marks Entry — must be before /exams/:id
-            <Route
-                path="/exams/marks/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <MarksEntry />
-                    </RoleRoute>
-                }
-            />
-            
-            // Class Results — must be before /exams/:id
-            <Route
-                path="/exams/results/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <ResultList />
-                    </RoleRoute>
-                }
-            />
-            
-            // Student Report Card — must be before /exams/:id
-            <Route
-                path="/exams/report/:studentId/:examId"
-                element={
-                    <RoleRoute roles={["admin", "teacher", "student"]}>
-                        <StudentResult />
-                    </RoleRoute>
-                }
-            />
-            
-            // Student My Results — must be before /exams/:id
-            <Route
-                path="/exams/my-results"
-                element={
-                    <RoleRoute roles={["student"]}>
-                        <ExamList />
-                    </RoleRoute>
-                }
-            />
-            
-            // Exam Analytics
-            <Route
-                path="/exams/analytics"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <ExamDashboard />
-                    </RoleRoute>
-                }
-            />
-            
-            // Exam Details — MUST BE LAST (dynamic :id catches everything above if placed first)
-            <Route
-                path="/exams/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher", "student"]}>
-                        <ExamList />
-                    </RoleRoute>
-                }
-            />
-
-                        {/* ==================== Notices ==================== */}
-
-            {/* Hub */}
-            <Route
-                path="/notices"
-                element={
-                    <RoleRoute roles={["admin", "teacher", "student"]}>
-                        <Notices />
-                    </RoleRoute>
-                }
-            />
-
-            {/* Dashboard — admin only */}
-            <Route
-                path="/notices/dashboard"
+                path="/home-management"
                 element={
                     <RoleRoute roles={["admin"]}>
-                        <NoticeDashboard />
+                        <HomeManagement />
                     </RoleRoute>
                 }
             />
-
-            {/* All Notices list */}
-            <Route
-                path="/notices/list"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <NoticeList />
-                    </RoleRoute>
-                }
-            />
-
-            {/* Create — must be before /notices/:id */}
-            <Route
-                path="/notices/create"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <CreateNotice />
-                    </RoleRoute>
-                }
-            />
-
-            {/* Edit — must be before /notices/:id */}
-            <Route
-                path="/notices/edit/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher"]}>
-                        <EditNotice />
-                    </RoleRoute>
-                }
-            />
-
-            {/* Notice Board — all roles */}
-            <Route
-                path="/notices/board"
-                element={
-                    <RoleRoute roles={["admin", "teacher", "student"]}>
-                        <StudentNoticeBoard />
-                    </RoleRoute>
-                }
-            />
-
-            {/* Archived — admin only — must be before /notices/:id */}
-            <Route
-                path="/notices/archived"
-                element={
-                    <RoleRoute roles={["admin"]}>
-                        <NoticeList />
-                    </RoleRoute>
-                }
-            />
-
-            {/* Notice Details — MUST BE LAST — dynamic :id */}
-            <Route
-                path="/notices/:id"
-                element={
-                    <RoleRoute roles={["admin", "teacher", "student"]}>
-                        <NoticeDetails />
-                    </RoleRoute>
-                }
-            />
- 
-            
-
-            {/* ============================== Fallback ============================== */}
 
             <Route
                 path="*"
-                element={<Navigate to="/dashboard" replace />}
+                element={<Navigate to="/login" replace />}
             />
-
         </Routes>
-
     );
-
 };
 
 export default App;

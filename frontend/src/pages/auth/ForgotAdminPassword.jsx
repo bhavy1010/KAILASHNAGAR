@@ -7,22 +7,19 @@ import {
     Loader2,
     Lock,
     ShieldCheck,
-    Smartphone,
-    UserRound
+    Smartphone
 } from "lucide-react";
 
-import { useAuth } from "../../context/AuthContext";
+import { resetAdminPassword } from "../../services/authService";
 
-const Register = () => {
+const ForgotAdminPassword = () => {
     const navigate = useNavigate();
-    const { register } = useAuth();
 
     const [formData, setFormData] = useState({
-        name: "",
         mobile: "",
-        password: "",
-        confirmPassword: "",
-        secretCode: ""
+        secretCode: "",
+        newPassword: "",
+        confirmPassword: ""
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -45,12 +42,12 @@ const Register = () => {
         setError("");
         setSuccess("");
 
-        if (formData.password.length < 6) {
+        if (formData.newPassword.length < 6) {
             setError("Password must contain at least 6 characters.");
             return;
         }
 
-        if (formData.password !== formData.confirmPassword) {
+        if (formData.newPassword !== formData.confirmPassword) {
             setError("Password and confirm password do not match.");
             return;
         }
@@ -58,15 +55,14 @@ const Register = () => {
         try {
             setLoading(true);
 
-            const response = await register({
-                name: formData.name.trim(),
+            const response = await resetAdminPassword({
                 mobile: formData.mobile.trim(),
-                password: formData.password,
-                secretCode: formData.secretCode.trim()
+                secretCode: formData.secretCode.trim(),
+                newPassword: formData.newPassword
             });
 
             if (response.success) {
-                setSuccess("Admin account created successfully.");
+                setSuccess("Password updated successfully.");
 
                 setTimeout(() => {
                     navigate("/login");
@@ -76,7 +72,7 @@ const Register = () => {
         } catch (err) {
             setError(
                 err.response?.data?.message ||
-                "Unable to create the admin account."
+                "Unable to reset password."
             );
 
         } finally {
@@ -93,12 +89,12 @@ const Register = () => {
                     </div>
 
                     <h1 className="mt-4 text-3xl font-bold text-gray-800">
-                        Create Admin Account
+                        Reset Admin Password
                     </h1>
 
                     <p className="mt-2 text-sm leading-6 text-gray-500">
-                        Enter the school Admin secret code to create a new
-                        administrator account.
+                        Verify your mobile number and Admin secret code to
+                        create a new password.
                     </p>
                 </div>
 
@@ -120,30 +116,7 @@ const Register = () => {
                 >
                     <div>
                         <label className="mb-2 block text-sm font-semibold text-gray-700">
-                            Full Name
-                        </label>
-
-                        <div className="flex h-12 items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 focus-within:border-[#5B2EFF] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#5B2EFF]/10">
-                            <UserRound
-                                size={18}
-                                className="text-gray-400"
-                            />
-
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="Enter full name"
-                                className="flex-1 bg-transparent text-sm outline-none"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="mb-2 block text-sm font-semibold text-gray-700">
-                            Mobile Number
+                            Admin Mobile Number
                         </label>
 
                         <div className="flex h-12 items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 focus-within:border-[#5B2EFF] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#5B2EFF]/10">
@@ -190,7 +163,7 @@ const Register = () => {
 
                     <div>
                         <label className="mb-2 block text-sm font-semibold text-gray-700">
-                            Password
+                            New Password
                         </label>
 
                         <div className="flex h-12 items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 focus-within:border-[#5B2EFF] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#5B2EFF]/10">
@@ -201,10 +174,10 @@ const Register = () => {
 
                             <input
                                 type={showPassword ? "text" : "password"}
-                                name="password"
-                                value={formData.password}
+                                name="newPassword"
+                                value={formData.newPassword}
                                 onChange={handleChange}
-                                placeholder="Create password"
+                                placeholder="Enter new password"
                                 className="flex-1 bg-transparent text-sm outline-none"
                                 required
                             />
@@ -232,7 +205,7 @@ const Register = () => {
 
                     <div>
                         <label className="mb-2 block text-sm font-semibold text-gray-700">
-                            Confirm Password
+                            Confirm New Password
                         </label>
 
                         <div className="flex h-12 items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 focus-within:border-[#5B2EFF] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#5B2EFF]/10">
@@ -246,7 +219,7 @@ const Register = () => {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                placeholder="Confirm password"
+                                placeholder="Confirm new password"
                                 className="flex-1 bg-transparent text-sm outline-none"
                                 required
                             />
@@ -264,11 +237,11 @@ const Register = () => {
                                     size={18}
                                     className="animate-spin"
                                 />
-                                Creating Account...
+                                Updating Password...
                             </>
                         ) : (
                             <>
-                                Create Admin Account
+                                Reset Password
                                 <ArrowRight
                                     size={18}
                                     className="transition group-hover:translate-x-1"
@@ -279,12 +252,12 @@ const Register = () => {
                 </form>
 
                 <p className="mt-6 text-center text-sm text-gray-500">
-                    Already have an account?{" "}
+                    Remembered your password?{" "}
                     <Link
                         to="/login"
                         className="font-semibold text-[#5B2EFF] hover:underline"
                     >
-                        Sign In
+                        Back to Login
                     </Link>
                 </p>
             </div>
@@ -292,4 +265,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default ForgotAdminPassword;

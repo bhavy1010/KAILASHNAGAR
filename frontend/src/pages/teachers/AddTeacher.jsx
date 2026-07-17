@@ -1,351 +1,215 @@
 import { useState } from "react";
-import { ArrowLeft, Save, RotateCcw, Camera } from "lucide-react";
+import {
+    ArrowLeft,
+    Camera,
+    Loader2,
+    RotateCcw,
+    Save
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { addTeacher } from "../../services/teacherService";
 import { uploadTeacherPhoto } from "../../services/uploadService";
 
-const AddTeacher = () => {
+const initialFormData = {
+    fullName: "",
+    mobile: "",
+    email: "",
+    qualification: "",
+    subject: "",
+    experience: "",
+    salary: "",
+    joiningDate: "",
+    gender: "",
+    address: "",
+    password: "",
+    status: "Active"
+};
 
+const AddTeacher = () => {
     const navigate = useNavigate();
 
-    const [loading, setLoading] = useState(false);
-
-    const [selectedPhoto, setSelectedPhoto] = useState(null);
-
-    const [preview, setPreview] = useState("");
-
-    const initialFormData = {
-
-        fullName: "",
-
-        mobile: "",
-
-        email: "",
-
-        qualification: "",
-
-        subject: "",
-
-        experience: "",
-
-        salary: "",
-
-        joiningDate: "",
-
-        gender: "",
-
-        address: "",
-
-        password: "",
-
-        status: "Active"
-
-    };
-
     const [formData, setFormData] = useState(initialFormData);
+    const [selectedPhoto, setSelectedPhoto] = useState(null);
+    const [preview, setPreview] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleChange = (e) => {
-
         setFormData({
-
             ...formData,
-
             [e.target.name]: e.target.value
-
         });
 
+        setError("");
     };
 
     const handlePhoto = (e) => {
-
         const file = e.target.files[0];
 
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-
-            alert("Image size should be less than 2 MB");
-
-            return;
-
-        }
-
-        const allowed = [
-
+        const allowedTypes = [
             "image/jpeg",
-
             "image/jpg",
-
             "image/png",
-
             "image/webp"
-
         ];
 
-        if (!allowed.includes(file.type)) {
-
-            alert("Only JPG, PNG and WEBP images are allowed.");
-
+        if (!allowedTypes.includes(file.type)) {
+            setError("Only JPG, PNG and WEBP images are allowed.");
             return;
+        }
 
+        if (file.size > 2 * 1024 * 1024) {
+            setError("Image size must be less than 2 MB.");
+            return;
         }
 
         setSelectedPhoto(file);
-
         setPreview(URL.createObjectURL(file));
-
+        setError("");
     };
 
     const handleReset = () => {
-
         setFormData(initialFormData);
-
         setSelectedPhoto(null);
-
         setPreview("");
-
+        setError("");
     };
 
-    // ======================================================
-    // Save Teacher
-    // ======================================================
-
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
+        if (
+            !formData.fullName ||
+            !formData.mobile ||
+            !formData.gender ||
+            !formData.qualification ||
+            !formData.subject ||
+            !formData.address
+        ) {
+            setError("Please fill all required fields.");
+            return;
+        }
+
         try {
-
             setLoading(true);
+            setError("");
 
-            // ----------------------------
-            // Save Teacher Details
-            // ----------------------------
-
-            const response = await addTeacher(formData);
+            const response = await addTeacher({
+                ...formData,
+                fullName: formData.fullName.trim(),
+                mobile: formData.mobile.trim(),
+                email: formData.email.trim(),
+                qualification: formData.qualification.trim(),
+                subject: formData.subject.trim(),
+                address: formData.address.trim()
+            });
 
             if (!response.success) {
-
-                throw new Error("Unable to save teacher");
-
+                throw new Error("Unable to save teacher.");
             }
-
-            // ----------------------------
-            // Upload Photo (Optional)
-            // ----------------------------
 
             if (selectedPhoto) {
-
                 await uploadTeacherPhoto(
-
                     response.teacher._id,
-
                     selectedPhoto
-
                 );
-
             }
-
-            console.log("Teacher Added Successfully");
 
             navigate("/teachers");
 
-        } catch (error) {
-
-            console.log(error);
-
-            alert(
-
-                error.response?.data?.message ||
-
-                error.message ||
-
-                "Something went wrong"
-
+        } catch (err) {
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Unable to add teacher."
             );
 
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
+    const inputClass =
+        "h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-[#5B2EFF]/10";
+
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
-            <div className="flex items-center justify-between mb-8">
-
-                <div className="flex items-center gap-4">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
+            <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3 sm:gap-4">
                     <button
+                        type="button"
                         onClick={() => navigate("/teachers")}
-                        className="w-12 h-12 rounded-xl bg-white shadow flex items-center justify-center hover:bg-gray-100"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm transition hover:bg-gray-100"
+                        aria-label="Back to teachers"
                     >
-
-                        <ArrowLeft size={22} />
-
+                        <ArrowLeft size={21} />
                     </button>
 
                     <div>
-
-                        <h1 className="text-4xl font-bold text-slate-800">
+                        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
                             Add Teacher
                         </h1>
 
-                        <p className="mt-2 text-slate-500">
-                            Fill teacher details below.
+                        <p className="mt-1 text-sm text-slate-500">
+                            Add teacher details and account information.
                         </p>
-
                     </div>
-
                 </div>
 
-                <div className="flex gap-3">
-
-                    <button
-                        type="button"
-                        onClick={handleReset}
-                        className="flex items-center gap-2 rounded-xl bg-white px-5 py-3 shadow hover:bg-gray-100"
-                    >
-
-                        <RotateCcw size={18} />
-
-                        Reset
-
-                    </button>
-
-                    <button
-                        type="submit"
-                        form="addTeacherForm"
-                        disabled={loading}
-                        className={`
-                            min-w-[180px]
-                            rounded-xl
-                            bg-[#5B2EFF]
-                            px-8
-                            py-3
-                            text-white
-                            font-semibold
-                            shadow-lg
-                            transition-all
-                            duration-300
-                            hover:bg-[#4724db]
-                            hover:scale-105
-                            disabled:opacity-60
-                            disabled:cursor-not-allowed
-                            disabled:hover:scale-100
-                        `}
-                    >
-
-                        {
-
-                            loading ? (
-
-                                <div className="flex items-center justify-center gap-3">
-
-                                    <svg
-                                        className="h-5 w-5 animate-spin"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-
-                                        <circle
-                                            className="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                        />
-
-                                        <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                        />
-
-                                    </svg>
-
-                                    Saving...
-
-                                </div>
-
-                            ) : (
-
-                                <div className="flex items-center gap-2">
-
-                                    <Save size={18} />
-
-                                    Save Teacher
-
-                                </div>
-
-                            )
-
-                        }
-
-                    </button>
-
-                </div>
-
+                <button
+                    type="button"
+                    onClick={handleReset}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold shadow-sm transition hover:bg-gray-100"
+                >
+                    <RotateCcw size={18} />
+                    Reset
+                </button>
             </div>
 
-            <form id="addTeacherForm" onSubmit={handleSubmit}>
+            {error && (
+                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                    {error}
+                </div>
+            )}
 
-                <div className="rounded-3xl bg-white p-8 shadow">
+            <form onSubmit={handleSubmit}>
+                <div className="rounded-3xl bg-white p-5 shadow-sm sm:p-8">
+                    <div className="mb-8">
+                        <h2 className="text-xl font-bold text-slate-800">
+                            Teacher Information
+                        </h2>
 
-                    <h2 className="mb-8 text-2xl font-bold">
-                        Teacher Information
-                    </h2>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Fields marked with * are required.
+                        </p>
+                    </div>
 
-                    {/* ====================================================== */}
-                    {/* Teacher Photo */}
-                    {/* ====================================================== */}
-
-                    <div className="mb-12 flex justify-center">
-
+                    <div className="mb-10 flex flex-col items-center">
                         <div className="relative">
-
-                            {
-                                preview ? (
-
-                                    <img
-                                        src={preview}
-                                        alt="Teacher"
-                                        className="w-40 h-40 rounded-full object-cover border-[6px] border-white shadow-2xl"
+                            {preview ? (
+                                <img
+                                    src={preview}
+                                    alt="Teacher preview"
+                                    className="h-32 w-32 rounded-full border-4 border-white object-cover shadow-xl sm:h-40 sm:w-40"
+                                />
+                            ) : (
+                                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-slate-100 to-slate-200 shadow-xl sm:h-40 sm:w-40">
+                                    <Camera
+                                        size={44}
+                                        className="text-slate-400"
                                     />
-
-                                ) : (
-
-                                    <div className="w-40 h-40 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border-[6px] border-white shadow-2xl flex items-center justify-center">
-
-                                        <Camera
-                                            size={50}
-                                            className="text-slate-400"
-                                        />
-
-                                    </div>
-
-                                )
-                            }
-
-                            {/* Camera Button */}
+                                </div>
+                            )}
 
                             <label
                                 htmlFor="teacherPhoto"
-                                className="absolute bottom-2 right-2 w-12 h-12 rounded-full bg-[#5B2EFF] hover:bg-[#4724db] text-white flex items-center justify-center cursor-pointer shadow-xl transition-all duration-300 hover:scale-110"
+                                className="absolute bottom-1 right-1 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[#5B2EFF] text-white shadow-lg transition hover:bg-[#4724db]"
                             >
-
-                                <Camera size={20} />
-
+                                <Camera size={19} />
                             </label>
-
-                            {/* Hidden Input */}
 
                             <input
                                 id="teacherPhoto"
@@ -354,29 +218,17 @@ const AddTeacher = () => {
                                 className="hidden"
                                 onChange={handlePhoto}
                             />
-
                         </div>
 
-                    </div>
-
-                    <div className="text-center mb-10">
-
-                        <h3 className="text-xl font-semibold text-slate-700">
-                            Teacher Photo
-                        </h3>
-
-                        <p className="text-sm text-slate-500 mt-2">
-                            JPG, PNG or WEBP (Maximum 2 MB)
+                        <p className="mt-4 text-center text-sm text-slate-500">
+                            Teacher photo: JPG, PNG or WEBP, maximum 2 MB.
                         </p>
-
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-
+                    <div className="grid gap-5 md:grid-cols-2">
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Full Name
+                            <label className="mb-2 block text-sm font-semibold">
+                                Full Name *
                             </label>
 
                             <input
@@ -384,30 +236,30 @@ const AddTeacher = () => {
                                 name="fullName"
                                 value={formData.fullName}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Enter full name"
+                                required
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Mobile
+                            <label className="mb-2 block text-sm font-semibold">
+                                Mobile Number *
                             </label>
 
                             <input
-                                type="text"
+                                type="tel"
                                 name="mobile"
                                 value={formData.mobile}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Enter mobile number"
+                                required
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
+                            <label className="mb-2 block text-sm font-semibold">
                                 Email
                             </label>
 
@@ -416,37 +268,33 @@ const AddTeacher = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Enter email address"
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Gender
+                            <label className="mb-2 block text-sm font-semibold">
+                                Gender *
                             </label>
 
                             <select
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                required
                             >
-
-                                <option value="">Select Gender</option>
+                                <option value="">Select gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Other">Other</option>
-
                             </select>
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Qualification
+                            <label className="mb-2 block text-sm font-semibold">
+                                Qualification *
                             </label>
 
                             <input
@@ -454,15 +302,15 @@ const AddTeacher = () => {
                                 name="qualification"
                                 value={formData.qualification}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Example: B.Ed, M.Sc"
+                                required
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Subject
+                            <label className="mb-2 block text-sm font-semibold">
+                                Subject *
                             </label>
 
                             <input
@@ -470,46 +318,46 @@ const AddTeacher = () => {
                                 name="subject"
                                 value={formData.subject}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Example: Mathematics"
+                                required
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
+                            <label className="mb-2 block text-sm font-semibold">
                                 Experience (Years)
                             </label>
 
                             <input
                                 type="number"
+                                min="0"
                                 name="experience"
                                 value={formData.experience}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="0"
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Salary (Optional)
+                            <label className="mb-2 block text-sm font-semibold">
+                                Salary
                             </label>
 
                             <input
                                 type="number"
+                                min="0"
                                 name="salary"
                                 value={formData.salary}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Optional"
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
+                            <label className="mb-2 block text-sm font-semibold">
                                 Joining Date
                             </label>
 
@@ -518,15 +366,13 @@ const AddTeacher = () => {
                                 name="joiningDate"
                                 value={formData.joiningDate}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
                             />
-
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
-                                Password
+                            <label className="mb-2 block text-sm font-semibold">
+                                Account Password
                             </label>
 
                             <input
@@ -534,31 +380,18 @@ const AddTeacher = () => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                placeholder="Defaults to mobile number if left blank"
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
+                                placeholder="Optional password"
                             />
 
-                        </div>
-
-                        <div className="col-span-2">
-
-                            <label className="mb-2 block font-medium">
-                                Address
-                            </label>
-
-                            <textarea
-                                rows="4"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleChange}
-                                className="w-full rounded-xl border p-4 outline-none resize-none focus:border-[#5B2EFF]"
-                            />
-
+                            <p className="mt-2 text-xs leading-5 text-[#5B2EFF]">
+                                If left empty, the teacher&apos;s mobile number
+                                becomes their password.
+                            </p>
                         </div>
 
                         <div>
-
-                            <label className="mb-2 block font-medium">
+                            <label className="mb-2 block text-sm font-semibold">
                                 Status
                             </label>
 
@@ -566,56 +399,65 @@ const AddTeacher = () => {
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
-                                className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                className={inputClass}
                             >
-
-                                <option value="Active">
-                                    Active
-                                </option>
-
-                                <option value="Inactive">
-                                    Inactive
-                                </option>
-
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
                             </select>
-
                         </div>
 
-                    </div>
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold">
+                                Address *
+                            </label>
 
+                            <textarea
+                                rows="4"
+                                name="address"
+                                value={formData.address}
+                                onChange={handleChange}
+                                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-[#5B2EFF]/10"
+                                placeholder="Enter complete address"
+                                required
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="mt-8 flex items-center justify-end gap-4">
-
+                <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                     <button
                         type="button"
                         onClick={handleReset}
                         disabled={loading}
-                        className="rounded-xl border border-gray-300 bg-white px-8 py-3 font-medium shadow-sm transition hover:bg-gray-100 disabled:opacity-60"
+                        className="rounded-xl border border-gray-300 bg-white px-6 py-3 font-semibold transition hover:bg-gray-100 disabled:opacity-60"
                     >
-
-                        Reset
-
+                        Reset Form
                     </button>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="rounded-xl bg-[#5B2EFF] px-10 py-3 text-white hover:bg-[#4724db]"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] px-7 py-3 font-semibold text-white shadow-lg transition hover:bg-[#4724db] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-
-                        {loading ? "Saving..." : "Save Teacher"}
-
+                        {loading ? (
+                            <>
+                                <Loader2
+                                    size={18}
+                                    className="animate-spin"
+                                />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save size={18} />
+                                Save Teacher
+                            </>
+                        )}
                     </button>
-
                 </div>
-
             </form>
-
         </div>
-
     );
-
 };
 
 export default AddTeacher;

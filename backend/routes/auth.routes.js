@@ -3,33 +3,29 @@ const express = require("express");
 const router = express.Router();
 
 const {
-
-    registerUser,
-
-    loginUser
-
+    registerAdmin,
+    loginUser,
+    resetAdminPassword
 } = require("../controllers/auth.controller");
 
-// ======================================================
-// Admin Registration
-// Only used for first admin or protected admin creation
-// ======================================================
-
+// Create a new Admin account
+// Requires the secret code
 router.post(
-    "/register",
-    registerUser
+    "/register-admin",
+    registerAdmin
 );
 
-// ======================================================
-// Login
-// Admin  -> Mobile + Password
-// Teacher -> Mobile + Password
-// Student -> GR Number + Password
-// ======================================================
-
+// Login for Admin, Teacher and Student
 router.post(
     "/login",
     loginUser
+);
+
+// Admin forgot-password reset
+// Requires mobile number + secret code
+router.post(
+    "/reset-admin-password",
+    resetAdminPassword
 );
 
 module.exports = router;

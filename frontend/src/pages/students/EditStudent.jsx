@@ -519,6 +519,11 @@ const [formData, setFormData] = useState({
                     className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
                   />
 
+                  <p className="mt-2 text-xs leading-5 text-[#5B2EFF]">
+                    If Date of Birth changes, the student password is automatically updated.
+                    Password format: DDMMYY. Example: 10/10/2005 becomes 101005.
+                </p>
+
                 </div>
 
                 <div>
