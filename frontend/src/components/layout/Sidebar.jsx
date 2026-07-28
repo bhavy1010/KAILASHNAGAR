@@ -1,171 +1,214 @@
-import { NavLink, useNavigate } from "react-router-dom";
 import {
     Bell,
     BookOpen,
-    ClipboardCheck,
-    FileText,
+    CalendarCheck2,
+    ClipboardList,
     GraduationCap,
     Home,
-    LayoutDashboard,
     LogOut,
-    School,
-    User,
+    Menu,
+    Settings2,
+    Trophy,
+    UserPlus,
     Users,
     X
 } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const { t, language, toggleLanguage } = useLanguage();
 
-    const menus = [
+    const role = user?.role || "";
+
+    const navItems = [
         {
-            title: "Dashboard",
-            path: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            label: t("sidebar.home"),
+            path: "/",
+            icon: Home,
             roles: ["admin", "teacher", "student"]
         },
         {
-            title: "Students",
+            label: t("sidebar.dashboard"),
+            path: "/dashboard",
+            icon: GraduationCap,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.students"),
             path: "/students",
-            icon: <Users size={20} />,
+            icon: Users,
             roles: ["admin", "teacher"]
         },
         {
-            title: "Teachers",
+            label: t("sidebar.teachers"),
             path: "/teachers",
-            icon: <GraduationCap size={20} />,
+            icon: UserPlus,
             roles: ["admin"]
         },
         {
-            title: "Attendance",
+            label: t("sidebar.attendance"),
             path: "/attendance",
-            icon: <ClipboardCheck size={20} />,
+            icon: CalendarCheck2,
             roles: ["admin", "teacher", "student"]
         },
         {
-            title: "Homework",
+            label: t("sidebar.homework"),
             path: "/homework",
-            icon: <BookOpen size={20} />,
+            icon: BookOpen,
             roles: ["admin", "teacher", "student"]
         },
         {
-            title: "Exams",
+            label: t("sidebar.exams"),
             path: "/exams",
-            icon: <FileText size={20} />,
+            icon: ClipboardList,
             roles: ["admin", "teacher", "student"]
         },
         {
-            title: "Notices",
+            label: t("sidebar.notices"),
             path: "/notices",
-            icon: <Bell size={20} />,
+            icon: Bell,
             roles: ["admin", "teacher", "student"]
         },
         {
-            title: "Profile",
-            path: "/profile",
-            icon: <User size={20} />,
-            roles: ["admin", "teacher", "student"]
-        },
-        {
-            title: "Home Management",
+            label: t("sidebar.homeManagement"),
             path: "/home-management",
-            icon: <Home size={20} />,
+            icon: Trophy,
             roles: ["admin"]
         }
     ];
 
-    const filteredMenus = menus.filter((menu) =>
-        menu.roles.includes(user?.role)
+    const visibleNavItems = navItems.filter((item) =>
+        item.roles.includes(role)
     );
 
     const handleLogout = () => {
         logout();
-        onClose();
         navigate("/login");
     };
+
+    const roleLabel =
+        role === "admin"
+            ? t("sidebar.adminPanel")
+            : role === "teacher"
+              ? t("sidebar.teacherPanel")
+              : t("sidebar.studentPanel");
 
     return (
         <>
             {isOpen && (
                 <button
                     type="button"
+                    aria-label="Close sidebar overlay"
                     onClick={onClose}
-                    aria-label="Close sidebar"
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm lg:hidden"
                 />
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 flex-col bg-[#111827] text-white shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-y-auto bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
-                <div className="flex h-20 items-center justify-between border-b border-gray-700 px-5">
-                    <div className="flex items-center gap-3">
-                        <School size={29} />
+                <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
+                    <NavLink
+                        to="/"
+                        onClick={onClose}
+                        className="flex min-w-0 items-center gap-3"
+                    >
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-indigo-500 shadow-lg shadow-fuchsia-500/20">
+                            <GraduationCap className="h-6 w-6" />
+                        </div>
 
-                        <div>
-                            <h1 className="text-lg font-bold">
-                                KailashNagar
+                        <div className="min-w-0">
+                            <h1 className="truncate text-lg font-extrabold">
+                                {t("sidebar.schoolErp")}
                             </h1>
+                            <p className="text-xs font-medium text-indigo-200">
+                                {roleLabel}
+                            </p>
+                        </div>
+                    </NavLink>
 
-                            <p className="text-xs text-gray-400">
-                                School ERP
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-xl p-2 text-indigo-100 transition hover:bg-white/10 lg:hidden"
+                        aria-label="Close menu"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <nav className="flex-1 space-y-1 px-3 py-5">
+                    {visibleNavItems.map((item) => {
+                        const Icon = item.icon;
+
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                end={item.path === "/"}
+                                onClick={onClose}
+                                className={({ isActive }) =>
+                                    `group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                        isActive
+                                            ? "bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white shadow-lg shadow-indigo-950/30"
+                                            : "text-indigo-100 hover:bg-white/10 hover:text-white"
+                                    }`
+                                }
+                            >
+                                <Icon className="h-5 w-5 shrink-0" />
+                                <span>{item.label}</span>
+                            </NavLink>
+                        );
+                    })}
+                </nav>
+
+                <div className="space-y-3 border-t border-white/10 p-4">
+                    <button
+                        type="button"
+                        onClick={toggleLanguage}
+                        className="flex w-full items-center justify-between rounded-xl bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15"
+                    >
+                        <span className="flex items-center gap-3">
+                            <Settings2 className="h-5 w-5" />
+                            Language
+                        </span>
+
+                        <span className="rounded-lg bg-white/15 px-2 py-1 text-xs">
+                            {language === "en" ? "ગુજરાતી" : "English"}
+                        </span>
+                    </button>
+
+                    <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500 font-bold text-white">
+                            {(user?.fullName || user?.name || "U")
+                                .charAt(0)
+                                .toUpperCase()}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-bold text-white">
+                                {user?.fullName || user?.name || "User"}
+                            </p>
+                            <p className="truncate text-xs capitalize text-indigo-200">
+                                {role}
                             </p>
                         </div>
                     </div>
 
                     <button
                         type="button"
-                        onClick={onClose}
-                        className="rounded-lg p-2 text-gray-300 hover:bg-gray-800 lg:hidden"
-                        aria-label="Close menu"
-                    >
-                        <X size={21} />
-                    </button>
-                </div>
-
-                <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
-                    {filteredMenus.map((menu) => (
-                        <NavLink
-                            key={menu.path}
-                            to={menu.path}
-                            onClick={onClose}
-                            className={({ isActive }) =>
-                                `flex items-center gap-4 rounded-xl px-4 py-3 font-medium transition-all ${
-                                    isActive
-                                        ? "bg-[#5B2EFF] text-white"
-                                        : "text-gray-300 hover:bg-gray-800"
-                                }`
-                            }
-                        >
-                            {menu.icon}
-
-                            <span>{menu.title}</span>
-                        </NavLink>
-                    ))}
-                </nav>
-
-                <div className="border-t border-gray-700 p-5">
-                    <div className="mb-4">
-                        <p className="font-semibold">
-                            {user?.name || "User"}
-                        </p>
-
-                        <p className="text-sm capitalize text-gray-400">
-                            {user?.role || "User"}
-                        </p>
-                    </div>
-
-                    <button
                         onClick={handleLogout}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 py-3 font-semibold transition hover:bg-red-700"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-rose-200 transition hover:bg-rose-500/20 hover:text-white"
                     >
-                        <LogOut size={18} />
-                        Logout
+                        <LogOut className="h-5 w-5" />
+                        {t("sidebar.logout")}
                     </button>
                 </div>
             </aside>

@@ -65,11 +65,11 @@ const studentSchema = new mongoose.Schema({
         trim: true
     },
 
-    classId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Class",
-        required: true
-    },
+    // classId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Class",
+    //     required: true
+    // },
 
     address: {
         type: String,

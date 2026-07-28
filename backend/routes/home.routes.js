@@ -11,50 +11,35 @@ const {
     getSchoolInfo,
     updateSchoolInfo,
     createAchievement,
-    getAllAchievements,
-    updateAchievement,
+    getAchievements,
     deleteAchievement,
-    saveTodayRose,
-    getAllTodayRoses,
-    deleteTodayRose
+    createTodayRose,
+    getTodayRoses,
+    deleteTodayRose,
+    getGalleryPhotos,
+    addGalleryPhoto,
+    deleteGalleryPhoto
 } = require("../controllers/home.controller");
 
-// ======================================================
-// Public Home Page
-// ======================================================
+// Public home page routes
+router.get("/public", getPublicHomeData);
+router.get("/school-info", getSchoolInfo);
 
-router.get(
-    "/public",
-    getPublicHomeData
-);
-
-router.get(
-    "/school-info",
-    getSchoolInfo
-);
-
-// ======================================================
-// School Information
-// Admin only
-// ======================================================
-
+// School information management
 router.put(
     "/school-info",
     authMiddleware,
     roleMiddleware("admin"),
+    uploadHome.single("logo"),
     updateSchoolInfo
 );
 
-// ======================================================
-// Achievement Management
-// Admin only
-// ======================================================
-
+// Achievement management
 router.get(
     "/achievements",
     authMiddleware,
     roleMiddleware("admin"),
-    getAllAchievements
+    getAchievements
 );
 
 router.post(
@@ -65,14 +50,6 @@ router.post(
     createAchievement
 );
 
-router.put(
-    "/achievements/:id",
-    authMiddleware,
-    roleMiddleware("admin"),
-    uploadHome.single("photo"),
-    updateAchievement
-);
-
 router.delete(
     "/achievements/:id",
     authMiddleware,
@@ -80,16 +57,12 @@ router.delete(
     deleteAchievement
 );
 
-// ======================================================
-// Today's Rose Management
-// Admin only
-// ======================================================
-
+// Today's Rose management
 router.get(
     "/today-roses",
     authMiddleware,
     roleMiddleware("admin"),
-    getAllTodayRoses
+    getTodayRoses
 );
 
 router.post(
@@ -97,7 +70,7 @@ router.post(
     authMiddleware,
     roleMiddleware("admin"),
     uploadHome.single("photo"),
-    saveTodayRose
+    createTodayRose
 );
 
 router.delete(
@@ -105,6 +78,29 @@ router.delete(
     authMiddleware,
     roleMiddleware("admin"),
     deleteTodayRose
+);
+
+// Home page photo gallery management
+router.get(
+    "/gallery",
+    authMiddleware,
+    roleMiddleware("admin"),
+    getGalleryPhotos
+);
+
+router.post(
+    "/gallery",
+    authMiddleware,
+    roleMiddleware("admin"),
+    uploadHome.single("photo"),
+    addGalleryPhoto
+);
+
+router.delete(
+    "/gallery/:id",
+    authMiddleware,
+    roleMiddleware("admin"),
+    deleteGalleryPhoto
 );
 
 module.exports = router;

@@ -5,15 +5,16 @@ import {
     Save,
     RotateCcw,
     Paperclip,
-    X
+    X,
+    Loader2
 } from "lucide-react";
 
-import { getClasses } from "../../services/classService";
+import { getStudents } from "../../services/studentService";
 import { createHomework } from "../../services/homeworkService";
+import { useLanguage } from "../../context/LanguageContext";
 import api from "../../config/axios";
 
 const SUBJECTS = [
-
     "Mathematics",
     "Science",
     "English",
@@ -30,347 +31,339 @@ const SUBJECTS = [
     "Art",
     "Music",
     "Other"
-
 ];
+
+const SUBJECTS_GU = {
+    Mathematics: "ગણિત",
+    Science: "વિજ્ઞાન",
+    English: "અંગ્રેજી",
+    Hindi: "હિન્દી",
+    Gujarati: "ગુજરાતી",
+    "Social Science": "સામાજિક વિજ્ઞાન",
+    History: "ઇતિહાસ",
+    Geography: "ભૂગોળ",
+    Physics: "ભૌતિક વિજ્ઞાન",
+    Chemistry: "રસાયણ વિજ્ઞાન",
+    Biology: "જીવવિજ્ઞાન",
+    "Computer Science": "કમ્પ્યુટર વિજ્ઞાન",
+    "Physical Education": "શારીરિક શિક્ષણ",
+    Art: "કલા",
+    Music: "સંગીત",
+    Other: "અન્ય"
+};
 
 const todayStr = () => new Date().toISOString().substring(0, 10);
 
 const CreateHomework = () => {
-
     const navigate = useNavigate();
+    const { language } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [classes, setClasses] = useState([]);
-
     const [academicYears, setAcademicYears] = useState([]);
-
     const [loading, setLoading] = useState(false);
-
     const [selectedFile, setSelectedFile] = useState(null);
 
     const initialFormData = {
-
         title: "",
-
         description: "",
-
         subject: "",
-
         standard: "",
-
         division: "",
-
         classId: "",
-
         academicYearId: "",
-
         teacherId: "",
-
         dueDate: "",
-
         totalMarks: 10,
-
         status: "Active"
-
     };
 
     const [formData, setFormData] = useState(initialFormData);
 
+    const text = {
+        title: isGujarati ? "હોમવર્ક બનાવો" : "Create Homework",
+        subtitle: isGujarati
+            ? "વર્ગ માટે નવું હોમવર્ક આપો."
+            : "Assign new homework to a class.",
+        reset: isGujarati ? "રીસેટ" : "Reset",
+        saveHomework: isGujarati ? "હોમવર્ક સાચવો" : "Save Homework",
+        saving: isGujarati ? "સાચવાઈ રહ્યું છે..." : "Saving...",
+        details: isGujarati ? "હોમવર્કની વિગતો" : "Homework Details",
+        homeworkTitle: isGujarati ? "શીર્ષક" : "Title",
+        description: isGujarati ? "વર્ણન" : "Description",
+        subject: isGujarati ? "વિષય" : "Subject",
+        totalMarks: isGujarati ? "કુલ ગુણ" : "Total Marks",
+        titlePlaceholder: isGujarati
+            ? "દા.ત. પ્રકરણ 5 ની કસરત"
+            : "e.g. Chapter 5 Exercise",
+        descriptionPlaceholder: isGujarati
+            ? "વિદ્યાર્થીઓએ શું કરવાનું છે તે લખો..."
+            : "Describe what students need to do...",
+        selectSubject: isGujarati ? "વિષય પસંદ કરો" : "Select Subject",
+        attachment: isGujarati ? "જોડાણ" : "Attachment",
+        attachmentInfo: isGujarati
+            ? "(વૈકલ્પિક — PDF, Word, Excel, Image, 10 MB સુધી)"
+            : "(Optional — PDF, Word, Excel, Image up to 10 MB)",
+        clickUpload: isGujarati
+            ? "ફાઇલ અપલોડ કરવા ક્લિક કરો"
+            : "Click to upload file",
+        allowedFiles: isGujarati
+            ? "PDF, Word, Excel અથવા Image"
+            : "PDF, Word, Excel or Image",
+        assignTo: isGujarati ? "કોને આપવું" : "Assign To",
+        class: isGujarati ? "વર્ગ" : "Class",
+        selectClass: isGujarati ? "વર્ગ પસંદ કરો" : "Select Class",
+        teacherId: isGujarati ? "શિક્ષક ID" : "Teacher ID",
+        teacherIdPlaceholder: isGujarati ? "શિક્ષક ID" : "Teacher ID",
+        teacherInfo: isGujarati
+            ? "શિક્ષક લોગિન જોડાયા પછી આપમેળે ભરાશે."
+            : "Auto-fills when teacher login is wired in.",
+        academicYear: isGujarati ? "શૈક્ષણિક વર્ષ" : "Academic Year",
+        selectYear: isGujarati ? "વર્ષ પસંદ કરો" : "Select Year",
+        active: isGujarati ? "સક્રિય" : "Active",
+        schedule: isGujarati ? "સમયપત્રક" : "Schedule",
+        dueDate: isGujarati ? "છેલ્લી તારીખ" : "Due Date",
+        status: isGujarati ? "સ્થિતિ" : "Status",
+        closed: isGujarati ? "બંધ" : "Closed",
+        titleRequired: isGujarati
+            ? "શીર્ષક જરૂરી છે."
+            : "Title is required",
+        classRequired: isGujarati
+            ? "કૃપા કરીને વર્ગ પસંદ કરો."
+            : "Please select a class",
+        dueDateRequired: isGujarati
+            ? "છેલ્લી તારીખ જરૂરી છે."
+            : "Due date is required",
+        fileSizeError: isGujarati
+            ? "ફાઇલનું કદ 10 MB કરતા ઓછું હોવું જોઈએ."
+            : "File size must be under 10 MB",
+        unableCreate: isGujarati
+            ? "હોમવર્ક બનાવી શકાયું નથી."
+            : "Unable to create homework"
+    };
+
     useEffect(() => {
-
         loadDependencies();
-
     }, []);
 
     const loadDependencies = async () => {
-
         try {
-
-            const [classResponse, yearResponse] = await Promise.all([
-
-                getClasses(),
-
+            const [studentsResponse, yearResponse] = await Promise.all([
+                getStudents(),
                 api.get("/academic-years/all")
-
             ]);
 
-            setClasses(classResponse.classes || []);
+            const activeStudents = (studentsResponse.students || []).filter(
+                (student) => student.status === "Active"
+            );
+
+            const realClasses = [
+                ...new Map(
+                    activeStudents.map((student) => [
+                        `${student.standard}-${student.division}`,
+                        {
+                            standard: student.standard,
+                            division: student.division
+                        }
+                    ])
+                ).values()
+            ].sort(
+                (a, b) =>
+                    a.standard - b.standard || a.division.localeCompare(b.division)
+            );
+
+            setClasses(realClasses);
 
             const years = yearResponse.data?.academicYears || [];
-
             setAcademicYears(years);
 
-            // Auto-select active academic year
-            const activeYear = years.find((y) => y.isActive);
+            const activeYear = years.find((year) => year.isActive);
 
             if (activeYear) {
-
-                setFormData((prev) => ({
-
-                    ...prev,
-
+                setFormData((previous) => ({
+                    ...previous,
                     academicYearId: activeYear._id
-
                 }));
-
             }
-
         } catch (error) {
-
             console.log(error);
-
         }
-
     };
 
-    const handleChange = (e) => {
+    const handleChange = (event) => {
+        const { name, value } = event.target;
 
-        const { name, value } = e.target;
-
-        setFormData((prev) => ({
-
-            ...prev,
-
+        setFormData((previous) => ({
+            ...previous,
             [name]: value
-
         }));
-
     };
 
-    const handleClassChange = (e) => {
-
-        const classId = e.target.value;
+    const handleClassChange = (event) => {
+        const value = event.target.value;
 
         const selectedClass = classes.find(
-
-            (c) => c._id === classId
-
+            (item) => `${item.standard}-${item.division}` === value
         );
 
-        setFormData((prev) => ({
-
-            ...prev,
-
-            classId,
-
+        setFormData((previous) => ({
+            ...previous,
+            classId: value,
             standard: selectedClass?.standard || "",
-
             division: selectedClass?.division || ""
-
         }));
-
     };
 
-    const handleFile = (e) => {
-
-        const file = e.target.files[0];
+    const handleFile = (event) => {
+        const file = event.target.files?.[0];
 
         if (!file) return;
 
         if (file.size > 10 * 1024 * 1024) {
-
-            alert("File size must be under 10 MB");
-
+            alert(text.fileSizeError);
+            event.target.value = "";
             return;
-
         }
 
         setSelectedFile(file);
-
     };
 
     const removeFile = () => {
-
         setSelectedFile(null);
-
     };
 
     const handleReset = () => {
+        const activeYear = academicYears.find((year) => year.isActive);
 
-        setFormData(initialFormData);
+        setFormData({
+            ...initialFormData,
+            academicYearId: activeYear?._id || ""
+        });
 
         setSelectedFile(null);
-
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-    e.preventDefault();
-
-    if (!formData.title.trim()) {
-        alert("Title is required");
-        return;
-    }
-
-    if (!formData.classId) {
-        alert("Please select a class");
-        return;
-    }
-
-    if (!formData.dueDate) {
-        alert("Due date is required");
-        return;
-    }
-
-    try {
-
-        setLoading(true);
-
-        const data = new FormData();
-
-        // Core required fields
-        data.append("title", formData.title);
-        data.append("description", formData.description);
-        data.append("subject", formData.subject);
-        data.append("classId", formData.classId);
-        data.append("standard", formData.standard);
-        data.append("division", formData.division);
-        data.append("dueDate", formData.dueDate);
-        data.append("totalMarks", formData.totalMarks);
-        data.append("status", formData.status);
-
-        // Optional — only append if present
-        if (formData.academicYearId) {
-            data.append("academicYearId", formData.academicYearId);
+        if (!formData.title.trim()) {
+            alert(text.titleRequired);
+            return;
         }
 
-        if (formData.teacherId) {
-            data.append("teacherId", formData.teacherId);
+        if (!formData.classId) {
+            alert(text.classRequired);
+            return;
         }
 
-        if (selectedFile) {
-            data.append("attachment", selectedFile);
+        if (!formData.dueDate) {
+            alert(text.dueDateRequired);
+            return;
         }
 
-        await createHomework(data);
+        try {
+            setLoading(true);
 
-        navigate("/homework/list");
+            const data = new FormData();
 
-    } catch (error) {
+            data.append("title", formData.title.trim());
+            data.append("description", formData.description);
+            data.append("subject", formData.subject);
+            data.append("standard", formData.standard);
+            data.append("division", formData.division);
+            data.append("dueDate", formData.dueDate);
+            data.append("totalMarks", formData.totalMarks);
+            data.append("status", formData.status);
 
-        console.log(error);
+            if (formData.academicYearId) {
+                data.append("academicYearId", formData.academicYearId);
+            }
 
-        alert(error.response?.data?.message || "Unable to create homework");
+            if (formData.teacherId) {
+                data.append("teacherId", formData.teacherId);
+            }
 
-    } finally {
+            if (selectedFile) {
+                data.append("attachment", selectedFile);
+            }
 
-        setLoading(false);
+            await createHomework(data);
 
-    }
+            navigate("/homework/list");
+        } catch (error) {
+            console.log(error);
 
-};
-
-    const divisionsForStandard = [
-
-        ...new Set(
-
-            classes
-
-                .filter(
-
-                    (c) =>
-
-                        String(c.standard) === String(formData.standard)
-
-                )
-
-                .map((c) => c.division)
-
-        )
-
-    ];
+            alert(
+                error.response?.data?.message || text.unableCreate
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
-            {/* ===================== Header ===================== */}
-
-            <div className="flex items-center justify-between mb-8">
-
-                <div className="flex items-center gap-4">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
+            <div className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
                     <button
                         onClick={() => navigate("/homework/list")}
-                        className="w-12 h-12 rounded-xl bg-white shadow flex items-center justify-center hover:bg-gray-100"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm transition hover:bg-slate-100 sm:h-12 sm:w-12"
+                        title={isGujarati ? "પાછળ" : "Back"}
                     >
-
-                        <ArrowLeft size={22} />
-
+                        <ArrowLeft size={21} />
                     </button>
 
                     <div>
-
-                        <h1 className="text-4xl font-bold text-slate-800">
-
-                            Create Homework
-
+                        <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                            {text.title}
                         </h1>
 
-                        <p className="mt-2 text-slate-500">
-
-                            Assign new homework to a class.
-
+                        <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                            {text.subtitle}
                         </p>
-
                     </div>
-
                 </div>
 
-                <div className="flex gap-3">
-
+                <div className="grid grid-cols-2 gap-3 sm:flex">
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="flex items-center gap-2 rounded-xl bg-white px-5 py-3 shadow hover:bg-gray-100"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100"
                     >
-
                         <RotateCcw size={18} />
-
-                        Reset
-
+                        <span className="hidden sm:inline">{text.reset}</span>
                     </button>
 
                     <button
                         type="submit"
                         form="createHomeworkForm"
                         disabled={loading}
-                        className="flex items-center gap-2 rounded-xl bg-[#5B2EFF] px-8 py-3 text-white font-semibold shadow-lg hover:bg-[#4724db] hover:scale-105 transition disabled:opacity-60 disabled:hover:scale-100"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-[#4724db] disabled:cursor-not-allowed disabled:opacity-60"
                     >
+                        {loading ? (
+                            <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                            <Save size={18} />
+                        )}
 
-                        <Save size={18} />
-
-                        {loading ? "Saving..." : "Save Homework"}
-
+                        {loading ? text.saving : text.saveHomework}
                     </button>
-
                 </div>
-
             </div>
 
             <form id="createHomeworkForm" onSubmit={handleSubmit}>
-
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-
-                    {/* ===================== Main Info ===================== */}
-
-                    <div className="xl:col-span-2 space-y-7">
-
-                        <div className="bg-white rounded-3xl shadow p-8">
-
-                            <h2 className="text-xl font-bold mb-6">
-
-                                Homework Details
-
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:gap-7">
+                    <div className="space-y-6 xl:col-span-2 xl:space-y-7">
+                        <div className="rounded-3xl bg-white p-5 shadow-sm sm:p-7">
+                            <h2 className="mb-6 text-xl font-bold text-slate-800">
+                                {text.details}
                             </h2>
 
                             <div className="space-y-5">
-
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Title <span className="text-red-500">*</span>
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.homeworkTitle}{" "}
+                                        <span className="text-red-500">*</span>
                                     </label>
 
                                     <input
@@ -378,18 +371,15 @@ const CreateHomework = () => {
                                         name="title"
                                         value={formData.title}
                                         onChange={handleChange}
-                                        placeholder="e.g. Chapter 5 Exercise"
-                                        className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                        placeholder={text.titlePlaceholder}
+                                        className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     />
-
                                 </div>
 
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Description <span className="text-red-500">*</span>
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.description}{" "}
+                                        <span className="text-red-500">*</span>
                                     </label>
 
                                     <textarea
@@ -397,55 +387,41 @@ const CreateHomework = () => {
                                         name="description"
                                         value={formData.description}
                                         onChange={handleChange}
-                                        placeholder="Describe what students need to do..."
-                                        className="w-full rounded-xl border p-4 outline-none resize-none focus:border-[#5B2EFF]"
+                                        placeholder={text.descriptionPlaceholder}
+                                        className="w-full resize-none rounded-xl border border-slate-200 p-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     />
-
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-5">
-
+                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                     <div>
-
-                                        <label className="mb-2 block font-medium">
-
-                                            Subject <span className="text-red-500">*</span>
-
+                                        <label className="mb-2 block font-semibold text-slate-700">
+                                            {text.subject}{" "}
+                                            <span className="text-red-500">*</span>
                                         </label>
 
                                         <select
                                             name="subject"
                                             value={formData.subject}
                                             onChange={handleChange}
-                                            className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                            className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                         >
+                                            <option value="">
+                                                {text.selectSubject}
+                                            </option>
 
-                                            <option value="">Select Subject</option>
-
-                                            {
-
-                                                SUBJECTS.map((s) => (
-
-                                                    <option key={s} value={s}>
-
-                                                        {s}
-
-                                                    </option>
-
-                                                ))
-
-                                            }
-
+                                            {SUBJECTS.map((subject) => (
+                                                <option key={subject} value={subject}>
+                                                    {isGujarati
+                                                        ? SUBJECTS_GU[subject]
+                                                        : subject}
+                                                </option>
+                                            ))}
                                         </select>
-
                                     </div>
 
                                     <div>
-
-                                        <label className="mb-2 block font-medium">
-
-                                            Total Marks
-
+                                        <label className="mb-2 block font-semibold text-slate-700">
+                                            {text.totalMarks}
                                         </label>
 
                                         <input
@@ -455,174 +431,118 @@ const CreateHomework = () => {
                                             onChange={handleChange}
                                             min="1"
                                             max="100"
-                                            className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                            className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                         />
-
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
 
-                        {/* ===================== Attachment ===================== */}
+                        <div className="rounded-3xl bg-white p-5 shadow-sm sm:p-7">
+                            <h2 className="text-xl font-bold text-slate-800">
+                                {text.attachment}
 
-                        <div className="bg-white rounded-3xl shadow p-8">
-
-                            <h2 className="text-xl font-bold mb-2">
-
-                                Attachment
-
-                                <span className="ml-2 text-sm font-normal text-gray-400">
-
-                                    (Optional — PDF, Word, Excel, Image up to 10 MB)
-
+                                <span className="ml-2 block mt-1 text-sm font-normal text-slate-400 sm:inline">
+                                    {text.attachmentInfo}
                                 </span>
-
                             </h2>
 
-                            {
+                            {selectedFile ? (
+                                <div className="mt-5 flex flex-col gap-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <Paperclip
+                                            size={20}
+                                            className="shrink-0 text-indigo-600"
+                                        />
 
-                                selectedFile ? (
+                                        <div className="min-w-0">
+                                            <p className="truncate font-semibold text-slate-800">
+                                                {selectedFile.name}
+                                            </p>
 
-                                    <div className="mt-5 flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-4">
-
-                                        <div className="flex items-center gap-3">
-
-                                            <Paperclip
-                                                size={20}
-                                                className="text-indigo-600"
-                                            />
-
-                                            <div>
-
-                                                <p className="font-semibold text-gray-800">
-
-                                                    {selectedFile.name}
-
-                                                </p>
-
-                                                <p className="text-xs text-gray-500 mt-1">
-
-                                                    {(selectedFile.size / 1024).toFixed(1)} KB
-
-                                                </p>
-
-                                            </div>
-
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                {(selectedFile.size / 1024).toFixed(1)} KB
+                                            </p>
                                         </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={removeFile}
-                                            className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition"
-                                        >
-
-                                            <X size={16} className="text-red-600" />
-
-                                        </button>
-
                                     </div>
 
-                                ) : (
-
-                                    <label
-                                        htmlFor="attachment"
-                                        className="mt-5 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-10 cursor-pointer hover:border-[#5B2EFF] hover:bg-indigo-50 transition"
+                                    <button
+                                        type="button"
+                                        onClick={removeFile}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center self-end rounded-full bg-red-100 transition hover:bg-red-200 sm:self-auto"
                                     >
+                                        <X size={16} className="text-red-600" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label
+                                    htmlFor="attachment"
+                                    className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 p-8 text-center transition hover:border-[#5B2EFF] hover:bg-indigo-50 sm:p-10"
+                                >
+                                    <Paperclip
+                                        size={36}
+                                        className="mb-3 text-slate-400"
+                                    />
 
-                                        <Paperclip
-                                            size={36}
-                                            className="text-gray-400 mb-3"
-                                        />
+                                    <p className="font-semibold text-slate-600">
+                                        {text.clickUpload}
+                                    </p>
 
-                                        <p className="font-semibold text-gray-600">
+                                    <p className="mt-1 text-sm text-slate-400">
+                                        {text.allowedFiles}
+                                    </p>
 
-                                            Click to upload file
-
-                                        </p>
-
-                                        <p className="text-sm text-gray-400 mt-1">
-
-                                            PDF, Word, Excel or Image
-
-                                        </p>
-
-                                        <input
-                                            id="attachment"
-                                            type="file"
-                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
-                                            className="hidden"
-                                            onChange={handleFile}
-                                        />
-
-                                    </label>
-
-                                )
-
-                            }
-
+                                    <input
+                                        id="attachment"
+                                        type="file"
+                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+                                        className="hidden"
+                                        onChange={handleFile}
+                                    />
+                                </label>
+                            )}
                         </div>
-
                     </div>
 
-                    {/* ===================== Right Panel ===================== */}
-
-                    <div className="space-y-7">
-
-                        {/* Class Assignment */}
-
-                        <div className="bg-white rounded-3xl shadow p-8">
-
-                            <h2 className="text-xl font-bold mb-6">
-
-                                Assign To
-
+                    <div className="space-y-6 xl:space-y-7">
+                        <div className="rounded-3xl bg-white p-5 shadow-sm sm:p-7">
+                            <h2 className="mb-6 text-xl font-bold text-slate-800">
+                                {text.assignTo}
                             </h2>
 
                             <div className="space-y-5">
-
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Class <span className="text-red-500">*</span>
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.class}{" "}
+                                        <span className="text-red-500">*</span>
                                     </label>
 
                                     <select
                                         value={formData.classId}
                                         onChange={handleClassChange}
-                                        className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                        className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     >
+                                        <option value="">
+                                            {text.selectClass}
+                                        </option>
 
-                                        <option value="">Select Class</option>
+                                        {classes.map((item) => {
+                                            const key = `${item.standard}-${item.division}`;
 
-                                        {
-
-                                            classes.map((cls) => (
-
-                                                <option key={cls._id} value={cls._id}>
-
-                                                    Std {cls.standard} - {cls.division}
-
+                                            return (
+                                                <option key={key} value={key}>
+                                                    {isGujarati
+                                                        ? `${item.standard} ધોરણ - ${item.division}`
+                                                        : `Std ${item.standard} - ${item.division}`}
                                                 </option>
-
-                                            ))
-
-                                        }
-
+                                            );
+                                        })}
                                     </select>
-
                                 </div>
 
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Teacher ID
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.teacherId}
                                     </label>
 
                                     <input
@@ -630,77 +550,51 @@ const CreateHomework = () => {
                                         name="teacherId"
                                         value={formData.teacherId}
                                         onChange={handleChange}
-                                        placeholder="Teacher ID"
-                                        className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                        placeholder={text.teacherIdPlaceholder}
+                                        className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     />
 
-                                    <p className="text-xs text-gray-400 mt-2">
-
-                                        Auto-fills when teacher login is wired in.
-
+                                    <p className="mt-2 text-xs text-slate-400">
+                                        {text.teacherInfo}
                                     </p>
-
                                 </div>
 
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Academic Year
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.academicYear}
                                     </label>
 
                                     <select
                                         name="academicYearId"
                                         value={formData.academicYearId}
                                         onChange={handleChange}
-                                        className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                        className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     >
+                                        <option value="">{text.selectYear}</option>
 
-                                        <option value="">Select Year</option>
-
-                                        {
-
-                                            academicYears.map((year) => (
-
-                                                <option key={year._id} value={year._id}>
-
-                                                    {year.yearName}
-
-                                                    {year.isActive ? " (Active)" : ""}
-
-                                                </option>
-
-                                            ))
-
-                                        }
-
+                                        {academicYears.map((year) => (
+                                            <option key={year._id} value={year._id}>
+                                                {year.yearName || year.year}
+                                                {year.isActive
+                                                    ? ` (${text.active})`
+                                                    : ""}
+                                            </option>
+                                        ))}
                                     </select>
-
                                 </div>
-
                             </div>
-
                         </div>
 
-                        {/* Schedule */}
-
-                        <div className="bg-white rounded-3xl shadow p-8">
-
-                            <h2 className="text-xl font-bold mb-6">
-
-                                Schedule
-
+                        <div className="rounded-3xl bg-white p-5 shadow-sm sm:p-7">
+                            <h2 className="mb-6 text-xl font-bold text-slate-800">
+                                {text.schedule}
                             </h2>
 
                             <div className="space-y-5">
-
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Due Date <span className="text-red-500">*</span>
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.dueDate}{" "}
+                                        <span className="text-red-500">*</span>
                                     </label>
 
                                     <input
@@ -709,74 +603,51 @@ const CreateHomework = () => {
                                         value={formData.dueDate}
                                         min={todayStr()}
                                         onChange={handleChange}
-                                        className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                        className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     />
-
                                 </div>
 
                                 <div>
-
-                                    <label className="mb-2 block font-medium">
-
-                                        Status
-
+                                    <label className="mb-2 block font-semibold text-slate-700">
+                                        {text.status}
                                     </label>
 
                                     <select
                                         name="status"
                                         value={formData.status}
                                         onChange={handleChange}
-                                        className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                                        className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                                     >
-
-                                        <option value="Active">Active</option>
-
-                                        <option value="Closed">Closed</option>
-
+                                        <option value="Active">{text.active}</option>
+                                        <option value="Closed">{text.closed}</option>
                                     </select>
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
 
-                {/* ===================== Bottom Save Bar ===================== */}
-
-                <div className="mt-8 flex justify-end gap-4">
-
+                <div className="mt-7 flex flex-col justify-end gap-3 sm:flex-row">
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="rounded-xl border border-gray-300 bg-white px-8 py-3 font-medium hover:bg-gray-100"
+                        className="rounded-xl border border-slate-300 bg-white px-7 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
                     >
-
-                        Reset
-
+                        {text.reset}
                     </button>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="rounded-xl bg-[#5B2EFF] px-10 py-3 text-white font-semibold hover:bg-[#4724db] disabled:opacity-60"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] px-8 py-3 font-semibold text-white transition hover:bg-[#4724db] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-
-                        {loading ? "Saving..." : "Save Homework"}
-
+                        {loading && <Loader2 size={18} className="animate-spin" />}
+                        {loading ? text.saving : text.saveHomework}
                     </button>
-
                 </div>
-
             </form>
-
         </div>
-
     );
-
 };
 
 export default CreateHomework;

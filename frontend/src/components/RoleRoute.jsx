@@ -49,6 +49,15 @@ const RoleRoute = ({ roles, children }) => {
 
     if (!roles.includes(user.role)) {
 
+        // TEMPORARY DEBUG — remove once the redirect issue is resolved.
+        // This pops up on screen automatically, no DevTools needed.
+        alert(
+            "RoleRoute BLOCKED\n" +
+            "user.role = " + user.role + "\n" +
+            "allowed roles = " + JSON.stringify(roles) + "\n" +
+            "current path = " + window.location.pathname
+        );
+
         return <Navigate to="/dashboard" replace />;
 
     }

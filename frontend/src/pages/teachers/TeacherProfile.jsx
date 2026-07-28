@@ -1,1243 +1,460 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import {
     ArrowLeft,
-    User,
-    Phone,
+    BookOpen,
+    BriefcaseBusiness,
     GraduationCap,
+    Camera,
+    Download,
+    Loader2,
     MapPin,
-    BookOpen
+    Pencil,
+    Phone,
+    Printer,
+    UserRound
 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
-import { getTeacherById, deleteTeacher } from "../../services/teacherService";
+import { useLanguage } from "../../context/LanguageContext";
+import { getTeacherById } from "../../services/teacherService";
 import { uploadTeacherPhoto } from "../../services/uploadService";
 
 const TeacherProfile = () => {
-
-    const navigate = useNavigate();
-
     const { id } = useParams();
-
+    const navigate = useNavigate();
     const { user } = useAuth();
-
-    const [teacher, setTeacher] = useState(null);
-
-    const [loading, setLoading] = useState(true);
-
-    const [uploading, setUploading] = useState(false);
-
+    const { language } = useLanguage();
     const fileInputRef = useRef(null);
 
-    useEffect(() => {
+    const [teacher, setTeacher] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const [message, setMessage] = useState("");
 
-        loadTeacher();
+    const gu = language === "gu";
 
-    }, []);
+    const serverUrl = (
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+    ).replace(/\/api\/?$/, "");
 
-    const loadTeacher = async () => {
-
-        try {
-
-            const response = await getTeacherById(id);
-
-            setTeacher(response.teacher);
-
-        } catch (error) {
-
-            console.log(error);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
+    const text = {
+        title: gu ? "શિક્ષક પ્રોફાઇલ" : "Teacher Profile",
+        back: gu ? "પાછા જાઓ" : "Back",
+        edit: gu ? "સંપાદિત કરો" : "Edit Teacher",
+        download: gu ? "પ્રોફાઇલ ડાઉનલોડ કરો" : "Download Profile",
+        print: gu ? "પ્રિન્ટ કરો" : "Print",
+        personal: gu ? "વ્યક્તિગત માહિતી" : "Personal Information",
+        professional: gu ? "વ્યાવસાયિક માહિતી" : "Professional Information",
+        contact: gu ? "સંપર્ક માહિતી" : "Contact Information",
+        fullName: gu ? "પૂરું નામ" : "Full Name",
+        mobile: gu ? "મોબાઇલ નંબર" : "Mobile Number",
+        email: gu ? "ઈમેલ" : "Email",
+        gender: gu ? "લિંગ" : "Gender",
+        qualification: gu ? "લાયકાત" : "Qualification",
+        subject: gu ? "વિષય" : "Subject",
+        experience: gu ? "અનુભવ" : "Experience",
+        salary: gu ? "પગાર" : "Salary",
+        address: gu ? "સરનામું" : "Address",
+        joiningDate: gu ? "જોડાવાની તારીખ" : "Joining Date",
+        classesHandled: gu ? "ભણાવવાના વર્ગો" : "Classes Handled",
+        status: gu ? "સ્થિતિ" : "Status",
+        years: gu ? "વર્ષ" : "Years"
     };
 
-    if (loading) {
+    const loadTeacher = async () => {
+        try {
+            setLoading(true);
 
-        return (
+            const response = await getTeacherById(id);
+            setTeacher(response.teacher || response.data || response);
+        } catch (error) {
+            console.error(error);
+            setMessage(
+                error.response?.data?.message ||
+                    "Unable to load teacher profile."
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            <div className="h-full flex items-center justify-center">
+    useEffect(() => {
+        loadTeacher();
+    }, [id]);
 
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    const getPhotoUrl = (photo) => {
+        if (!photo) return "";
 
-            </div>
+        if (photo.startsWith("http")) return photo;
+        if (photo.startsWith("/")) return `${serverUrl}${photo}`;
 
-        );
+        return `${serverUrl}/uploads/teachers/${photo}`;
+    };
 
-    }
-
-    const InfoItem = ({ label, value }) => (
-
-        <div className="border-b border-gray-100 pb-4">
-
-            <p className="text-sm text-gray-500">
-
-                {label}
-
-            </p>
-
-            <h3 className="text-lg font-semibold text-gray-800 mt-2">
-
-                {value}
-
-            </h3>
-
-        </div>
-
-    );
-
-    const handlePhotoUpload = async (event) => {
-
-        const file = event.target.files[0];
+    const handlePhotoChange = async (event) => {
+        const file = event.target.files?.[0];
 
         if (!file) return;
 
-        try {
+        const allowedTypes = [
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp"
+        ];
 
-            setUploading(true);
-
-            const response = await uploadTeacherPhoto(
-
-                teacher._id,
-
-                file
-
-            );
-
-            if (response.success) {
-
-                setTeacher({
-
-                    ...teacher,
-
-                    photo: response.photo
-
-                });
-
-                alert("Photo Uploaded Successfully");
-
-            }
-
-        } catch (error) {
-
-            alert(
-
-                error.response?.data?.message ||
-
-                "Upload Failed"
-
-            );
-
-        } finally {
-
-            setUploading(false);
-
-        }
-
-    };
-
-    const handleDelete = async () => {
-
-        if (!window.confirm("Delete this teacher? This action cannot be undone.")) {
-
+        if (!allowedTypes.includes(file.type)) {
+            setMessage("Only JPG, PNG and WEBP images are allowed.");
             return;
+        }
 
+        if (file.size > 2 * 1024 * 1024) {
+            setMessage("Image size must be less than 2 MB.");
+            return;
         }
 
         try {
+            setUploading(true);
+            setMessage("");
 
-            await deleteTeacher(teacher._id);
-
-            navigate("/teachers");
-
+            await uploadTeacherPhoto(id, file);
+            await loadTeacher();
         } catch (error) {
-
-            alert(
-
+            setMessage(
                 error.response?.data?.message ||
-
-                "Unable to delete teacher"
-
+                    "Unable to update teacher photo."
             );
-
+        } finally {
+            setUploading(false);
         }
-
     };
 
-    const handlePrint = () => {
-        window.print();
+    const handleDownload = () => {
+        const content = `
+${text.title}
+
+${text.fullName}: ${teacher.fullName}
+${text.mobile}: ${teacher.mobile}
+${text.email}: ${teacher.email || "—"}
+${text.gender}: ${teacher.gender || "—"}
+${text.qualification}: ${teacher.qualification || "—"}
+${text.subject}: ${teacher.subject || "—"}
+${text.experience}: ${teacher.experience || 0} ${text.years}
+${text.salary}: ${teacher.salary ? `₹ ${teacher.salary}` : "—"}
+${text.joiningDate}: ${
+            teacher.joiningDate
+                ? new Date(teacher.joiningDate).toLocaleDateString()
+                : "—"
+        }
+${text.classesHandled}: ${
+            teacher.classesHandled?.length
+                ? teacher.classesHandled.join(", ")
+                : "—"
+        }
+${text.status}: ${teacher.status || "—"}
+${text.address}: ${teacher.address || "—"}
+        `.trim();
+
+        const blob = new Blob([content], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = `${teacher.fullName}-profile.txt`;
+        link.click();
+
+        URL.revokeObjectURL(url);
     };
+
+    if (loading) {
+        return (
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
+
+    if (!teacher) {
+        return (
+            <div className="min-h-full bg-[#F5F7FB] p-8 text-center">
+                <h1 className="text-xl font-bold text-rose-600">
+                    {message || "Teacher not found."}
+                </h1>
+            </div>
+        );
+    }
 
     return (
-
-        <div className="space-y-8" id="teacher-profile-print">
-
-            <style>{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    #teacher-profile-print,
-                    #teacher-profile-print * {
-                        visibility: visible;
-                    }
-                    #teacher-profile-print {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                        padding: 20px;
-                    }
-                    .no-print {
-                        display: none !important;
-                    }
-                    .print-break-avoid {
-                        break-inside: avoid;
-                    }
-                }
-            `}</style>
-
-            {/* ================= Header ================= */}
-
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-
-                <div className="no-print">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
+            <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
                     <button
-
-                        onClick={() => navigate(-1)}
-
-                        className="flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-4 transition"
-
+                        type="button"
+                        onClick={() => navigate("/teachers")}
+                        className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm transition hover:bg-gray-100"
                     >
-
-                        <ArrowLeft size={18} />
-
-                        Back
-
+                        <ArrowLeft size={22} />
                     </button>
 
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                            {text.title}
+                        </h1>
+                        <p className="mt-2 text-slate-500">
+                            {teacher.fullName}
+                        </p>
+                    </div>
                 </div>
 
-                <div>
-
-                    <p className="text-sm text-gray-500">
-
-                        Teachers
-
-                        <span className="mx-2">›</span>
-
-                        Teacher Profile
-
-                    </p>
-
-                    <h1 className="text-4xl font-bold text-gray-800 mt-2">
-
-                        Teacher Profile
-
-                    </h1>
-
-                    <p className="text-gray-500 mt-2">
-
-                        View and manage teacher information
-
-                    </p>
-
-                </div>
-
-                <div className="flex flex-wrap gap-3 no-print">
-
+                <div className="flex flex-wrap gap-3">
                     <button
-
-                        onClick={handlePrint}
-
-                        className="px-6 py-3 rounded-xl border bg-white shadow hover:shadow-md transition"
-
+                        type="button"
+                        onClick={handleDownload}
+                        className="flex items-center gap-2 rounded-xl bg-white px-4 py-3 font-semibold shadow-sm transition hover:bg-gray-100"
                     >
-
-                        🖨 Print
-
+                        <Download size={18} />
+                        {text.download}
                     </button>
 
-                    {
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="flex items-center gap-2 rounded-xl bg-white px-4 py-3 font-semibold shadow-sm transition hover:bg-gray-100"
+                    >
+                        <Printer size={18} />
+                        {text.print}
+                    </button>
 
-                        user?.role === "admin" && (
+                    {user?.role === "admin" && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                navigate(`/teachers/edit/${teacher._id}`)
+                            }
+                            className="flex items-center gap-2 rounded-xl bg-[#5B2EFF] px-4 py-3 font-semibold text-white transition hover:bg-[#4724db]"
+                        >
+                            <Pencil size={18} />
+                            {text.edit}
+                        </button>
+                    )}
+                </div>
+            </div>
 
+            {message && (
+                <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">
+                    {message}
+                </div>
+            )}
+
+            <section className="rounded-3xl bg-white p-6 shadow-sm sm:p-8">
+                <div className="mb-10 flex flex-col items-center">
+                    <div className="relative">
+                        {teacher.photo ? (
+                            <img
+                                src={getPhotoUrl(teacher.photo)}
+                                alt={teacher.fullName}
+                                className="h-36 w-36 rounded-full border-4 border-white object-cover shadow-xl"
+                            />
+                        ) : (
+                            <div className="flex h-36 w-36 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 shadow-xl">
+                                <UserRound size={56} />
+                            </div>
+                        )}
+
+                        {user?.role === "admin" && (
                             <>
-
                                 <button
-
+                                    type="button"
                                     onClick={() =>
-
-                                        navigate(`/teachers/edit/${teacher._id}`)
-
+                                        fileInputRef.current?.click()
                                     }
-
-                                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg hover:scale-105 transition"
-
+                                    disabled={uploading}
+                                    className="absolute bottom-1 right-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#5B2EFF] text-white shadow-lg transition hover:bg-[#4724db]"
                                 >
-
-                                    ✏ Edit Teacher
-
-                                </button>
-
-                                <button
-
-                                    onClick={handleDelete}
-
-                                    className="px-6 py-3 rounded-xl bg-red-600 text-white shadow-lg hover:bg-red-700 transition"
-
-                                >
-
-                                    🗑 Delete
-
-                                </button>
-
-                            </>
-
-                        )
-
-                    }
-
-                </div>
-
-            </div>
-
-            <input
-
-                ref={fileInputRef}
-
-                type="file"
-
-                accept="image/*"
-
-                className="hidden no-print"
-
-                onChange={handlePhotoUpload}
-
-            />
-
-            {/* ================= Hero Card ================= */}
-
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-100 via-white to-indigo-100 border shadow-lg">
-
-                <div className="absolute inset-0 opacity-20">
-
-                    <div className="absolute -right-32 -top-20 w-96 h-96 rounded-full bg-blue-300 blur-3xl"></div>
-
-                    <div className="absolute -left-32 bottom-0 w-80 h-80 rounded-full bg-indigo-300 blur-3xl"></div>
-
-                </div>
-
-                <div className="relative p-10">
-
-                    <div className="flex flex-col xl:flex-row items-center gap-10">
-
-                        <div className="relative">
-
-                            {
-
-                                teacher.photo ?
-
-                                (
-
-                                    <img
-
-                                        src={`http://localhost:5000/uploads/teachers/${teacher.photo}`}
-
-                                        alt={teacher.fullName}
-
-                                        className="w-52 h-52 rounded-full object-cover border-[6px] border-white shadow-xl"
-
-                                    />
-
-                                )
-
-                                :
-
-                                (
-
-                                    <div className="w-52 h-52 rounded-full bg-blue-100 flex items-center justify-center border-[6px] border-white shadow-xl">
-
-                                        <User
-
-                                            size={90}
-
-                                            className="text-blue-600"
-
+                                    {uploading ? (
+                                        <Loader2
+                                            size={18}
+                                            className="animate-spin"
                                         />
-
-                                    </div>
-
-                                )
-
-                            }
-
-                            <button
-
-                                onClick={() => fileInputRef.current.click()}
-
-                                disabled={uploading}
-
-                                className="absolute bottom-2 right-2 w-14 h-14 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition no-print"
-
-                            >
-
-                                {
-
-                                    uploading
-                                        ? "..."
-                                        : "📷"
-
-                                }
-
-                            </button>
-
-                        </div>
-
-                        <div className="flex-1">
-
-                            <div className="flex items-center gap-3">
-
-                                <h1 className="text-5xl font-bold text-gray-800">
-
-                                    {teacher.fullName}
-
-                                </h1>
-
-                                <span className="text-blue-600 text-2xl">
-
-                                    ✔
-
-                                </span>
-
-                            </div>
-
-                            <div className="mt-4">
-
-                                <span
-
-                                    className={`px-5 py-2 rounded-full font-semibold text-sm ${
-
-                                        teacher.status === "Active"
-
-                                            ? "bg-green-100 text-green-700"
-
-                                            : "bg-red-100 text-red-700"
-
-                                    }`}
-
-                                >
-
-                                    {teacher.status}
-
-                                </span>
-
-                            </div>
-
-                            <h2 className="text-2xl mt-6">
-
-                                Subject :
-
-                                <span className="ml-2 font-bold text-indigo-600">
-
-                                    {teacher.subject}
-
-                                </span>
-
-                            </h2>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
-
-                                <div className="bg-white rounded-2xl p-5 shadow">
-
-                                    <p className="text-sm text-gray-500">
-
-                                        Gender
-
-                                    </p>
-
-                                    <h3 className="text-xl font-bold mt-2">
-
-                                        {teacher.gender}
-
-                                    </h3>
-
-                                </div>
-
-                                <div className="bg-white rounded-2xl p-5 shadow">
-
-                                    <p className="text-sm text-gray-500">
-
-                                        Qualification
-
-                                    </p>
-
-                                    <h3 className="text-xl font-bold mt-2">
-
-                                        {teacher.qualification}
-
-                                    </h3>
-
-                                </div>
-
-                                <div className="bg-white rounded-2xl p-5 shadow">
-
-                                    <p className="text-sm text-gray-500">
-
-                                        Mobile
-
-                                    </p>
-
-                                    <h3 className="text-xl font-bold mt-2">
-
-                                        {teacher.mobile}
-
-                                    </h3>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div className="hidden xl:flex flex-col gap-4">
-
-                            <div className="bg-white rounded-2xl p-6 shadow w-56">
-
-                                <p className="text-gray-500">
-
-                                    Joining Date
-
-                                </p>
-
-                                <h3 className="font-bold mt-2">
-
-                                    {
-                                        teacher.joiningDate
-                                            ? new Date(teacher.joiningDate).toLocaleDateString()
-                                            : "-"
-                                    }
-
-                                </h3>
-
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-6 shadow w-56">
-
-                                <p className="text-gray-500">
-
-                                    Experience
-
-                                </p>
-
-                                <h3 className="font-bold mt-2">
-
-                                    {teacher.experience || 0} Years
-
-                                </h3>
-
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-6 shadow w-56">
-
-                                <p className="text-gray-500">
-
-                                    Classes Handled
-
-                                </p>
-
-                                <h3 className="font-bold mt-2">
-
-                                    {
-                                        teacher.classesHandled?.length
-                                            ? teacher.classesHandled.join(", ")
-                                            : "Not Assigned"
-                                    }
-
-                                </h3>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* ================= Information Section ================= */}
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-
-                {/* Personal Information */}
-
-                <div className="xl:col-span-2 bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-3 mb-8">
-
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-
-                            <User className="text-indigo-600"/>
-
-                        </div>
-
-                        <div>
-
-                            <h2 className="text-2xl font-bold">
-
-                                Personal Information
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                Basic teacher details
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-x-12 gap-y-7">
-
-                        <InfoItem
-
-                            label="Full Name"
-
-                            value={teacher.fullName}
-
-                        />
-
-                        <InfoItem
-
-                            label="Gender"
-
-                            value={teacher.gender}
-
-                        />
-
-                        <InfoItem
-
-                            label="Mobile"
-
-                            value={teacher.mobile}
-
-                        />
-
-                        <InfoItem
-
-                            label="Email"
-
-                            value={teacher.email || "-"}
-
-                        />
-
-                        <InfoItem
-
-                            label="Joining Date"
-
-                            value={
-                                teacher.joiningDate
-                                    ? new Date(teacher.joiningDate).toLocaleDateString()
-                                    : "-"
-                            }
-
-                        />
-
-                        <InfoItem
-
-                            label="Status"
-
-                            value={teacher.status}
-
-                        />
-
-                    </div>
-
-                </div>
-
-                {/* Professional */}
-
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-3 mb-8">
-
-                        <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-
-                            <GraduationCap className="text-blue-600"/>
-
-                        </div>
-
-                        <div>
-
-                            <h2 className="text-2xl font-bold">
-
-                                Professional
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                Qualification & expertise
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="space-y-6">
-
-                        <InfoItem
-
-                            label="Qualification"
-
-                            value={teacher.qualification}
-
-                        />
-
-                        <InfoItem
-
-                            label="Subject"
-
-                            value={teacher.subject}
-
-                        />
-
-                        <InfoItem
-
-                            label="Experience"
-
-                            value={`${teacher.experience || 0} Years`}
-
-                        />
-
-                        {
-
-                            user?.role === "admin" && (
-
-                                <InfoItem
-
-                                    label="Salary"
-
-                                    value={
-                                        teacher.salary
-                                            ? `₹ ${teacher.salary}`
-                                            : "-"
-                                    }
-
+                                    ) : (
+                                        <Camera size={19} />
+                                    )}
+                                </button>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                    onChange={handlePhotoChange}
+                                    className="hidden"
                                 />
-
-                            )
-
-                        }
-
+                            </>
+                        )}
                     </div>
 
+                    <h2 className="mt-4 text-2xl font-bold text-slate-800">
+                        {teacher.fullName}
+                    </h2>
+
+                    <p className="mt-1 text-slate-500">
+                        {teacher.subject || "—"}
+                    </p>
                 </div>
 
-            </div>
-
-            {/* Contact */}
-
-            <div className="grid lg:grid-cols-2 gap-7">
-
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-3 mb-8">
-
-                        <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-
-                            <Phone className="text-green-600"/>
-
-                        </div>
-
-                        <div>
-
-                            <h2 className="text-2xl font-bold">
-
-                                Contact Information
-
-                            </h2>
-
-                        </div>
-
-                    </div>
-
-                    <InfoItem
-
-                        label="Mobile"
-
-                        value={teacher.mobile}
-
+                <div className="grid gap-7 xl:grid-cols-2">
+                    <InfoSection
+                        title={text.personal}
+                        icon={<UserRound className="text-indigo-600" />}
+                        items={[
+                            [text.fullName, teacher.fullName],
+                            [text.gender, teacher.gender],
+                            [text.mobile, teacher.mobile],
+                            [text.email, teacher.email],
+                            [
+                                text.joiningDate,
+                                teacher.joiningDate
+                                    ? new Date(
+                                          teacher.joiningDate
+                                      ).toLocaleDateString()
+                                    : "—"
+                            ],
+                            [
+                                text.status,
+                                teacher.status === "Active"
+                                    ? gu
+                                        ? "સક્રિય"
+                                        : "Active"
+                                    : gu
+                                      ? "નિષ્ક્રિય"
+                                      : "Inactive"
+                            ]
+                        ]}
                     />
 
+                    <InfoSection
+                        title={text.professional}
+                        icon={<GraduationCap className="text-amber-600" />}
+                        items={[
+                            [text.qualification, teacher.qualification],
+                            [text.subject, teacher.subject],
+                            [
+                                text.experience,
+                                `${teacher.experience || 0} ${text.years}`
+                            ],
+                            [
+                                text.salary,
+                                teacher.salary
+                                    ? `₹ ${teacher.salary}`
+                                    : "—"
+                            ],
+                            [
+                                text.classesHandled,
+                                teacher.classesHandled?.length
+                                    ? teacher.classesHandled.join(", ")
+                                    : "—"
+                            ],
+                            [text.address, teacher.address]
+                        ]}
+                    />
                 </div>
+            </section>
 
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+            <section className="mt-7 grid gap-5 md:grid-cols-3">
+                <StatCard
+                    icon={<BriefcaseBusiness size={26} />}
+                    title={text.experience}
+                    value={`${teacher.experience || 0} ${text.years}`}
+                    color="bg-indigo-100 text-indigo-600"
+                />
 
-                    <div className="flex items-center gap-3 mb-8">
+                <StatCard
+                    icon={<BookOpen size={26} />}
+                    title={text.classesHandled}
+                    value={teacher.classesHandled?.length || 0}
+                    color="bg-emerald-100 text-emerald-600"
+                />
 
-                        <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                <StatCard
+                    icon={<Phone size={26} />}
+                    title={text.mobile}
+                    value={teacher.mobile}
+                    color="bg-amber-100 text-amber-600"
+                />
+            </section>
 
-                            <MapPin className="text-orange-600"/>
-
+            <section className="mt-7 grid gap-5 lg:grid-cols-2">
+                <div className="rounded-3xl bg-white p-6 shadow-sm">
+                    <div className="mb-4 flex items-center gap-3">
+                        <div className="rounded-xl bg-green-100 p-3">
+                            <Phone className="text-green-600" />
                         </div>
-
-                        <div>
-
-                            <h2 className="text-2xl font-bold">
-
-                                Address
-
-                            </h2>
-
-                        </div>
-
+                        <h2 className="text-xl font-bold">
+                            {text.contact}
+                        </h2>
                     </div>
 
-                    <p className="text-gray-700 leading-8">
+                    <a
+                        href={`tel:${teacher.mobile}`}
+                        className="font-semibold text-[#5B2EFF] hover:underline"
+                    >
+                        {teacher.mobile}
+                    </a>
+                </div>
 
-                        {teacher.address}
+                <div className="rounded-3xl bg-white p-6 shadow-sm">
+                    <div className="mb-4 flex items-center gap-3">
+                        <div className="rounded-xl bg-orange-100 p-3">
+                            <MapPin className="text-orange-600" />
+                        </div>
+                        <h2 className="text-xl font-bold">{text.address}</h2>
+                    </div>
 
+                    <p className="leading-7 text-slate-600">
+                        {teacher.address || "—"}
                     </p>
-
                 </div>
-
-            </div>
-
-            {/* ================= Statistics ================= */}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-
-                {/* Attendance */}
-
-                <div className="group bg-gradient-to-br from-indigo-50 to-white rounded-3xl p-6 border border-indigo-100 shadow hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-
-                    <div className="flex justify-between items-start">
-
-                        <div>
-
-                            <p className="text-sm text-indigo-500 font-semibold">
-
-                                Attendance
-
-                            </p>
-
-                            <h2 className="text-4xl font-bold mt-3">
-
-                                96%
-
-                            </h2>
-
-                            <p className="text-gray-500 mt-2">
-
-                                This Month
-
-                            </p>
-
-                        </div>
-
-                        <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center">
-
-                            <User className="text-indigo-600" size={32}/>
-
-                        </div>
-
-                    </div>
-
-                    <div className="mt-6 h-2 rounded-full bg-indigo-100 overflow-hidden">
-
-                        <div className="h-full w-[96%] rounded-full bg-indigo-600"></div>
-
-                    </div>
-
-                </div>
-
-                {/* Classes Handled */}
-
-                <div className="group bg-gradient-to-br from-green-50 to-white rounded-3xl p-6 border border-green-100 shadow hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-
-                    <div className="flex justify-between">
-
-                        <div>
-
-                            <p className="text-green-600 font-semibold">
-
-                                Classes Handled
-
-                            </p>
-
-                            <h2 className="text-4xl font-bold mt-3">
-
-                                {teacher.classesHandled?.length || 0}
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                Active Classes
-
-                            </p>
-
-                        </div>
-
-                        <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center">
-
-                            <BookOpen
-
-                                className="text-green-600"
-
-                                size={32}
-
-                            />
-
-                        </div>
-
-                    </div>
-
-                    <div className="mt-6 h-2 rounded-full bg-green-100">
-
-                        <div className="w-[80%] h-full bg-green-500 rounded-full"></div>
-
-                    </div>
-
-                </div>
-
-                {/* Experience */}
-
-                <div className="group bg-gradient-to-br from-orange-50 to-white rounded-3xl p-6 border border-orange-100 shadow hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-
-                    <div className="flex justify-between">
-
-                        <div>
-
-                            <p className="text-orange-600 font-semibold">
-
-                                Experience
-
-                            </p>
-
-                            <h2 className="text-4xl font-bold mt-3">
-
-                                {teacher.experience || 0}
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                Years
-
-                            </p>
-
-                        </div>
-
-                        <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center">
-
-                            🏆
-
-                        </div>
-
-                    </div>
-
-                    <div className="mt-6 h-2 rounded-full bg-orange-100">
-
-                        <div className="w-[70%] h-full bg-orange-500 rounded-full"></div>
-
-                    </div>
-
-                </div>
-
-                {/* Performance */}
-
-                <div className="group bg-gradient-to-br from-blue-50 to-white rounded-3xl p-6 border border-blue-100 shadow hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-
-                    <div className="flex justify-between">
-
-                        <div>
-
-                            <p className="text-blue-600 font-semibold">
-
-                                Performance
-
-                            </p>
-
-                            <h2 className="text-4xl font-bold mt-3">
-
-                                89%
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                Overall Rating
-
-                            </p>
-
-                        </div>
-
-                        <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center">
-
-                            ⭐
-
-                        </div>
-
-                    </div>
-
-                    <div className="mt-6 h-2 rounded-full bg-blue-100">
-
-                        <div className="w-[89%] h-full bg-blue-500 rounded-full"></div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* ================= Timetable & Recent Activity ================= */}
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-
-                {/* Timetable Preview */}
-
-                <div className="xl:col-span-2 bg-white rounded-3xl shadow-lg border border-gray-100">
-
-                    <div className="flex items-center justify-between p-7 border-b">
-
-                        <div>
-
-                            <h2 className="text-2xl font-bold">
-
-                                Weekly Timetable
-
-                            </h2>
-
-                            <p className="text-gray-500 mt-1">
-
-                                Current teaching schedule
-
-                            </p>
-
-                        </div>
-
-                        <button
-                            onClick={() => navigate(`/teachers/${teacher._id}/timetable`)}
-                            className="text-indigo-600 font-semibold hover:underline no-print"
-                        >
-
-                            View Full Timetable
-
-                        </button>
-
-                    </div>
-
-                    <div className="overflow-x-auto">
-
-                        <table className="w-full">
-
-                            <thead className="bg-gray-50">
-
-                                <tr>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Day
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Period
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Subject
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Class
-
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                {[
-
-                                    {
-                                        day: "Monday",
-                                        period: "1st Period",
-                                        subject: teacher.subject,
-                                        class: "Std 8 - A"
-                                    },
-
-                                    {
-                                        day: "Monday",
-                                        period: "3rd Period",
-                                        subject: teacher.subject,
-                                        class: "Std 9 - B"
-                                    },
-
-                                    {
-                                        day: "Tuesday",
-                                        period: "2nd Period",
-                                        subject: teacher.subject,
-                                        class: "Std 8 - A"
-                                    },
-
-                                    {
-                                        day: "Wednesday",
-                                        period: "4th Period",
-                                        subject: teacher.subject,
-                                        class: "Std 10 - C"
-                                    }
-
-                                ].map((item, index) => (
-
-                                    <tr
-                                        key={index}
-                                        className="border-b hover:bg-gray-50"
-                                    >
-
-                                        <td className="px-6 py-5">
-
-                                            {item.day}
-
-                                        </td>
-
-                                        <td className="px-6 py-5">
-
-                                            {item.period}
-
-                                        </td>
-
-                                        <td className="px-6 py-5">
-
-                                            {item.subject}
-
-                                        </td>
-
-                                        <td className="px-6 py-5">
-
-                                            {item.class}
-
-                                        </td>
-
-                                    </tr>
-
-                                ))}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-                {/* Recent Activities */}
-
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-4">
-
-                        <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-2xl">
-
-                            👨‍🏫
-
-                        </div>
-
-                        <div>
-
-                            <h2 className="text-xl font-bold">
-
-                                Recent Activities
-
-                            </h2>
-
-                            <p className="text-gray-500">
-
-                                Last updates
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="mt-8 space-y-5">
-
-                        <div className="rounded-2xl bg-indigo-50 p-5">
-
-                            <p className="text-gray-700">
-
-                                Marked attendance for Std 8 - A
-
-                            </p>
-
-                            <p className="text-xs text-gray-400 mt-2">
-
-                                Today, 9:30 AM
-
-                            </p>
-
-                        </div>
-
-                        <div className="rounded-2xl bg-green-50 p-5">
-
-                            <p className="text-gray-700">
-
-                                Submitted homework for Std 9 - B
-
-                            </p>
-
-                            <p className="text-xs text-gray-400 mt-2">
-
-                                Yesterday, 4:15 PM
-
-                            </p>
-
-                        </div>
-
-                        <div className="rounded-2xl bg-orange-50 p-5">
-
-                            <p className="text-gray-700">
-
-                                Updated exam marks for Std 10 - C
-
-                            </p>
-
-                            <p className="text-xs text-gray-400 mt-2">
-
-                                2 Days Ago
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+            </section>
+        </div>
+    );
+};
+
+const InfoSection = ({ title, icon, items }) => (
+    <div>
+        <div className="mb-6 flex items-center gap-3">
+            <div className="rounded-xl bg-slate-100 p-3">{icon}</div>
+            <h2 className="text-xl font-bold text-slate-800">{title}</h2>
         </div>
 
-    );
+        <div className="grid gap-4 sm:grid-cols-2">
+            {items.map(([label, value]) => (
+                <div key={label} className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        {label}
+                    </p>
+                    <p className="mt-1 break-words font-semibold text-slate-800">
+                        {value || "—"}
+                    </p>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
-};
+const StatCard = ({ icon, title, value, color }) => (
+    <div className="rounded-3xl bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-4">
+            <div className={`rounded-2xl p-3 ${color}`}>{icon}</div>
+            <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-500">
+                    {title}
+                </p>
+                <p className="truncate text-xl font-extrabold text-slate-800">
+                    {value}
+                </p>
+            </div>
+        </div>
+    </div>
+);
 
 export default TeacherProfile;

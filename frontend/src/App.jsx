@@ -46,6 +46,8 @@ import Exams from "./pages/exams/Exams";
 import ExamDashboard from "./pages/exams/ExamDashboard";
 import ExamList from "./pages/exams/ExamList";
 import CreateExam from "./pages/exams/CreateExam";
+import MyResults from "./pages/exams/MyResults";
+import ExamDetails from "./pages/exams/ExamDetails";
 import EditExam from "./pages/exams/EditExam";
 import ExamSchedule from "./pages/exams/ExamSchedule";
 import MarksEntry from "./pages/exams/MarksEntry";
@@ -447,7 +449,7 @@ const App = () => {
                     path="/exams/my-results"
                     element={
                         <RoleRoute roles={["student"]}>
-                            <ExamList />
+                            <MyResults />
                         </RoleRoute>
                     }
                 />
@@ -467,7 +469,7 @@ const App = () => {
                         <RoleRoute
                             roles={["admin", "teacher", "student"]}
                         >
-                            <ExamList />
+                            <ExamDetails />
                         </RoleRoute>
                     }
                 />
@@ -562,16 +564,16 @@ const App = () => {
                         </RoleRoute>
                     }
                 />
-            </Route>
 
-            <Route
-                path="/home-management"
-                element={
-                    <RoleRoute roles={["admin"]}>
-                        <HomeManagement />
-                    </RoleRoute>
-                }
-            />
+                <Route
+                    path="/home-management"
+                    element={
+                        <RoleRoute roles={["admin"]}>
+                            <HomeManagement />
+                        </RoleRoute>
+                    }
+                />
+            </Route>
 
             <Route
                 path="*"

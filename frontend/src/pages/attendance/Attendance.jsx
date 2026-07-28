@@ -22,7 +22,7 @@ const ALL_FEATURES = [
         color: "from-indigo-500 to-indigo-400",
         bg: "bg-indigo-50",
         iconColor: "text-indigo-600",
-        roles: ["admin", "teacher", "student"]
+        roles: ["admin", "teacher"]
     },
 
     {
@@ -61,12 +61,12 @@ const ALL_FEATURES = [
     {
         title: "Student Report",
         description: "Per-student attendance %, monthly breakdown chart and calendar view.",
-        path: "/attendance/student-report",
+        path: "/attendance/student/me",
         icon: User,
         color: "from-cyan-500 to-cyan-400",
         bg: "bg-cyan-50",
         iconColor: "text-cyan-600",
-        roles: ["admin", "teacher", "student"]
+        roles: ["student"]
     },
 
     {
@@ -202,11 +202,19 @@ const Attendance = () => {
                     </div>
 
                     <button
-                        onClick={() => navigate("/attendance/mark")}
+                        onClick={() =>
+                            navigate(
+                                user?.role === "student"
+                                    ? "/attendance/today"
+                                    : "/attendance/mark"
+                            )
+                        }
                         className="shrink-0 bg-white text-[#5B2EFF] font-bold px-8 py-4 rounded-2xl shadow-lg hover:scale-105 transition text-lg"
                     >
 
-                        📋 Mark Attendance
+                        {user?.role === "student"
+                            ? "📋 View Attendance"
+                            : "📋 Mark Attendance"}
 
                     </button>
 
@@ -228,7 +236,13 @@ const Attendance = () => {
 
                             <div
                                 key={feature.path}
-                                onClick={() => navigate(feature.path)}
+                                onClick={() =>
+                                    navigate(
+                                        feature.path === "/attendance/student/me"
+                                            ? `/attendance/student/${user?.id}`
+                                            : feature.path
+                                    )
+                                }
                                 className="group bg-white rounded-3xl shadow-sm border border-gray-100 p-7 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                             >
 

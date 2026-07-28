@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { useLanguage } from "../../context/LanguageContext";
 import { addTeacher } from "../../services/teacherService";
 import { uploadTeacherPhoto } from "../../services/uploadService";
 
@@ -28,6 +29,8 @@ const initialFormData = {
 
 const AddTeacher = () => {
     const navigate = useNavigate();
+    const { language } = useLanguage();
+    const gu = language === "gu";
 
     const [formData, setFormData] = useState(initialFormData);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -35,17 +38,32 @@ const AddTeacher = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const handleChange = (e) => {
+    const text = {
+        title: gu ? "શિક્ષક ઉમેરો" : "Add Teacher",
+        subtitle: gu
+            ? "શિક્ષકની વિગતો અને એકાઉન્ટ માહિતી ઉમેરો."
+            : "Add teacher details and account information.",
+        info: gu ? "શિક્ષકની માહિતી" : "Teacher Information",
+        reset: gu ? "રીસેટ" : "Reset",
+        save: gu ? "શિક્ષક સાચવો" : "Save Teacher",
+        saving: gu ? "સાચવી રહ્યા છીએ..." : "Saving...",
+        photo: gu ? "શિક્ષકનો ફોટો" : "Teacher Photo"
+    };
+
+    const inputClass =
+        "h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-[#5B2EFF]/10";
+
+    const handleChange = (event) => {
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [event.target.name]: event.target.value
         });
 
         setError("");
     };
 
-    const handlePhoto = (e) => {
-        const file = e.target.files[0];
+    const handlePhoto = (event) => {
+        const file = event.target.files?.[0];
 
         if (!file) return;
 
@@ -78,20 +96,8 @@ const AddTeacher = () => {
         setError("");
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (
-            !formData.fullName ||
-            !formData.mobile ||
-            !formData.gender ||
-            !formData.qualification ||
-            !formData.subject ||
-            !formData.address
-        ) {
-            setError("Please fill all required fields.");
-            return;
-        }
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
         try {
             setLoading(true);
@@ -104,10 +110,12 @@ const AddTeacher = () => {
                 email: formData.email.trim(),
                 qualification: formData.qualification.trim(),
                 subject: formData.subject.trim(),
-                address: formData.address.trim()
+                address: formData.address.trim(),
+                experience: Number(formData.experience) || 0,
+                salary: Number(formData.salary) || 0
             });
 
-            if (!response.success) {
+            if (!response.success || !response.teacher?._id) {
                 throw new Error("Unable to save teacher.");
             }
 
@@ -119,21 +127,16 @@ const AddTeacher = () => {
             }
 
             navigate("/teachers");
-
-        } catch (err) {
+        } catch (requestError) {
             setError(
-                err.response?.data?.message ||
-                err.message ||
-                "Unable to add teacher."
+                requestError.response?.data?.message ||
+                    requestError.message ||
+                    "Unable to add teacher."
             );
-
         } finally {
             setLoading(false);
         }
     };
-
-    const inputClass =
-        "h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-[#5B2EFF]/10";
 
     return (
         <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
@@ -142,19 +145,17 @@ const AddTeacher = () => {
                     <button
                         type="button"
                         onClick={() => navigate("/teachers")}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm transition hover:bg-gray-100"
-                        aria-label="Back to teachers"
+                        className="flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-sm transition hover:bg-gray-100"
                     >
                         <ArrowLeft size={21} />
                     </button>
 
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
-                            Add Teacher
+                            {text.title}
                         </h1>
-
                         <p className="mt-1 text-sm text-slate-500">
-                            Add teacher details and account information.
+                            {text.subtitle}
                         </p>
                     </div>
                 </div>
@@ -165,7 +166,7 @@ const AddTeacher = () => {
                     className="flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold shadow-sm transition hover:bg-gray-100"
                 >
                     <RotateCcw size={18} />
-                    Reset
+                    {text.reset}
                 </button>
             </div>
 
@@ -177,15 +178,9 @@ const AddTeacher = () => {
 
             <form onSubmit={handleSubmit}>
                 <div className="rounded-3xl bg-white p-5 shadow-sm sm:p-8">
-                    <div className="mb-8">
-                        <h2 className="text-xl font-bold text-slate-800">
-                            Teacher Information
-                        </h2>
-
-                        <p className="mt-1 text-sm text-slate-500">
-                            Fields marked with * are required.
-                        </p>
-                    </div>
+                    <h2 className="mb-8 text-xl font-bold text-slate-800">
+                        {text.info}
+                    </h2>
 
                     <div className="mb-10 flex flex-col items-center">
                         <div className="relative">
@@ -197,10 +192,7 @@ const AddTeacher = () => {
                                 />
                             ) : (
                                 <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-slate-100 to-slate-200 shadow-xl sm:h-40 sm:w-40">
-                                    <Camera
-                                        size={44}
-                                        className="text-slate-400"
-                                    />
+                                    <Camera size={44} className="text-slate-400" />
                                 </div>
                             )}
 
@@ -221,243 +213,70 @@ const AddTeacher = () => {
                         </div>
 
                         <p className="mt-4 text-center text-sm text-slate-500">
-                            Teacher photo: JPG, PNG or WEBP, maximum 2 MB.
+                            {text.photo}: JPG, PNG or WEBP, maximum 2 MB.
                         </p>
                     </div>
 
                     <div className="grid gap-5 md:grid-cols-2">
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Full Name *
-                            </label>
-
-                            <input
-                                type="text"
-                                name="fullName"
-                                value={formData.fullName}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Enter full name"
-                                required
-                            />
-                        </div>
+                        <Field label={gu ? "પૂરું નામ *" : "Full Name *"} name="fullName" form={formData} onChange={handleChange} className={inputClass} required />
+                        <Field label={gu ? "મોબાઇલ નંબર *" : "Mobile Number *"} name="mobile" type="tel" form={formData} onChange={handleChange} className={inputClass} required />
+                        <Field label={gu ? "ઈમેલ" : "Email"} name="email" type="email" form={formData} onChange={handleChange} className={inputClass} />
 
                         <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Mobile Number *
-                            </label>
-
-                            <input
-                                type="tel"
-                                name="mobile"
-                                value={formData.mobile}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Enter mobile number"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Email
-                            </label>
-
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Enter email address"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Gender *
-                            </label>
-
-                            <select
-                                name="gender"
-                                value={formData.gender}
-                                onChange={handleChange}
-                                className={inputClass}
-                                required
-                            >
-                                <option value="">Select gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
+                            <label className="mb-2 block text-sm font-semibold">{gu ? "લિંગ *" : "Gender *"}</label>
+                            <select name="gender" value={formData.gender} onChange={handleChange} className={inputClass} required>
+                                <option value="">{gu ? "લિંગ પસંદ કરો" : "Select gender"}</option>
+                                <option value="Male">{gu ? "પુરુષ" : "Male"}</option>
+                                <option value="Female">{gu ? "સ્ત્રી" : "Female"}</option>
+                                <option value="Other">{gu ? "અન્ય" : "Other"}</option>
                             </select>
                         </div>
 
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Qualification *
-                            </label>
-
-                            <input
-                                type="text"
-                                name="qualification"
-                                value={formData.qualification}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Example: B.Ed, M.Sc"
-                                required
-                            />
-                        </div>
+                        <Field label={gu ? "લાયકાત *" : "Qualification *"} name="qualification" form={formData} onChange={handleChange} className={inputClass} required />
+                        <Field label={gu ? "વિષય *" : "Subject *"} name="subject" form={formData} onChange={handleChange} className={inputClass} required />
+                        <Field label={gu ? "અનુભવ (વર્ષ)" : "Experience (Years)"} name="experience" type="number" form={formData} onChange={handleChange} className={inputClass} />
+                        <Field label={gu ? "પગાર" : "Salary"} name="salary" type="number" form={formData} onChange={handleChange} className={inputClass} />
+                        <Field label={gu ? "જોડાવાની તારીખ" : "Joining Date"} name="joiningDate" type="date" form={formData} onChange={handleChange} className={inputClass} />
 
                         <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Subject *
-                            </label>
-
-                            <input
-                                type="text"
-                                name="subject"
-                                value={formData.subject}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Example: Mathematics"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Experience (Years)
-                            </label>
-
-                            <input
-                                type="number"
-                                min="0"
-                                name="experience"
-                                value={formData.experience}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="0"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Salary
-                            </label>
-
-                            <input
-                                type="number"
-                                min="0"
-                                name="salary"
-                                value={formData.salary}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Optional"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Joining Date
-                            </label>
-
-                            <input
-                                type="date"
-                                name="joiningDate"
-                                value={formData.joiningDate}
-                                onChange={handleChange}
-                                className={inputClass}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Account Password
-                            </label>
-
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className={inputClass}
-                                placeholder="Optional password"
-                            />
-
-                            <p className="mt-2 text-xs leading-5 text-[#5B2EFF]">
-                                If left empty, the teacher&apos;s mobile number
-                                becomes their password.
+                            <label className="mb-2 block text-sm font-semibold">{gu ? "પાસવર્ડ" : "Account Password"}</label>
+                            <input name="password" type="password" value={formData.password} onChange={handleChange} className={inputClass} />
+                            <p className="mt-2 text-xs text-[#5B2EFF]">
+                                {gu ? "ખાલી રાખશો તો મોબાઇલ નંબર પાસવર્ડ બનશે." : "If empty, mobile number becomes the password."}
                             </p>
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                Status
-                            </label>
-
-                            <select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                                className={inputClass}
-                            >
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
+                            <label className="mb-2 block text-sm font-semibold">{gu ? "સ્થિતિ" : "Status"}</label>
+                            <select name="status" value={formData.status} onChange={handleChange} className={inputClass}>
+                                <option value="Active">{gu ? "સક્રિય" : "Active"}</option>
+                                <option value="Inactive">{gu ? "નિષ્ક્રિય" : "Inactive"}</option>
                             </select>
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-semibold">
-                                Address *
-                            </label>
-
-                            <textarea
-                                rows="4"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleChange}
-                                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-[#5B2EFF]/10"
-                                placeholder="Enter complete address"
-                                required
-                            />
+                            <label className="mb-2 block text-sm font-semibold">{gu ? "સરનામું *" : "Address *"}</label>
+                            <textarea rows="4" name="address" value={formData.address} onChange={handleChange} required className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#5B2EFF]" />
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button
-                        type="button"
-                        onClick={handleReset}
-                        disabled={loading}
-                        className="rounded-xl border border-gray-300 bg-white px-6 py-3 font-semibold transition hover:bg-gray-100 disabled:opacity-60"
-                    >
-                        Reset Form
-                    </button>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] px-7 py-3 font-semibold text-white shadow-lg transition hover:bg-[#4724db] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2
-                                    size={18}
-                                    className="animate-spin"
-                                />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={18} />
-                                Save Teacher
-                            </>
-                        )}
+                <div className="mt-6 flex justify-end">
+                    <button type="submit" disabled={loading} className="flex items-center gap-2 rounded-xl bg-[#5B2EFF] px-7 py-3 font-semibold text-white shadow-lg hover:bg-[#4724db] disabled:opacity-60">
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        {loading ? text.saving : text.save}
                     </button>
                 </div>
             </form>
         </div>
     );
 };
+
+const Field = ({ label, name, type = "text", form, onChange, className, required }) => (
+    <div>
+        <label className="mb-2 block text-sm font-semibold">{label}</label>
+        <input type={type} name={name} value={form[name]} onChange={onChange} className={className} required={required} />
+    </div>
+);
 
 export default AddTeacher;

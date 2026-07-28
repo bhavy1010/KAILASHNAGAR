@@ -49,10 +49,37 @@ const getAllExams = async (req, res) => {
 
         const filter = {};
 
-        if (req.query.standard) filter.standard = Number(req.query.standard);
-        if (req.query.division) filter.division = req.query.division;
         if (req.query.status) filter.status = req.query.status;
         if (req.query.examType) filter.examType = req.query.examType;
+
+        if (req.user?.role === "student") {
+
+            // Students must only ever see exams for their own class.
+            // Their own standard/division is looked up server-side and
+            // enforced here so a student cannot view another class's
+            // exams by editing query parameters in the request.
+            const student = await Student.findById(req.user.id);
+
+            if (!student) {
+
+                return res.status(404).json({
+
+                    success: false,
+                    message: "Student Not Found"
+
+                });
+
+            }
+
+            filter.standard = student.standard;
+            filter.division = student.division;
+
+        } else {
+
+            if (req.query.standard) filter.standard = Number(req.query.standard);
+            if (req.query.division) filter.division = req.query.division;
+
+        }
 
         const exams = await Exam.find(filter)
             .populate("classId", "className standard division")
@@ -101,6 +128,27 @@ const getExamById = async (req, res) => {
                 message: "Exam Not Found"
 
             });
+
+        }
+
+        if (req.user?.role === "student") {
+
+            const student = await Student.findById(req.user.id);
+
+            if (
+                !student ||
+                String(student.standard) !== String(exam.standard) ||
+                String(student.division) !== String(exam.division)
+            ) {
+
+                return res.status(403).json({
+
+                    success: false,
+                    message: "You are not allowed to view this exam."
+
+                });
+
+            }
 
         }
 

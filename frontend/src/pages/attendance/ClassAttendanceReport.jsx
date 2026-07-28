@@ -1,764 +1,704 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import {
     BookOpen,
     Search,
     RefreshCw,
-    ArrowUpDown
+    ArrowUpDown,
+    Loader2,
+    Eye
 } from "lucide-react";
 
-import { getClasses } from "../../services/classService";
+import { getStudents } from "../../services/studentService";
 import { getClassAttendanceReport } from "../../services/attendanceService";
+import { useLanguage } from "../../context/LanguageContext";
 
-const MONTHS = [
+const MONTHS_EN = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+];
 
-    "January", "February", "March", "April",
-    "May", "June", "July", "August",
-    "September", "October", "November", "December"
-
+const MONTHS_GU = [
+    "જાન્યુઆરી",
+    "ફેબ્રુઆરી",
+    "માર્ચ",
+    "એપ્રિલ",
+    "મે",
+    "જૂન",
+    "જુલાઈ",
+    "ઓગસ્ટ",
+    "સપ્ટેમ્બર",
+    "ઓક્ટોબર",
+    "નવેમ્બર",
+    "ડિસેમ્બર"
 ];
 
 const now = new Date();
 
 const ClassAttendanceReport = () => {
-
     const navigate = useNavigate();
+    const { language } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [classes, setClasses] = useState([]);
-
     const [standard, setStandard] = useState("");
-
     const [division, setDivision] = useState("");
-
     const [month, setMonth] = useState(now.getMonth() + 1);
-
     const [year, setYear] = useState(now.getFullYear());
-
     const [students, setStudents] = useState([]);
-
     const [totalDays, setTotalDays] = useState(0);
-
     const [loading, setLoading] = useState(false);
-
     const [search, setSearch] = useState("");
-
     const [sortKey, setSortKey] = useState("attendancePercent");
-
     const [sortAsc, setSortAsc] = useState(false);
 
+    const text = {
+        title: isGujarati
+            ? "વર્ગ હાજરી રિપોર્ટ"
+            : "Class Attendance Report",
+        subtitle: isGujarati
+            ? "વર્ગ માટે માસિક હાજરીનો સારાંશ."
+            : "Monthly attendance summary for a class.",
+        class: isGujarati ? "વર્ગ" : "Class",
+        selectClass: isGujarati ? "વર્ગ પસંદ કરો" : "Select Class",
+        division: isGujarati ? "વિભાગ" : "Division",
+        selectDivision: isGujarati ? "વિભાગ પસંદ કરો" : "Select Division",
+        month: isGujarati ? "મહિનો" : "Month",
+        year: isGujarati ? "વર્ષ" : "Year",
+        reset: isGujarati ? "રીસેટ" : "Reset",
+        loadReport: isGujarati ? "રિપોર્ટ લોડ કરો" : "Load Report",
+        loading: isGujarati ? "લોડ થઈ રહ્યું છે..." : "Loading...",
+        totalStudents: isGujarati ? "કુલ વિદ્યાર્થીઓ" : "Total Students",
+        workingDays: isGujarati ? "કામકાજના દિવસો" : "Working Days",
+        classAverage: isGujarati ? "વર્ગ સરેરાશ" : "Class Average",
+        searchPlaceholder: isGujarati
+            ? "નામ અથવા GR નંબરથી વિદ્યાર્થી શોધો..."
+            : "Search student by name or GR...",
+        student: isGujarati ? "વિદ્યાર્થી" : "Student",
+        present: isGujarati ? "હાજર" : "Present",
+        absent: isGujarati ? "ગેરહાજર" : "Absent",
+        late: isGujarati ? "મોડા" : "Late",
+        leave: isGujarati ? "રજા" : "Leave",
+        attendancePercent: isGujarati ? "હાજરી %" : "Attendance %",
+        details: isGujarati ? "વિગતો" : "Details",
+        view: isGujarati ? "જુઓ" : "View",
+        noReport: isGujarati
+            ? "કોઈ રિપોર્ટ લોડ થયો નથી"
+            : "No Report Loaded",
+        noReportText: isGujarati
+            ? "વર્ગ, વિભાગ અને મહિનો પસંદ કરીને રિપોર્ટ લોડ કરો."
+            : "Select class, division and month, then click Load Report."
+    };
+
+    const months = isGujarati ? MONTHS_GU : MONTHS_EN;
+
     useEffect(() => {
-
         loadClasses();
-
     }, []);
 
     const loadClasses = async () => {
-
         try {
+            const response = await getStudents();
 
-            const response = await getClasses();
+            const activeStudents = (response.students || []).filter(
+                (student) => student.status === "Active"
+            );
 
-            setClasses(response.classes || []);
+            const realClasses = [
+                ...new Map(
+                    activeStudents.map((student) => [
+                        `${student.standard}-${student.division}`,
+                        {
+                            standard: student.standard,
+                            division: student.division
+                        }
+                    ])
+                ).values()
+            ];
 
+            setClasses(realClasses);
         } catch (error) {
-
             console.log(error);
-
+            setClasses([]);
         }
-
     };
 
     const divisionsForStandard = [
-
         ...new Set(
-
             classes
-
-                .filter((c) => String(c.standard) === String(standard))
-
-                .map((c) => c.division)
-
+                .filter(
+                    (item) => String(item.standard) === String(standard)
+                )
+                .map((item) => item.division)
         )
-
     ];
 
     const handleLoad = async () => {
-
         if (!standard || !division) {
-
-            alert("Please select Class and Division");
-
+            alert(
+                isGujarati
+                    ? "કૃપા કરીને વર્ગ અને વિભાગ પસંદ કરો."
+                    : "Please select Class and Division"
+            );
             return;
-
         }
 
         try {
-
             setLoading(true);
 
             const response = await getClassAttendanceReport(
-
                 standard,
-
                 division,
-
                 month,
-
                 year
-
             );
 
-            setStudents(response.students || []);
-
-            setTotalDays(response.totalDays || 0);
-
+            setStudents(response?.students || []);
+            setTotalDays(response?.totalDays || 0);
         } catch (error) {
-
             console.log(error);
 
-            alert("Unable to load report");
-
+            alert(
+                error.response?.data?.message ||
+                    (isGujarati
+                        ? "રિપોર્ટ લોડ થઈ શક્યો નથી."
+                        : "Unable to load report")
+            );
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     const handleReset = () => {
-
         setStandard("");
-
         setDivision("");
-
         setMonth(now.getMonth() + 1);
-
         setYear(now.getFullYear());
-
         setStudents([]);
-
         setTotalDays(0);
-
         setSearch("");
-
+        setSortKey("attendancePercent");
+        setSortAsc(false);
     };
 
     const handleSort = (key) => {
-
         if (sortKey === key) {
-
-            setSortAsc(!sortAsc);
-
+            setSortAsc((previous) => !previous);
         } else {
-
             setSortKey(key);
-
             setSortAsc(false);
-
         }
-
     };
 
-    const filteredStudents = students
+    const filteredStudents = useMemo(() => {
+        const searchText = search.toLowerCase().trim();
 
-        .filter((s) =>
+        return [...students]
+            .filter((student) =>
+                searchText
+                    ? student.fullName?.toLowerCase().includes(searchText) ||
+                      student.grNumber?.toLowerCase().includes(searchText)
+                    : true
+            )
+            .sort((first, second) => {
+                const firstValue = first[sortKey] ?? 0;
+                const secondValue = second[sortKey] ?? 0;
 
-            search
-
-                ? s.fullName.toLowerCase().includes(search.toLowerCase()) ||
-
-                  s.grNumber.toLowerCase().includes(search.toLowerCase())
-
-                : true
-
-        )
-
-        .sort((a, b) => {
-
-            const valA = a[sortKey];
-
-            const valB = b[sortKey];
-
-            if (typeof valA === "string") {
+                if (typeof firstValue === "string") {
+                    return sortAsc
+                        ? firstValue.localeCompare(secondValue)
+                        : secondValue.localeCompare(firstValue);
+                }
 
                 return sortAsc
-
-                    ? valA.localeCompare(valB)
-
-                    : valB.localeCompare(valA);
-
-            }
-
-            return sortAsc ? valA - valB : valB - valA;
-
-        });
+                    ? Number(firstValue) - Number(secondValue)
+                    : Number(secondValue) - Number(firstValue);
+            });
+    }, [students, search, sortKey, sortAsc]);
 
     const classAvg =
         students.length > 0
             ? Math.round(
-                  students.reduce((sum, s) => sum + s.attendancePercent, 0) /
-                      students.length
+                  students.reduce(
+                      (sum, student) =>
+                          sum + Number(student.attendancePercent || 0),
+                      0
+                  ) / students.length
               )
             : 0;
 
+    const progressColor = (percentage) => {
+        if (percentage >= 90) return "bg-green-500";
+        if (percentage >= 75) return "bg-yellow-500";
+        return "bg-red-500";
+    };
+
+    const percentColor = (percentage) => {
+        if (percentage >= 90) return "text-green-600";
+        if (percentage >= 75) return "text-yellow-600";
+        return "text-red-600";
+    };
+
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
-            <div className="mb-8">
-
-                <h1 className="text-4xl font-bold text-slate-800">
-
-                    Class Attendance Report
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
+            <div className="mb-7">
+                <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                    {text.title}
                 </h1>
 
-                <p className="mt-2 text-slate-500">
-
-                    Monthly attendance summary for a class.
-
+                <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                    {text.subtitle}
                 </p>
-
             </div>
 
-            {/* ===================== Selector Card ===================== */}
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-7">
-
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-
+            <div className="mb-7 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-5">
                     <div>
-
-                        <label className="mb-2 block font-medium">
-
-                            Class
-
+                        <label className="mb-2 block font-semibold text-slate-700">
+                            {text.class}
                         </label>
 
                         <select
                             value={standard}
-                            onChange={(e) => {
-
-                                setStandard(e.target.value);
-
+                            onChange={(event) => {
+                                setStandard(event.target.value);
                                 setDivision("");
-
                             }}
-                            className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                            className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                         >
+                            <option value="">{text.selectClass}</option>
 
-                            <option value="">Select Class</option>
-
-                            {
-
-                                [...new Set(classes.map((c) => c.standard))]
-
-                                    .sort((a, b) => a - b)
-
-                                    .map((std) => (
-
-                                        <option key={std} value={std}>
-
-                                            Std {std}
-
-                                        </option>
-
-                                    ))
-
-                            }
-
+                            {[...new Set(classes.map((item) => item.standard))]
+                                .sort((a, b) => a - b)
+                                .map((std) => (
+                                    <option key={std} value={std}>
+                                        {isGujarati ? `${std} ધોરણ` : `Std ${std}`}
+                                    </option>
+                                ))}
                         </select>
-
                     </div>
 
                     <div>
-
-                        <label className="mb-2 block font-medium">
-
-                            Division
-
+                        <label className="mb-2 block font-semibold text-slate-700">
+                            {text.division}
                         </label>
 
                         <select
                             value={division}
-                            onChange={(e) => setDivision(e.target.value)}
+                            onChange={(event) => setDivision(event.target.value)}
                             disabled={!standard}
-                            className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF] disabled:bg-gray-100"
+                            className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100 disabled:cursor-not-allowed disabled:bg-slate-100"
                         >
+                            <option value="">{text.selectDivision}</option>
 
-                            <option value="">Select Division</option>
-
-                            {
-
-                                divisionsForStandard.map((div) => (
-
-                                    <option key={div} value={div}>
-
-                                        {div}
-
-                                    </option>
-
-                                ))
-
-                            }
-
+                            {divisionsForStandard.map((div) => (
+                                <option key={div} value={div}>
+                                    {div}
+                                </option>
+                            ))}
                         </select>
-
                     </div>
 
                     <div>
-
-                        <label className="mb-2 block font-medium">
-
-                            Month
-
+                        <label className="mb-2 block font-semibold text-slate-700">
+                            {text.month}
                         </label>
 
                         <select
                             value={month}
-                            onChange={(e) => setMonth(Number(e.target.value))}
-                            className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                            onChange={(event) => setMonth(Number(event.target.value))}
+                            className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                         >
-
-                            {
-
-                                MONTHS.map((m, index) => (
-
-                                    <option key={m} value={index + 1}>
-
-                                        {m}
-
-                                    </option>
-
-                                ))
-
-                            }
-
+                            {months.map((monthName, index) => (
+                                <option key={index + 1} value={index + 1}>
+                                    {monthName}
+                                </option>
+                            ))}
                         </select>
-
                     </div>
 
                     <div>
-
-                        <label className="mb-2 block font-medium">
-
-                            Year
-
+                        <label className="mb-2 block font-semibold text-slate-700">
+                            {text.year}
                         </label>
 
                         <select
                             value={year}
-                            onChange={(e) => setYear(Number(e.target.value))}
-                            className="h-12 w-full rounded-xl border px-4 outline-none focus:border-[#5B2EFF]"
+                            onChange={(event) => setYear(Number(event.target.value))}
+                            className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                         >
-
-                            {
-
-                                [now.getFullYear(), now.getFullYear() - 1].map((y) => (
-
-                                    <option key={y} value={y}>
-
-                                        {y}
-
+                            {[now.getFullYear(), now.getFullYear() - 1].map(
+                                (yearOption) => (
+                                    <option key={yearOption} value={yearOption}>
+                                        {yearOption}
                                     </option>
-
-                                ))
-
-                            }
-
+                                )
+                            )}
                         </select>
-
                     </div>
 
                     <div className="flex gap-3">
-
                         <button
                             onClick={handleReset}
-                            className="flex items-center gap-2 h-12 px-4 rounded-xl bg-gray-700 hover:bg-gray-800 text-white transition"
+                            title={text.reset}
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-700 text-white transition hover:bg-slate-800"
                         >
-
-                            <RefreshCw size={16} />
-
+                            <RefreshCw size={18} />
                         </button>
 
                         <button
                             onClick={handleLoad}
                             disabled={loading}
-                            className="flex-1 h-12 rounded-xl bg-[#5B2EFF] text-white font-semibold hover:bg-[#4724db] transition disabled:opacity-60"
+                            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] px-4 font-semibold text-white transition hover:bg-[#4724db] disabled:cursor-not-allowed disabled:opacity-60"
                         >
+                            {loading && <Loader2 size={18} className="animate-spin" />}
 
-                            {loading ? "Loading..." : "Load Report"}
-
+                            {loading ? text.loading : text.loadReport}
                         </button>
-
                     </div>
-
                 </div>
-
             </div>
 
-            {
+            {students.length > 0 ? (
+                <>
+                    <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-slate-500">{text.class}</p>
 
-                students.length > 0 && (
-
-                    <>
-
-                        {/* ===================== Summary Bar ===================== */}
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-7">
-
-                            <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-
-                                <p className="text-gray-500 text-sm">
-
-                                    Class
-
-                                </p>
-
-                                <h3 className="text-xl font-bold mt-2">
-
-                                    Std {standard} - {division}
-
-                                </h3>
-
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-
-                                <p className="text-gray-500 text-sm">
-
-                                    Total Students
-
-                                </p>
-
-                                <h3 className="text-xl font-bold mt-2">
-
-                                    {students.length}
-
-                                </h3>
-
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-
-                                <p className="text-gray-500 text-sm">
-
-                                    Working Days
-
-                                </p>
-
-                                <h3 className="text-xl font-bold mt-2">
-
-                                    {totalDays}
-
-                                </h3>
-
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-
-                                <p className="text-gray-500 text-sm">
-
-                                    Class Average
-
-                                </p>
-
-                                <h3
-
-                                    className={`text-xl font-bold mt-2 ${
-
-                                        classAvg >= 90
-
-                                            ? "text-green-600"
-
-                                            : classAvg >= 75
-
-                                            ? "text-yellow-600"
-
-                                            : "text-red-600"
-
-                                    }`}
-
-                                >
-
-                                    {classAvg}%
-
-                                </h3>
-
-                            </div>
-
+                            <h3 className="mt-2 text-xl font-bold text-slate-800">
+                                {isGujarati
+                                    ? `${standard} ધોરણ - ${division}`
+                                    : `Std ${standard} - ${division}`}
+                            </h3>
                         </div>
 
-                        {/* ===================== Search ===================== */}
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-slate-500">
+                                {text.totalStudents}
+                            </p>
 
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-5">
-
-                            <div className="flex items-center gap-3 bg-gray-100 rounded-xl px-4">
-
-                                <Search size={18} className="text-gray-500" />
-
-                                <input
-                                    type="text"
-                                    placeholder="Search student by name or GR..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="flex-1 bg-transparent py-3 outline-none"
-                                />
-
-                            </div>
-
+                            <h3 className="mt-2 text-xl font-bold text-slate-800">
+                                {students.length}
+                            </h3>
                         </div>
 
-                        {/* ===================== Table ===================== */}
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-slate-500">
+                                {text.workingDays}
+                            </p>
 
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                            <h3 className="mt-2 text-xl font-bold text-slate-800">
+                                {totalDays}
+                            </h3>
+                        </div>
 
-                            <table className="w-full">
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-slate-500">
+                                {text.classAverage}
+                            </p>
 
-                                <thead className="bg-gray-100">
+                            <h3
+                                className={`mt-2 text-xl font-bold ${percentColor(
+                                    classAvg
+                                )}`}
+                            >
+                                {classAvg}%
+                            </h3>
+                        </div>
+                    </div>
 
+                    <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="flex items-center gap-3 rounded-xl bg-slate-100 px-4">
+                            <Search size={18} className="shrink-0 text-slate-500" />
+
+                            <input
+                                type="text"
+                                placeholder={text.searchPlaceholder}
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                className="w-full bg-transparent py-3 outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        <div className="hidden overflow-x-auto lg:block">
+                            <table className="w-full min-w-[1000px]">
+                                <thead className="bg-slate-100">
                                     <tr>
-
-                                        <th className="text-left px-6 py-4">
-
-                                            Student
-
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.student}
                                         </th>
 
-                                        {
+                                        {[
+                                            {
+                                                key: "present",
+                                                label: text.present
+                                            },
+                                            {
+                                                key: "absent",
+                                                label: text.absent
+                                            },
+                                            {
+                                                key: "late",
+                                                label: text.late
+                                            },
+                                            {
+                                                key: "leave",
+                                                label: text.leave
+                                            },
+                                            {
+                                                key: "attendancePercent",
+                                                label: text.attendancePercent
+                                            }
+                                        ].map((column) => (
+                                            <th
+                                                key={column.key}
+                                                onClick={() =>
+                                                    handleSort(column.key)
+                                                }
+                                                className="cursor-pointer px-6 py-4 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {column.label}
+                                                    <ArrowUpDown
+                                                        size={14}
+                                                        className="text-slate-400"
+                                                    />
+                                                </div>
+                                            </th>
+                                        ))}
 
-                                            [
-
-                                                { key: "present", label: "Present" },
-
-                                                { key: "absent", label: "Absent" },
-
-                                                { key: "late", label: "Late" },
-
-                                                { key: "leave", label: "Leave" },
-
-                                                { key: "attendancePercent", label: "Attendance %" }
-
-                                            ].map((col) => (
-
-                                                <th
-                                                    key={col.key}
-                                                    className="text-left px-6 py-4 cursor-pointer hover:bg-gray-200 transition"
-                                                    onClick={() => handleSort(col.key)}
-                                                >
-
-                                                    <div className="flex items-center gap-2">
-
-                                                        {col.label}
-
-                                                        <ArrowUpDown size={14} className="text-gray-400" />
-
-                                                    </div>
-
-                                                </th>
-
-                                            ))
-
-                                        }
-
-                                        <th className="text-left px-6 py-4">
-
-                                            Details
-
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.details}
                                         </th>
-
                                     </tr>
-
                                 </thead>
 
                                 <tbody>
+                                    {filteredStudents.map((student) => {
+                                        const percentage = Number(
+                                            student.attendancePercent || 0
+                                        );
 
-                                    {
-
-                                        filteredStudents.map((student) => (
-
+                                        return (
                                             <tr
                                                 key={student.studentId}
-                                                className="border-t hover:bg-gray-50 transition"
+                                                className="border-t border-slate-100 transition hover:bg-slate-50"
                                             >
-
                                                 <td className="px-6 py-4">
-
-                                                    <p className="font-semibold text-gray-800">
-
+                                                    <p className="font-semibold text-slate-800">
                                                         {student.fullName}
-
                                                     </p>
 
-                                                    <p className="text-sm text-gray-500">
-
-                                                        GR : {student.grNumber}
-
+                                                    <p className="text-sm text-slate-500">
+                                                        GR: {student.grNumber}
                                                     </p>
-
                                                 </td>
 
                                                 <td className="px-6 py-4">
-
-                                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-
-                                                        {student.present}
-
+                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                                        {student.present || 0}
                                                     </span>
-
                                                 </td>
 
                                                 <td className="px-6 py-4">
-
-                                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-
-                                                        {student.absent}
-
+                                                    <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                                        {student.absent || 0}
                                                     </span>
-
                                                 </td>
 
                                                 <td className="px-6 py-4">
-
-                                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
-
-                                                        {student.late}
-
+                                                    <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                                                        {student.late || 0}
                                                     </span>
-
                                                 </td>
 
                                                 <td className="px-6 py-4">
-
-                                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-
-                                                        {student.leave}
-
+                                                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                                        {student.leave || 0}
                                                     </span>
-
                                                 </td>
 
                                                 <td className="px-6 py-4">
-
                                                     <div className="flex items-center gap-3">
-
-                                                        <div className="flex-1 h-2 rounded-full bg-gray-100 w-24 overflow-hidden">
-
+                                                        <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-100">
                                                             <div
-                                                                className={`h-full rounded-full ${
-
-                                                                    student.attendancePercent >= 90
-
-                                                                        ? "bg-green-500"
-
-                                                                        : student.attendancePercent >= 75
-
-                                                                        ? "bg-yellow-500"
-
-                                                                        : "bg-red-500"
-
-                                                                }`}
-                                                                style={{ width: `${student.attendancePercent}%` }}
-                                                            ></div>
-
+                                                                className={`h-full rounded-full ${progressColor(
+                                                                    percentage
+                                                                )}`}
+                                                                style={{
+                                                                    width: `${Math.min(
+                                                                        Math.max(
+                                                                            percentage,
+                                                                            0
+                                                                        ),
+                                                                        100
+                                                                    )}%`
+                                                                }}
+                                                            />
                                                         </div>
 
                                                         <span
-
-                                                            className={`font-bold text-sm ${
-
-                                                                student.attendancePercent >= 90
-
-                                                                    ? "text-green-600"
-
-                                                                    : student.attendancePercent >= 75
-
-                                                                    ? "text-yellow-600"
-
-                                                                    : "text-red-600"
-
-                                                            }`}
-
+                                                            className={`font-bold text-sm ${percentColor(
+                                                                percentage
+                                                            )}`}
                                                         >
-
-                                                            {student.attendancePercent}%
-
+                                                            {percentage}%
                                                         </span>
-
                                                     </div>
-
                                                 </td>
 
                                                 <td className="px-6 py-4">
-
                                                     <button
                                                         onClick={() =>
                                                             navigate(
                                                                 `/attendance/student/${student.studentId}`
                                                             )
                                                         }
-                                                        className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm transition"
+                                                        className="flex items-center gap-2 rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-600"
                                                     >
-
-                                                        View
-
+                                                        <Eye size={16} />
+                                                        {text.view}
                                                     </button>
-
                                                 </td>
-
                                             </tr>
-
-                                        ))
-
-                                    }
-
+                                        );
+                                    })}
                                 </tbody>
-
                             </table>
-
                         </div>
 
-                    </>
+                        <div className="divide-y divide-slate-100 lg:hidden">
+                            {filteredStudents.map((student) => {
+                                const percentage = Number(
+                                    student.attendancePercent || 0
+                                );
 
-                )
+                                return (
+                                    <div
+                                        key={student.studentId}
+                                        className="p-4 sm:p-5"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="truncate font-semibold text-slate-800">
+                                                    {student.fullName}
+                                                </p>
 
-            }
+                                                <p className="mt-1 text-sm text-slate-500">
+                                                    GR: {student.grNumber}
+                                                </p>
+                                            </div>
 
-            {
+                                            <span
+                                                className={`shrink-0 text-lg font-bold ${percentColor(
+                                                    percentage
+                                                )}`}
+                                            >
+                                                {percentage}%
+                                            </span>
+                                        </div>
 
-                students.length === 0 && !loading && (
+                                        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                                            <div
+                                                className={`h-full rounded-full ${progressColor(
+                                                    percentage
+                                                )}`}
+                                                style={{
+                                                    width: `${Math.min(
+                                                        Math.max(percentage, 0),
+                                                        100
+                                                    )}%`
+                                                }}
+                                            />
+                                        </div>
 
-                    <div className="bg-white rounded-3xl p-16 text-center shadow">
+                                        <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+                                            <div className="rounded-xl bg-green-50 p-2">
+                                                <p className="text-xs text-green-700">
+                                                    {text.present}
+                                                </p>
+                                                <p className="mt-1 font-bold text-green-700">
+                                                    {student.present || 0}
+                                                </p>
+                                            </div>
 
+                                            <div className="rounded-xl bg-red-50 p-2">
+                                                <p className="text-xs text-red-700">
+                                                    {text.absent}
+                                                </p>
+                                                <p className="mt-1 font-bold text-red-700">
+                                                    {student.absent || 0}
+                                                </p>
+                                            </div>
+
+                                            <div className="rounded-xl bg-yellow-50 p-2">
+                                                <p className="text-xs text-yellow-700">
+                                                    {text.late}
+                                                </p>
+                                                <p className="mt-1 font-bold text-yellow-700">
+                                                    {student.late || 0}
+                                                </p>
+                                            </div>
+
+                                            <div className="rounded-xl bg-blue-50 p-2">
+                                                <p className="text-xs text-blue-700">
+                                                    {text.leave}
+                                                </p>
+                                                <p className="mt-1 font-bold text-blue-700">
+                                                    {student.leave || 0}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() =>
+                                                navigate(
+                                                    `/attendance/student/${student.studentId}`
+                                                )
+                                            }
+                                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                                        >
+                                            <Eye size={16} />
+                                            {text.view}
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </>
+            ) : (
+                !loading && (
+                    <div className="rounded-3xl bg-white px-5 py-16 text-center shadow-sm sm:px-8">
                         <BookOpen
                             size={56}
-                            className="mx-auto text-gray-300 mb-4"
+                            className="mx-auto mb-4 text-slate-300"
                         />
 
-                        <h2 className="text-xl font-semibold text-gray-600">
-
-                            No Report Loaded
-
+                        <h2 className="text-xl font-semibold text-slate-600">
+                            {text.noReport}
                         </h2>
 
-                        <p className="text-gray-400 mt-2">
-
-                            Select class, division and month, then click Load Report.
-
+                        <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400 sm:text-base">
+                            {text.noReportText}
                         </p>
-
                     </div>
-
                 )
-
-            }
-
+            )}
         </div>
-
     );
-
 };
 
 export default ClassAttendanceReport;

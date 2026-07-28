@@ -1,706 +1,748 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Calendar, User, Paperclip, Star } from "lucide-react";
+import {
+    ArrowLeft,
+    BookOpen,
+    Calendar,
+    User,
+    Paperclip,
+    Star,
+    Loader2,
+    Pencil,
+    Trash2,
+    CheckCircle2
+} from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
-import { getHomeworkById, deleteHomework } from "../../services/homeworkService";
-import { getSubmissionsByHomework, gradeSubmission } from "../../services/homeworkSubmissionService";
+import { useLanguage } from "../../context/LanguageContext";
+import {
+    getHomeworkById,
+    deleteHomework
+} from "../../services/homeworkService";
+import {
+    getSubmissionsByHomework,
+    gradeSubmission
+} from "../../services/homeworkSubmissionService";
 
 const HomeworkDetails = () => {
-
     const { id } = useParams();
-
     const navigate = useNavigate();
-
     const { user } = useAuth();
+    const { language } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [homework, setHomework] = useState(null);
-
     const [stats, setStats] = useState(null);
-
     const [submissions, setSubmissions] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [activeTab, setActiveTab] = useState("details");
-
     const [gradingId, setGradingId] = useState(null);
-
     const [gradeValue, setGradeValue] = useState("");
-
     const [feedbackValue, setFeedbackValue] = useState("");
-
     const [gradeLoading, setGradeLoading] = useState(false);
 
+    const serverUrl = (
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+    ).replace(/\/api\/?$/, "");
+
+    const text = {
+        back: isGujarati ? "પાછળ" : "Back",
+        breadcrumb: isGujarati ? "હોમવર્ક › વિગતો" : "Homework › Details",
+        edit: isGujarati ? "સંપાદિત કરો" : "Edit",
+        delete: isGujarati ? "કાઢી નાખો" : "Delete",
+        active: isGujarati ? "સક્રિય" : "Active",
+        closed: isGujarati ? "બંધ" : "Closed",
+        overdue: isGujarati ? "મુદત પૂર્ણ" : "Overdue",
+        dueDate: isGujarati ? "છેલ્લી તારીખ" : "Due Date",
+        class: isGujarati ? "વર્ગ" : "Class",
+        teacher: isGujarati ? "શિક્ષક" : "Teacher",
+        totalMarks: isGujarati ? "કુલ ગુણ" : "Total Marks",
+        downloadAttachment: isGujarati
+            ? "જોડાણ ડાઉનલોડ કરો"
+            : "Download Attachment",
+        totalStudents: isGujarati ? "કુલ વિદ્યાર્થીઓ" : "Total Students",
+        submitted: isGujarati ? "સબમિટ થયેલ" : "Submitted",
+        graded: isGujarati ? "ચકાસેલ" : "Graded",
+        pending: isGujarati ? "બાકી" : "Pending",
+        completion: isGujarati ? "પૂર્ણતા" : "Completion",
+        details: isGujarati ? "વિગતો" : "Details",
+        submissions: isGujarati ? "સબમિશન" : "Submissions",
+        studentSubmissions: isGujarati
+            ? "વિદ્યાર્થીઓના સબમિશન"
+            : "Student Submissions",
+        submissionsReceived: isGujarati
+            ? "સબમિશન પ્રાપ્ત થયા"
+            : "submissions received",
+        noSubmissions: isGujarati
+            ? "હજુ સુધી કોઈ સબમિશન નથી."
+            : "No submissions yet",
+        answer: isGujarati ? "જવાબ" : "Answer",
+        feedback: isGujarati ? "પ્રતિસાદ" : "Feedback",
+        viewFile: isGujarati ? "ફાઇલ જુઓ" : "View File",
+        submittedOn: isGujarati ? "સબમિટ તારીખ" : "Submitted",
+        grade: isGujarati ? "ગુણ આપો" : "Grade",
+        editGrade: isGujarati ? "ગુણ સંપાદિત કરો" : "Edit Grade",
+        notSubmitted: isGujarati ? "સબમિટ નથી કર્યું" : "Not Submitted",
+        gradeSubmission: isGujarati
+            ? "સબમિશનને ગુણ આપો"
+            : "Grade Submission",
+        gradeOutOf: isGujarati ? "ગુણ (કુલમાંથી)" : "Grade (out of)",
+        feedbackPlaceholder: isGujarati
+            ? "પ્રતિસાદ લખો..."
+            : "Write feedback...",
+        saveGrade: isGujarati ? "ગુણ સાચવો" : "Save Grade",
+        saving: isGujarati ? "સાચવાઈ રહ્યું છે..." : "Saving...",
+        cancel: isGujarati ? "રદ કરો" : "Cancel",
+        homeworkNotFound: isGujarati
+            ? "હોમવર્ક મળ્યું નથી"
+            : "Homework Not Found",
+        loading: isGujarati
+            ? "હોમવર્ક લોડ થઈ રહ્યું છે..."
+            : "Loading homework...",
+        enterGrade: isGujarati
+            ? "કૃપા કરીને ગુણ દાખલ કરો."
+            : "Please enter a grade",
+        unableGrade: isGujarati
+            ? "ગુણ આપી શકાયા નથી."
+            : "Unable to grade",
+        confirmDelete: isGujarati
+            ? "શું તમે આ હોમવર્ક કાઢી નાખવા માંગો છો? બધા સબમિશન પણ કાઢી નાખવામાં આવશે."
+            : "Delete this homework? All submissions will also be deleted.",
+        unableDelete: isGujarati
+            ? "હોમવર્ક કાઢી શકાતું નથી."
+            : "Unable to delete"
+    };
+
+    const statusLabel = {
+        Submitted: isGujarati ? "સબમિટ થયેલ" : "Submitted",
+        Graded: isGujarati ? "ચકાસેલ" : "Graded",
+        Late: isGujarati ? "મોડું સબમિટ" : "Late",
+        Pending: text.pending
+    };
+
     useEffect(() => {
-
         loadData();
-
-    }, []);
+    }, [id, user?.role]);
 
     const loadData = async () => {
-
         try {
-
             setLoading(true);
 
-            const hwRes = await getHomeworkById(id);
+            const homeworkResponse = await getHomeworkById(id);
 
-            setHomework(hwRes.homework);
-
-            setStats(hwRes.stats);
+            setHomework(homeworkResponse?.homework || null);
+            setStats(homeworkResponse?.stats || null);
 
             if (user?.role === "admin" || user?.role === "teacher") {
-
-                const subRes = await getSubmissionsByHomework(id);
-
-                setSubmissions(subRes.submissions || []);
-
+                const submissionResponse = await getSubmissionsByHomework(id);
+                setSubmissions(submissionResponse?.submissions || []);
             }
-
         } catch (error) {
-
             console.log(error);
-
+            setHomework(null);
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     const handleDelete = async () => {
-
-        if (!window.confirm("Delete this homework? All submissions will also be deleted.")) {
-            return;
-        }
+        if (!window.confirm(text.confirmDelete)) return;
 
         try {
-
             await deleteHomework(id);
-
             navigate("/homework/list");
-
         } catch (error) {
-
-            alert(error.response?.data?.message || "Unable to delete");
-
+            alert(error.response?.data?.message || text.unableDelete);
         }
-
     };
 
-    const openGrading = (sub) => {
-
-        setGradingId(sub._id);
-
-        setGradeValue(sub.grade || "");
-
-        setFeedbackValue(sub.feedback || "");
-
+    const openGrading = (submission) => {
+        setGradingId(submission._id);
+        setGradeValue(submission.grade ?? "");
+        setFeedbackValue(submission.feedback || "");
     };
 
     const closeGrading = () => {
-
         setGradingId(null);
-
         setGradeValue("");
-
         setFeedbackValue("");
-
     };
 
     const handleGradeSave = async (submissionId) => {
-
         if (gradeValue === "") {
-
-            alert("Please enter a grade");
-
+            alert(text.enterGrade);
             return;
-
         }
 
         try {
-
             setGradeLoading(true);
 
             await gradeSubmission(submissionId, {
-
                 grade: gradeValue,
-
                 feedback: feedbackValue
-
             });
 
-            setGradingId(null);
-
-            loadData();
-
+            closeGrading();
+            await loadData();
         } catch (error) {
-
-            alert(error.response?.data?.message || "Unable to grade");
-
+            alert(error.response?.data?.message || text.unableGrade);
         } finally {
-
             setGradeLoading(false);
-
         }
-
     };
 
     const getStatusColor = (status) => {
-
         if (status === "Submitted") return "bg-blue-100 text-blue-700";
-
         if (status === "Graded") return "bg-green-100 text-green-700";
-
         if (status === "Late") return "bg-orange-100 text-orange-700";
-
-        return "bg-gray-100 text-gray-500";
-
+        return "bg-slate-100 text-slate-500";
     };
 
-    const getGradeBtnLabel = (status) => {
+    const getGradeButtonLabel = (status) => {
+        if (status === "Graded") return text.editGrade;
+        if (status === "Pending") return text.notSubmitted;
+        return text.grade;
+    };
 
-        if (status === "Graded") return "Edit Grade";
+    const formatDate = (date) => {
+        if (!date) return "-";
 
-        if (status === "Pending") return "Not Submitted";
-
-        return "Grade";
-
+        return new Date(date).toLocaleDateString(
+            isGujarati ? "gu-IN" : "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
     };
 
     if (loading) {
-
         return (
-
-            <div className="h-full flex items-center justify-center">
-
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-
+            <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 bg-[#F5F7FB] px-4">
+                <Loader2 size={40} className="animate-spin text-[#5B2EFF]" />
+                <p className="font-medium text-slate-500">{text.loading}</p>
             </div>
-
         );
-
     }
 
     if (!homework) {
-
         return (
-
-            <div className="p-8 text-center">
-
-                <BookOpen size={56} className="mx-auto text-gray-300 mb-4" />
-
-                <h2 className="text-xl font-semibold text-gray-600">Homework Not Found</h2>
-
+            <div className="flex min-h-[70vh] flex-col items-center justify-center bg-[#F5F7FB] px-4 text-center">
+                <BookOpen size={56} className="mb-4 text-slate-300" />
+                <h2 className="text-xl font-semibold text-slate-600">
+                    {text.homeworkNotFound}
+                </h2>
             </div>
-
         );
-
     }
 
-    const isOverdue = homework.status === "Active" && new Date(homework.dueDate) < new Date();
+    const isOverdue =
+        homework.status === "Active" &&
+        new Date(homework.dueDate) < new Date();
 
-    const isTeacherOrAdmin = user?.role === "admin" || user?.role === "teacher";
+    const isTeacherOrAdmin =
+        user?.role === "admin" || user?.role === "teacher";
+
+    const safeStats = {
+        totalStudents: stats?.totalStudents || 0,
+        submittedCount: stats?.submittedCount || 0,
+        gradedCount: stats?.gradedCount || 0,
+        pendingCount: stats?.pendingCount || 0,
+        submissionPercent: stats?.submissionPercent || 0
+    };
+
+    const statCards = [
+        {
+            label: text.totalStudents,
+            value: safeStats.totalStudents,
+            className: "border-indigo-100 bg-indigo-50 text-indigo-700"
+        },
+        {
+            label: text.submitted,
+            value: safeStats.submittedCount,
+            className: "border-blue-100 bg-blue-50 text-blue-700"
+        },
+        {
+            label: text.graded,
+            value: safeStats.gradedCount,
+            className: "border-green-100 bg-green-50 text-green-700"
+        },
+        {
+            label: text.pending,
+            value: safeStats.pendingCount,
+            className: "border-red-100 bg-red-50 text-red-700"
+        },
+        {
+            label: text.completion,
+            value: `${safeStats.submissionPercent}%`,
+            className: "border-purple-100 bg-purple-50 text-purple-700"
+        }
+    ];
 
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
-            {/* ============================== Header ============================== */}
-
-            <div className="flex items-center justify-between mb-8">
-
-                <div className="flex items-center gap-4">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
+            <div className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
                     <button
                         onClick={() => navigate("/homework/list")}
-                        className="w-12 h-12 rounded-xl bg-white shadow flex items-center justify-center hover:bg-gray-100"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm transition hover:bg-slate-100 sm:h-12 sm:w-12"
+                        title={text.back}
                     >
-
-                        <ArrowLeft size={22} />
-
+                        <ArrowLeft size={21} />
                     </button>
 
-                    <div>
-
-                        <p className="text-sm text-gray-500">
-                            Homework &rsaquo; Details
+                    <div className="min-w-0">
+                        <p className="text-sm text-slate-500">
+                            {text.breadcrumb}
                         </p>
 
-                        <h1 className="text-3xl font-bold text-slate-800 mt-1">
+                        <h1 className="mt-1 truncate text-2xl font-bold text-slate-800 sm:text-3xl">
                             {homework.title}
                         </h1>
-
                     </div>
-
                 </div>
 
                 {isTeacherOrAdmin && (
-
-                    <div className="flex gap-3">
-
+                    <div className="grid grid-cols-2 gap-3 sm:flex">
                         <button
-                            onClick={() => navigate("/homework/edit/" + homework._id)}
-                            className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold transition"
+                            onClick={() =>
+                                navigate(`/homework/edit/${homework._id}`)
+                            }
+                            className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 font-semibold text-white transition hover:bg-amber-600"
                         >
-                            Edit
+                            <Pencil size={17} />
+                            {text.edit}
                         </button>
 
                         <button
                             onClick={handleDelete}
-                            className="px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition"
+                            className="flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 font-semibold text-white transition hover:bg-red-700"
                         >
-                            Delete
+                            <Trash2 size={17} />
+                            {text.delete}
                         </button>
-
                     </div>
-
                 )}
-
             </div>
 
-            {/* ============================== Hero Card ============================== */}
-
-            <div className="bg-white rounded-3xl shadow border border-gray-100 p-8 mb-8">
-
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
-
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5B2EFF] to-indigo-400 flex items-center justify-center shadow-lg shrink-0">
-
-                        <BookOpen size={36} className="text-white" />
-
+            <div className="mb-7 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">
+                <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#5B2EFF] to-indigo-400 shadow-lg sm:h-20 sm:w-20">
+                        <BookOpen size={34} className="text-white" />
                     </div>
 
-                    <div className="flex-1">
-
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-
-                            <span className="px-4 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm">
+                    <div className="w-full flex-1">
+                        <div className="mb-4 flex flex-wrap items-center gap-2">
+                            <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 sm:px-4 sm:text-sm">
                                 {homework.subject}
                             </span>
 
-                            {homework.status === "Active" ? (
-
-                                <span className="px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
-                                    Active
-                                </span>
-
-                            ) : (
-
-                                <span className="px-4 py-1 rounded-full bg-gray-100 text-gray-600 font-semibold text-sm">
-                                    Closed
-                                </span>
-
-                            )}
+                            <span
+                                className={`rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm ${
+                                    homework.status === "Active"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-slate-100 text-slate-600"
+                                }`}
+                            >
+                                {homework.status === "Active"
+                                    ? text.active
+                                    : text.closed}
+                            </span>
 
                             {isOverdue && (
-
-                                <span className="px-4 py-1 rounded-full bg-red-100 text-red-600 font-semibold text-sm">
-                                    Overdue
+                                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600 sm:px-4 sm:text-sm">
+                                    {text.overdue}
                                 </span>
-
                             )}
-
                         </div>
 
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                        <h2 className="text-xl font-bold text-slate-800 sm:text-2xl">
                             {homework.title}
                         </h2>
 
-                        <p className="text-gray-500 leading-relaxed mb-6">
+                        <p className="mt-2 whitespace-pre-wrap leading-relaxed text-slate-500">
                             {homework.description}
                         </p>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
+                        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                             <div className="flex items-center gap-2">
-
-                                <Calendar size={16} className="text-gray-400" />
-
+                                <Calendar
+                                    size={17}
+                                    className="shrink-0 text-slate-400"
+                                />
                                 <div>
-
-                                    <p className="text-xs text-gray-400">Due Date</p>
-
-                                    <p className={"font-semibold text-sm " + (isOverdue ? "text-red-600" : "text-gray-700")}>
-
-                                        {new Date(homework.dueDate).toLocaleDateString(undefined, {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric"
-                                        })}
-
+                                    <p className="text-xs text-slate-400">
+                                        {text.dueDate}
                                     </p>
-
+                                    <p
+                                        className={`text-sm font-semibold ${
+                                            isOverdue
+                                                ? "text-red-600"
+                                                : "text-slate-700"
+                                        }`}
+                                    >
+                                        {formatDate(homework.dueDate)}
+                                    </p>
                                 </div>
-
                             </div>
 
                             <div className="flex items-center gap-2">
-
-                                <BookOpen size={16} className="text-gray-400" />
-
+                                <BookOpen
+                                    size={17}
+                                    className="shrink-0 text-slate-400"
+                                />
                                 <div>
-
-                                    <p className="text-xs text-gray-400">Class</p>
-
-                                    <p className="font-semibold text-sm text-gray-700">
-                                        Std {homework.standard} - {homework.division}
+                                    <p className="text-xs text-slate-400">
+                                        {text.class}
                                     </p>
-
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        {isGujarati
+                                            ? `${homework.standard} ધોરણ - ${homework.division}`
+                                            : `Std ${homework.standard} - ${homework.division}`}
+                                    </p>
                                 </div>
-
                             </div>
 
                             <div className="flex items-center gap-2">
-
-                                <User size={16} className="text-gray-400" />
-
+                                <User
+                                    size={17}
+                                    className="shrink-0 text-slate-400"
+                                />
                                 <div>
-
-                                    <p className="text-xs text-gray-400">Teacher</p>
-
-                                    <p className="font-semibold text-sm text-gray-700">
+                                    <p className="text-xs text-slate-400">
+                                        {text.teacher}
+                                    </p>
+                                    <p className="text-sm font-semibold text-slate-700">
                                         {homework.teacherId?.fullName || "-"}
                                     </p>
-
                                 </div>
-
                             </div>
 
                             <div className="flex items-center gap-2">
-
-                                <Star size={16} className="text-gray-400" />
-
+                                <Star
+                                    size={17}
+                                    className="shrink-0 text-slate-400"
+                                />
                                 <div>
-
-                                    <p className="text-xs text-gray-400">Total Marks</p>
-
-                                    <p className="font-semibold text-sm text-gray-700">
+                                    <p className="text-xs text-slate-400">
+                                        {text.totalMarks}
+                                    </p>
+                                    <p className="text-sm font-semibold text-slate-700">
                                         {homework.totalMarks}
                                     </p>
-
                                 </div>
-
                             </div>
-
                         </div>
 
                         {homework.attachment && (
-
                             <div className="mt-6">
-
                                 <a
-                                    href={"http://localhost:5000/uploads/homework/questions/" + homework.attachment}
+                                    href={`${serverUrl}/uploads/homework/questions/${homework.attachment}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
                                 >
-
                                     <Paperclip size={16} />
-
-                                    Download Attachment
-
+                                    {text.downloadAttachment}
                                 </a>
-
                             </div>
-
                         )}
-
                     </div>
-
                 </div>
-
             </div>
 
-            {/* ============================== Stats ============================== */}
-
             {stats && (
-
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-5 mb-8">
-
-                    <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
-                        <p className="text-sm text-indigo-500">Total Students</p>
-                        <h3 className="text-3xl font-bold text-indigo-700 mt-2">{stats.totalStudents}</h3>
-                    </div>
-
-                    <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
-                        <p className="text-sm text-blue-500">Submitted</p>
-                        <h3 className="text-3xl font-bold text-blue-700 mt-2">{stats.submittedCount}</h3>
-                    </div>
-
-                    <div className="rounded-2xl border border-green-100 bg-green-50 p-5">
-                        <p className="text-sm text-green-500">Graded</p>
-                        <h3 className="text-3xl font-bold text-green-700 mt-2">{stats.gradedCount}</h3>
-                    </div>
-
-                    <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
-                        <p className="text-sm text-red-500">Pending</p>
-                        <h3 className="text-3xl font-bold text-red-700 mt-2">{stats.pendingCount}</h3>
-                    </div>
-
-                    <div className="rounded-2xl border border-purple-100 bg-purple-50 p-5">
-                        <p className="text-sm text-purple-500">Completion</p>
-                        <h3 className="text-3xl font-bold text-purple-700 mt-2">{stats.submissionPercent}%</h3>
-                    </div>
-
+                <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                    {statCards.map((card) => (
+                        <div
+                            key={card.label}
+                            className={`rounded-2xl border p-5 ${card.className}`}
+                        >
+                            <p className="text-sm opacity-80">{card.label}</p>
+                            <h3 className="mt-2 text-3xl font-bold">
+                                {card.value}
+                            </h3>
+                        </div>
+                    ))}
                 </div>
-
             )}
 
-            {/* ============================== Tabs (admin/teacher only) ============================== */}
-
             {isTeacherOrAdmin && (
-
                 <div>
-
-                    <div className="flex gap-2 mb-6">
-
+                    <div className="mb-6 flex flex-col gap-2 sm:flex-row">
                         <button
                             onClick={() => setActiveTab("details")}
-                            className={"px-6 py-3 rounded-xl font-semibold transition " + (activeTab === "details" ? "bg-[#5B2EFF] text-white" : "bg-white text-gray-600 hover:bg-gray-100")}
+                            className={`rounded-xl px-5 py-3 font-semibold transition ${
+                                activeTab === "details"
+                                    ? "bg-[#5B2EFF] text-white"
+                                    : "bg-white text-slate-600 hover:bg-slate-100"
+                            }`}
                         >
-                            Details
+                            {text.details}
                         </button>
 
                         <button
                             onClick={() => setActiveTab("submissions")}
-                            className={"px-6 py-3 rounded-xl font-semibold transition " + (activeTab === "submissions" ? "bg-[#5B2EFF] text-white" : "bg-white text-gray-600 hover:bg-gray-100")}
+                            className={`rounded-xl px-5 py-3 font-semibold transition ${
+                                activeTab === "submissions"
+                                    ? "bg-[#5B2EFF] text-white"
+                                    : "bg-white text-slate-600 hover:bg-slate-100"
+                            }`}
                         >
-                            Submissions ({submissions.length})
+                            {text.submissions} ({submissions.length})
                         </button>
-
                     </div>
 
                     {activeTab === "submissions" && (
+                        <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+                            <div className="border-b border-slate-100 p-5 sm:p-6">
+                                <h2 className="text-xl font-bold text-slate-800">
+                                    {text.studentSubmissions}
+                                </h2>
 
-                        <div className="bg-white rounded-3xl shadow border border-gray-100 overflow-hidden">
-
-                            <div className="p-6 border-b">
-
-                                <h2 className="text-xl font-bold">Student Submissions</h2>
-
-                                <p className="text-gray-500 mt-1">{submissions.length} submissions received</p>
-
+                                <p className="mt-1 text-sm text-slate-500">
+                                    {submissions.length} {text.submissionsReceived}
+                                </p>
                             </div>
 
-                            {submissions.length === 0 && (
+                            {submissions.length === 0 ? (
+                                <div className="px-5 py-16 text-center">
+                                    <BookOpen
+                                        size={50}
+                                        className="mx-auto mb-4 text-slate-300"
+                                    />
 
-                                <div className="py-16 text-center">
-
-                                    <BookOpen size={50} className="mx-auto text-gray-300 mb-4" />
-
-                                    <p className="text-gray-500">No submissions yet</p>
-
+                                    <p className="text-slate-500">
+                                        {text.noSubmissions}
+                                    </p>
                                 </div>
-
-                            )}
-
-                            {submissions.length > 0 && (
-
-                                <div className="divide-y">
-
-                                    {submissions.map((sub) => (
-
-                                        <div key={sub._id} className="p-6 hover:bg-gray-50 transition">
-
-                                            <div className="flex flex-col lg:flex-row gap-5">
-
-                                                {/* Student Info */}
-
-                                                <div className="flex items-center gap-4 lg:w-56 shrink-0">
-
-                                                    {sub.studentId?.photo ? (
-
+                            ) : (
+                                <div className="divide-y divide-slate-100">
+                                    {submissions.map((submission) => (
+                                        <div
+                                            key={submission._id}
+                                            className="p-4 transition hover:bg-slate-50 sm:p-6"
+                                        >
+                                            <div className="flex flex-col gap-5 xl:flex-row">
+                                                <div className="flex shrink-0 items-center gap-3 xl:w-60">
+                                                    {submission.studentId?.photo ? (
                                                         <img
-                                                            src={"http://localhost:5000/uploads/students/" + sub.studentId.photo}
-                                                            alt="student"
-                                                            className="w-12 h-12 rounded-full object-cover"
+                                                            src={`${serverUrl}/uploads/students/${submission.studentId.photo}`}
+                                                            alt={
+                                                                submission.studentId?.fullName ||
+                                                                "Student"
+                                                            }
+                                                            className="h-12 w-12 rounded-full object-cover"
                                                         />
-
                                                     ) : (
-
-                                                        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600">
-                                                            {sub.studentId?.fullName?.charAt(0)}
+                                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
+                                                            {submission.studentId?.fullName
+                                                                ?.charAt(0)
+                                                                ?.toUpperCase() || "S"}
                                                         </div>
-
                                                     )}
 
-                                                    <div>
-
-                                                        <p className="font-semibold text-gray-800">
-                                                            {sub.studentId?.fullName}
+                                                    <div className="min-w-0">
+                                                        <p className="truncate font-semibold text-slate-800">
+                                                            {submission.studentId?.fullName ||
+                                                                "-"}
                                                         </p>
 
-                                                        <p className="text-xs text-gray-400">
-                                                            GR : {sub.studentId?.grNumber}
+                                                        <p className="text-xs text-slate-400">
+                                                            GR:{" "}
+                                                            {submission.studentId?.grNumber ||
+                                                                "-"}
                                                         </p>
-
                                                     </div>
-
                                                 </div>
 
-                                                {/* Answer + Status */}
-
-                                                <div className="flex-1">
-
-                                                    <div className="flex flex-wrap items-center gap-3 mb-3">
-
-                                                        <span className={"px-3 py-1 rounded-full text-xs font-semibold " + getStatusColor(sub.status)}>
-                                                            {sub.status}
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                                                        <span
+                                                            className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(
+                                                                submission.status
+                                                            )}`}
+                                                        >
+                                                            {statusLabel[
+                                                                submission.status
+                                                            ] || submission.status}
                                                         </span>
 
-                                                        {sub.submittedAt && (
-
-                                                            <span className="text-xs text-gray-400">
-                                                                Submitted {new Date(sub.submittedAt).toLocaleDateString()}
+                                                        {submission.submittedAt && (
+                                                            <span className="text-xs text-slate-400">
+                                                                {text.submittedOn}:{" "}
+                                                                {formatDate(
+                                                                    submission.submittedAt
+                                                                )}
                                                             </span>
-
                                                         )}
 
-                                                        {sub.status === "Graded" && (
-
-                                                            <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">
-                                                                {sub.grade} / {homework.totalMarks}
+                                                        {submission.status ===
+                                                            "Graded" && (
+                                                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-700">
+                                                                {submission.grade} /{" "}
+                                                                {homework.totalMarks}
                                                             </span>
-
                                                         )}
-
                                                     </div>
 
-                                                    {sub.answer && (
-
-                                                        <div className="bg-gray-50 rounded-xl p-4 mb-3">
-                                                            <p className="text-xs text-gray-400 mb-1">Answer</p>
-                                                            <p className="text-gray-700 text-sm">{sub.answer}</p>
+                                                    {submission.answer && (
+                                                        <div className="mb-3 rounded-xl bg-slate-50 p-4">
+                                                            <p className="mb-1 text-xs text-slate-400">
+                                                                {text.answer}
+                                                            </p>
+                                                            <p className="whitespace-pre-wrap text-sm text-slate-700">
+                                                                {submission.answer}
+                                                            </p>
                                                         </div>
-
                                                     )}
 
-                                                    {sub.fileAttachment && (
-
+                                                    {submission.fileAttachment && (
                                                         <a
-                                                            href={"http://localhost:5000/uploads/homework/submissions/" + sub.fileAttachment}
+                                                            href={`${serverUrl}/uploads/homework/submissions/${submission.fileAttachment}`}
                                                             target="_blank"
                                                             rel="noreferrer"
-                                                            className="inline-flex items-center gap-2 text-indigo-600 text-sm hover:underline"
+                                                            className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:underline"
                                                         >
                                                             <Paperclip size={14} />
-                                                            {sub.fileOriginalName || "View File"}
+                                                            {submission.fileOriginalName ||
+                                                                text.viewFile}
                                                         </a>
-
                                                     )}
 
-                                                    {sub.feedback && (
-
-                                                        <div className="mt-3 bg-green-50 rounded-xl p-3">
-                                                            <p className="text-xs text-green-600 font-semibold mb-1">Feedback</p>
-                                                            <p className="text-sm text-gray-700">{sub.feedback}</p>
+                                                    {submission.feedback && (
+                                                        <div className="mt-3 rounded-xl bg-green-50 p-3">
+                                                            <p className="mb-1 text-xs font-semibold text-green-600">
+                                                                {text.feedback}
+                                                            </p>
+                                                            <p className="whitespace-pre-wrap text-sm text-slate-700">
+                                                                {submission.feedback}
+                                                            </p>
                                                         </div>
-
                                                     )}
-
                                                 </div>
 
-                                                {/* Grade Panel */}
-
-                                                <div className="shrink-0 lg:w-64">
-
-                                                    {gradingId === sub._id ? (
-
-                                                        <div className="bg-indigo-50 rounded-2xl p-5 border border-indigo-100">
-
-                                                            <p className="font-semibold text-indigo-700 mb-4">Grade Submission</p>
+                                                <div className="shrink-0 xl:w-64">
+                                                    {gradingId ===
+                                                    submission._id ? (
+                                                        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
+                                                            <p className="mb-4 font-semibold text-indigo-700">
+                                                                {text.gradeSubmission}
+                                                            </p>
 
                                                             <div className="mb-3">
-
-                                                                <label className="text-sm font-medium mb-1 block">
-                                                                    Grade (out of {homework.totalMarks})
+                                                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                                                    {text.gradeOutOf}{" "}
+                                                                    {homework.totalMarks}
                                                                 </label>
 
                                                                 <input
                                                                     type="number"
                                                                     min="0"
-                                                                    max={homework.totalMarks}
+                                                                    max={
+                                                                        homework.totalMarks
+                                                                    }
                                                                     value={gradeValue}
-                                                                    onChange={(e) => setGradeValue(e.target.value)}
-                                                                    className="h-10 w-full rounded-xl border px-3 outline-none focus:border-[#5B2EFF]"
+                                                                    onChange={(event) =>
+                                                                        setGradeValue(
+                                                                            event.target
+                                                                                .value
+                                                                        )
+                                                                    }
+                                                                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 outline-none focus:border-[#5B2EFF]"
                                                                 />
-
                                                             </div>
 
                                                             <div className="mb-4">
-
-                                                                <label className="text-sm font-medium mb-1 block">Feedback</label>
+                                                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                                                    {text.feedback}
+                                                                </label>
 
                                                                 <textarea
                                                                     rows="3"
-                                                                    value={feedbackValue}
-                                                                    onChange={(e) => setFeedbackValue(e.target.value)}
-                                                                    placeholder="Write feedback..."
-                                                                    className="w-full rounded-xl border p-3 text-sm outline-none resize-none focus:border-[#5B2EFF]"
+                                                                    value={
+                                                                        feedbackValue
+                                                                    }
+                                                                    onChange={(event) =>
+                                                                        setFeedbackValue(
+                                                                            event.target
+                                                                                .value
+                                                                        )
+                                                                    }
+                                                                    placeholder={
+                                                                        text.feedbackPlaceholder
+                                                                    }
+                                                                    className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:border-[#5B2EFF]"
                                                                 />
-
                                                             </div>
 
                                                             <div className="flex gap-2">
-
                                                                 <button
-                                                                    onClick={() => handleGradeSave(sub._id)}
-                                                                    disabled={gradeLoading}
-                                                                    className="flex-1 py-2 rounded-xl bg-[#5B2EFF] text-white text-sm font-semibold hover:bg-[#4724db] disabled:opacity-60"
+                                                                    onClick={() =>
+                                                                        handleGradeSave(
+                                                                            submission._id
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        gradeLoading
+                                                                    }
+                                                                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] py-2 text-sm font-semibold text-white transition hover:bg-[#4724db] disabled:opacity-60"
                                                                 >
-                                                                    {gradeLoading ? "Saving..." : "Save Grade"}
+                                                                    {gradeLoading && (
+                                                                        <Loader2
+                                                                            size={15}
+                                                                            className="animate-spin"
+                                                                        />
+                                                                    )}
+                                                                    {gradeLoading
+                                                                        ? text.saving
+                                                                        : text.saveGrade}
                                                                 </button>
 
                                                                 <button
-                                                                    onClick={closeGrading}
-                                                                    className="px-3 py-2 rounded-xl bg-white border text-sm hover:bg-gray-50"
+                                                                    onClick={
+                                                                        closeGrading
+                                                                    }
+                                                                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                                                                 >
-                                                                    Cancel
+                                                                    {text.cancel}
                                                                 </button>
-
                                                             </div>
-
                                                         </div>
-
                                                     ) : (
-
                                                         <button
-                                                            onClick={() => openGrading(sub)}
-                                                            disabled={sub.status === "Pending"}
-                                                            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                                            onClick={() =>
+                                                                openGrading(
+                                                                    submission
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                submission.status ===
+                                                                "Pending"
+                                                            }
+                                                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
                                                         >
-                                                            {getGradeBtnLabel(sub.status)}
+                                                            <CheckCircle2
+                                                                size={16}
+                                                            />
+                                                            {getGradeButtonLabel(
+                                                                submission.status
+                                                            )}
                                                         </button>
-
                                                     )}
-
                                                 </div>
-
                                             </div>
-
                                         </div>
-
                                     ))}
-
                                 </div>
-
                             )}
-
                         </div>
-
                     )}
-
                 </div>
-
             )}
-
         </div>
-
     );
-
 };
 
 export default HomeworkDetails;

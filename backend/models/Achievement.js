@@ -14,9 +14,10 @@ const achievementSchema = new mongoose.Schema(
             trim: true
         },
 
-        photo: {
+        category: {
             type: String,
-            default: ""
+            default: "General",
+            trim: true
         },
 
         achievementDate: {
@@ -24,9 +25,20 @@ const achievementSchema = new mongoose.Schema(
             default: Date.now
         },
 
-        isPublished: {
+        photo: {
+            type: String,
+            default: ""
+        },
+
+        isActive: {
             type: Boolean,
             default: true
+        },
+
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
         }
     },
     {
@@ -34,7 +46,4 @@ const achievementSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model(
-    "Achievement",
-    achievementSchema
-);
+module.exports = mongoose.model("Achievement", achievementSchema);

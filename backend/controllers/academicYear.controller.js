@@ -47,7 +47,7 @@ async (req, res) => {
 
             success: true,
 
-            years
+            academicYears: years
 
         });
 

@@ -58,17 +58,6 @@ const ALL_FEATURES = [
     },
 
     {
-        title: "Notice Details",
-        description: "Read a full notice, download attachments and print.",
-        path: "/notices/list",
-        icon: FileText,
-        color: "from-cyan-500 to-cyan-400",
-        bg: "bg-cyan-50",
-        iconColor: "text-cyan-600",
-        roles: ["admin", "teacher", "student"]
-    },
-
-    {
         title: "Archived Notices",
         description: "Browse historical notices that have been archived.",
         path: "/notices/archived",

@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Trophy, User, BookOpen, Award } from "lucide-react";
+import { ArrowLeft, Trophy, User, BookOpen, Award, Languages } from "lucide-react";
 
 import { getStudentResult } from "../../services/resultService";
+import { useLanguage } from "../../context/LanguageContext";
 
 const GRADE_STYLE = {
     "A+": "bg-green-100 text-green-700",
-    "A":  "bg-green-100 text-green-600",
+    A: "bg-green-100 text-green-600",
     "B+": "bg-blue-100 text-blue-700",
-    "B":  "bg-blue-100 text-blue-600",
-    "C":  "bg-yellow-100 text-yellow-700",
-    "D":  "bg-orange-100 text-orange-700",
-    "F":  "bg-red-100 text-red-700"
+    B: "bg-blue-100 text-blue-600",
+    C: "bg-yellow-100 text-yellow-700",
+    D: "bg-orange-100 text-orange-700",
+    F: "bg-red-100 text-red-700"
 };
 
 const getGradeColor = (grade) => {
@@ -29,82 +30,117 @@ const getPercentColor = (percent) => {
 };
 
 const StudentResult = () => {
-
     const { studentId, examId } = useParams();
-
     const navigate = useNavigate();
+    const { language, toggleLanguage } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [result, setResult] = useState(null);
-
     const [loading, setLoading] = useState(true);
 
+    const text = {
+        switchLang: isGujarati ? "English" : "ગુજરાતી",
+        breadcrumb: isGujarati ? "પરીક્ષા › રિપોર્ટ કાર્ડ" : "Exams › Report Card",
+        title: isGujarati ? "વિદ્યાર્થી રિપોર્ટ કાર્ડ" : "Student Report Card",
+        printReport: isGujarati ? "🖨 રિપોર્ટ કાર્ડ પ્રિન્ટ કરો" : "🖨 Print Report Card",
+        notFoundTitle: isGujarati ? "પરિણામ મળ્યું નથી" : "Result Not Found",
+        notFoundSub: isGujarati
+            ? "આ વિદ્યાર્થી માટે હજુ સુધી માર્ક્સ દાખલ કરવામાં આવ્યા નથી."
+            : "Marks may not have been entered yet for this student.",
+        schoolName: isGujarati ? "કૈલાસનગર શાળા" : "Kailashnagar School",
+        officialReport: isGujarati ? "સત્તાવાર રિપોર્ટ કાર્ડ" : "Official Report Card",
+        studentName: isGujarati ? "વિદ્યાર્થીનું નામ" : "Student Name",
+        grNumber: isGujarati ? "GR નંબર" : "GR Number",
+        class: isGujarati ? "ધોરણ" : "Class",
+        std: isGujarati ? "ધોરણ" : "Std",
+        examPeriod: isGujarati ? "પરીક્ષા સમયગાળો" : "Exam Period",
+        to: isGujarati ? "થી" : "to",
+        gender: isGujarati ? "લિંગ" : "Gender",
+        reportDate: isGujarati ? "રિપોર્ટ તારીખ" : "Report Date",
+        totalMarks: isGujarati ? "કુલ માર્ક્સ" : "Total Marks",
+        marksObtained: isGujarati ? "મેળવેલ માર્ક્સ" : "Marks Obtained",
+        percentage: isGujarati ? "ટકાવારી" : "Percentage",
+        grade: isGujarati ? "ગ્રેડ" : "Grade",
+        rank: isGujarati ? "ક્રમાંક" : "Rank",
+        passed: isGujarati ? "✅ પાસ થયા" : "✅ PASSED",
+        failed: isGujarati ? "❌ ફેલ થયા" : "❌ FAILED",
+        subjectPerformance: isGujarati
+            ? "વિષય-વાર કામગીરી"
+            : "Subject-wise Performance",
+        subject: isGujarati ? "વિષય" : "Subject",
+        passingMarks: isGujarati ? "પાસિંગ માર્ક્સ" : "Passing Marks",
+        obtained: isGujarati ? "મેળવેલ" : "Obtained",
+        status: isGujarati ? "સ્થિતિ" : "Status",
+        total: isGujarati ? "કુલ" : "Total",
+        pass: isGujarati ? "પાસ" : "Pass",
+        fail: isGujarati ? "ફેલ" : "Fail",
+        performanceOverview: isGujarati ? "કામગીરી ઝાંખી" : "Performance Overview",
+        classTeacher: isGujarati ? "વર્ગ શિક્ષક" : "Class Teacher",
+        principal: isGujarati ? "આચાર્ય" : "Principal",
+        parentGuardian: isGujarati ? "વાલી" : "Parent / Guardian",
+        computerGenerated: isGujarati
+            ? "આ કમ્પ્યુટર-જનરેટેડ રિપોર્ટ કાર્ડ છે. હસ્તાક્ષરની જરૂર નથી."
+            : "This is a computer-generated report card. No signature required.",
+        backToResults: isGujarati ? "ધોરણ પરિણામો પર પાછા જાઓ" : "Back to Class Results"
+    };
+
+    const formatDate = (date) => {
+        if (!date) return "-";
+
+        return new Date(date).toLocaleDateString(isGujarati ? "gu-IN" : "en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+    };
+
     useEffect(() => {
-
         loadResult();
-
     }, []);
 
     const loadResult = async () => {
-
         try {
-
             setLoading(true);
 
             const response = await getStudentResult(studentId, examId);
 
             setResult(response.result);
-
         } catch (error) {
-
             console.log(error);
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     const handlePrint = () => {
-
         window.print();
-
     };
 
     if (loading) {
-
         return (
-
-            <div className="h-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="flex h-full items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
             </div>
-
         );
-
     }
 
     if (!result) {
-
         return (
-
             <div className="p-8 text-center">
-                <Trophy size={56} className="mx-auto text-gray-300 mb-4" />
-                <h2 className="text-xl font-semibold text-gray-600">Result Not Found</h2>
-                <p className="text-gray-400 mt-2">Marks may not have been entered yet for this student.</p>
+                <Trophy size={56} className="mx-auto mb-4 text-gray-300" />
+                <h2 className="text-xl font-semibold text-gray-600">
+                    {text.notFoundTitle}
+                </h2>
+                <p className="mt-2 text-gray-400">{text.notFoundSub}</p>
             </div>
-
         );
-
     }
 
     const student = result.studentId;
     const exam = result.examId;
 
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full" id="report-card-print">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8" id="report-card-print">
             <style>{`
                 @media print {
                     body * { visibility: hidden; }
@@ -116,220 +152,248 @@ const StudentResult = () => {
 
             {/* ============================== Header ============================== */}
 
-            <div className="flex items-center justify-between mb-8 no-print">
-
+            <div className="no-print mb-6 flex flex-col gap-4 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-4">
-
                     <button
                         onClick={() => navigate(-1)}
-                        className="w-12 h-12 rounded-xl bg-white shadow flex items-center justify-center hover:bg-gray-100"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow hover:bg-gray-100 sm:h-12 sm:w-12"
                     >
                         <ArrowLeft size={22} />
                     </button>
 
                     <div>
-                        <p className="text-sm text-gray-500">Exams &rsaquo; Report Card</p>
-                        <h1 className="text-3xl font-bold text-slate-800 mt-1">Student Report Card</h1>
+                        <p className="text-sm text-gray-500">{text.breadcrumb}</p>
+                        <h1 className="mt-1 text-2xl font-bold text-slate-800 sm:text-3xl">
+                            {text.title}
+                        </h1>
                     </div>
-
                 </div>
 
-                <button
-                    onClick={handlePrint}
-                    className="flex items-center gap-2 bg-[#5B2EFF] hover:bg-[#4724db] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition"
-                >
-                    🖨 Print Report Card
-                </button>
+                <div className="flex flex-wrap gap-3">
+                    <button
+                        onClick={toggleLanguage}
+                        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow transition hover:border-[#5B2EFF] hover:text-[#5B2EFF] sm:py-3"
+                    >
+                        <Languages size={16} />
+                        {text.switchLang}
+                    </button>
 
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 rounded-xl bg-[#5B2EFF] px-5 py-2.5 font-semibold text-white shadow-lg transition hover:scale-105 hover:bg-[#4724db] sm:px-6 sm:py-3"
+                    >
+                        {text.printReport}
+                    </button>
+                </div>
             </div>
 
             {/* ============================== Report Card ============================== */}
 
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-
+            <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-lg">
                 {/* School Header */}
 
-                <div className="bg-gradient-to-r from-[#5B2EFF] to-indigo-500 p-8 text-white text-center">
+                <div className="bg-gradient-to-r from-[#5B2EFF] to-indigo-500 p-6 text-center text-white sm:p-8">
+                    <h1 className="text-2xl font-bold sm:text-3xl">{text.schoolName}</h1>
 
-                    <h1 className="text-3xl font-bold">Kailashnagar School</h1>
+                    <p className="mt-1 text-indigo-200">{text.officialReport}</p>
 
-                    <p className="text-indigo-200 mt-1">
-                        Official Report Card
-                    </p>
-
-                    <div className="mt-4 inline-block bg-white bg-opacity-20 rounded-xl px-6 py-2">
-                        <p className="font-semibold text-lg">
+                    <div className="mt-4 inline-block rounded-xl bg-white bg-opacity-20 px-4 py-2 sm:px-6">
+                        <p className="text-base font-semibold sm:text-lg">
                             {exam?.examName} — {exam?.examType}
                         </p>
                     </div>
-
                 </div>
 
                 {/* Student Info */}
 
-                <div className="p-8 border-b">
-
-                    <div className="flex flex-col lg:flex-row items-start gap-8">
-
+                <div className="border-b p-5 sm:p-8">
+                    <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
                         <div className="shrink-0">
-
                             {student?.photo ? (
-
                                 <img
-                                    src={"http://localhost:5000/uploads/students/" + student.photo}
+                                    src={
+                                        "http://localhost:5000/uploads/students/" +
+                                        student.photo
+                                    }
                                     alt={student?.fullName}
-                                    className="w-28 h-28 rounded-2xl object-cover border-4 border-indigo-100 shadow"
+                                    className="h-24 w-24 rounded-2xl border-4 border-indigo-100 object-cover shadow sm:h-28 sm:w-28"
                                 />
-
                             ) : (
-
-                                <div className="w-28 h-28 rounded-2xl bg-indigo-100 flex items-center justify-center border-4 border-indigo-200 shadow">
-                                    <User size={50} className="text-indigo-400" />
+                                <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-4 border-indigo-200 bg-indigo-100 shadow sm:h-28 sm:w-28">
+                                    <User size={44} className="text-indigo-400" />
                                 </div>
-
                             )}
-
                         </div>
 
-                        <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-5">
-
+                        <div className="grid flex-1 grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3">
                             <div>
-                                <p className="text-xs text-gray-400">Student Name</p>
-                                <p className="font-bold text-gray-800 mt-1 text-lg">{student?.fullName}</p>
-                            </div>
-
-                            <div>
-                                <p className="text-xs text-gray-400">GR Number</p>
-                                <p className="font-semibold text-gray-700 mt-1">{student?.grNumber}</p>
-                            </div>
-
-                            <div>
-                                <p className="text-xs text-gray-400">Class</p>
-                                <p className="font-semibold text-gray-700 mt-1">
-                                    Std {result.standard} - {result.division}
+                                <p className="text-xs text-gray-400">{text.studentName}</p>
+                                <p className="mt-1 truncate text-lg font-bold text-gray-800">
+                                    {student?.fullName}
                                 </p>
                             </div>
 
                             <div>
-                                <p className="text-xs text-gray-400">Exam Period</p>
-                                <p className="font-semibold text-gray-700 mt-1">
-                                    {exam?.startDate ? new Date(exam.startDate).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "-"}
-                                    {" "} to {" "}
-                                    {exam?.endDate ? new Date(exam.endDate).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "-"}
+                                <p className="text-xs text-gray-400">{text.grNumber}</p>
+                                <p className="mt-1 font-semibold text-gray-700">
+                                    {student?.grNumber}
                                 </p>
                             </div>
 
                             <div>
-                                <p className="text-xs text-gray-400">Gender</p>
-                                <p className="font-semibold text-gray-700 mt-1">{student?.gender || "-"}</p>
-                            </div>
-
-                            <div>
-                                <p className="text-xs text-gray-400">Report Date</p>
-                                <p className="font-semibold text-gray-700 mt-1">
-                                    {new Date().toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" })}
+                                <p className="text-xs text-gray-400">{text.class}</p>
+                                <p className="mt-1 font-semibold text-gray-700">
+                                    {text.std} {result.standard} - {result.division}
                                 </p>
                             </div>
 
+                            <div>
+                                <p className="text-xs text-gray-400">{text.examPeriod}</p>
+                                <p className="mt-1 font-semibold text-gray-700">
+                                    {formatDate(exam?.startDate)} {text.to}{" "}
+                                    {formatDate(exam?.endDate)}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-xs text-gray-400">{text.gender}</p>
+                                <p className="mt-1 font-semibold text-gray-700">
+                                    {student?.gender || "-"}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-xs text-gray-400">{text.reportDate}</p>
+                                <p className="mt-1 font-semibold text-gray-700">
+                                    {formatDate(new Date())}
+                                </p>
+                            </div>
                         </div>
-
                     </div>
-
                 </div>
 
                 {/* Result Summary */}
 
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-0 border-b">
-
-                    <div className="p-6 border-r text-center">
-                        <p className="text-xs text-gray-400">Total Marks</p>
-                        <h3 className="text-2xl font-bold text-gray-800 mt-2">{result.totalMarks}</h3>
+                <div className="grid grid-cols-2 border-b sm:grid-cols-3 md:grid-cols-5">
+                    <div className="border-b border-r p-4 text-center sm:border-b-0 sm:p-6">
+                        <p className="text-xs text-gray-400">{text.totalMarks}</p>
+                        <h3 className="mt-2 text-xl font-bold text-gray-800 sm:text-2xl">
+                            {result.totalMarks}
+                        </h3>
                     </div>
 
-                    <div className="p-6 border-r text-center">
-                        <p className="text-xs text-gray-400">Marks Obtained</p>
-                        <h3 className="text-2xl font-bold text-gray-800 mt-2">{result.totalObtained}</h3>
+                    <div className="border-b border-r p-4 text-center sm:border-b-0 sm:p-6">
+                        <p className="text-xs text-gray-400">{text.marksObtained}</p>
+                        <h3 className="mt-2 text-xl font-bold text-gray-800 sm:text-2xl">
+                            {result.totalObtained}
+                        </h3>
                     </div>
 
-                    <div className="p-6 border-r text-center">
-                        <p className="text-xs text-gray-400">Percentage</p>
-                        <h3 className={"text-2xl font-bold mt-2 " + getPercentColor(result.percentage)}>
+                    <div className="border-r p-4 text-center sm:p-6">
+                        <p className="text-xs text-gray-400">{text.percentage}</p>
+                        <h3
+                            className={
+                                "mt-2 text-xl font-bold sm:text-2xl " +
+                                getPercentColor(result.percentage)
+                            }
+                        >
                             {result.percentage}%
                         </h3>
                     </div>
 
-                    <div className="p-6 border-r text-center">
-                        <p className="text-xs text-gray-400">Grade</p>
-                        <h3 className={"text-2xl font-bold mt-2 " + getGradeColor(result.grade)}>
+                    <div className="border-r p-4 text-center sm:p-6">
+                        <p className="text-xs text-gray-400">{text.grade}</p>
+                        <h3
+                            className={
+                                "mt-2 text-xl font-bold sm:text-2xl " +
+                                getGradeColor(result.grade)
+                            }
+                        >
                             {result.grade}
                         </h3>
                     </div>
 
-                    <div className="p-6 text-center">
-                        <p className="text-xs text-gray-400">Rank</p>
-                        <h3 className="text-2xl font-bold text-indigo-600 mt-2">
-                            {result.rank === 1 ? "🥇" : result.rank === 2 ? "🥈" : result.rank === 3 ? "🥉" : "#" + result.rank}
+                    <div className="p-4 text-center sm:p-6">
+                        <p className="text-xs text-gray-400">{text.rank}</p>
+                        <h3 className="mt-2 text-xl font-bold text-indigo-600 sm:text-2xl">
+                            {result.rank === 1
+                                ? "🥇"
+                                : result.rank === 2
+                                ? "🥈"
+                                : result.rank === 3
+                                ? "🥉"
+                                : "#" + result.rank}
                         </h3>
                     </div>
-
                 </div>
 
                 {/* Status Banner */}
 
-                <div className={"p-5 text-center " + (result.isPassed ? "bg-green-50" : "bg-red-50")}>
-
-                    <span className={"text-xl font-bold " + (result.isPassed ? "text-green-700" : "text-red-700")}>
-                        {result.isPassed ? "✅ PASSED" : "❌ FAILED"}
+                <div
+                    className={
+                        "p-5 text-center " + (result.isPassed ? "bg-green-50" : "bg-red-50")
+                    }
+                >
+                    <span
+                        className={
+                            "text-xl font-bold " +
+                            (result.isPassed ? "text-green-700" : "text-red-700")
+                        }
+                    >
+                        {result.isPassed ? text.passed : text.failed}
                     </span>
 
                     {result.remarks && (
-                        <p className="text-gray-500 mt-1 text-sm">{result.remarks}</p>
+                        <p className="mt-1 text-sm text-gray-500">{result.remarks}</p>
                     )}
-
                 </div>
 
                 {/* Subject-wise Results */}
 
-                <div className="p-8">
-
-                    <div className="flex items-center gap-3 mb-6">
-
-                        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                <div className="p-5 sm:p-8">
+                    <div className="mb-6 flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100">
                             <BookOpen size={20} className="text-indigo-600" />
                         </div>
 
-                        <h2 className="text-xl font-bold">Subject-wise Performance</h2>
-
+                        <h2 className="text-xl font-bold">{text.subjectPerformance}</h2>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-gray-100">
-
-                        <table className="w-full">
-
+                    {/* Desktop table */}
+                    <div className="hidden overflow-hidden overflow-x-auto rounded-2xl border border-gray-100 sm:block">
+                        <table className="w-full min-w-[700px]">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="text-left px-6 py-4">Subject</th>
-                                    <th className="text-center px-6 py-4">Total Marks</th>
-                                    <th className="text-center px-6 py-4">Passing Marks</th>
-                                    <th className="text-center px-6 py-4">Obtained</th>
-                                    <th className="text-center px-6 py-4">Percentage</th>
-                                    <th className="text-center px-6 py-4">Grade</th>
-                                    <th className="text-center px-6 py-4">Status</th>
+                                    <th className="px-6 py-4 text-left">{text.subject}</th>
+                                    <th className="px-6 py-4 text-center">
+                                        {text.totalMarks}
+                                    </th>
+                                    <th className="px-6 py-4 text-center">
+                                        {text.passingMarks}
+                                    </th>
+                                    <th className="px-6 py-4 text-center">{text.obtained}</th>
+                                    <th className="px-6 py-4 text-center">
+                                        {text.percentage}
+                                    </th>
+                                    <th className="px-6 py-4 text-center">{text.grade}</th>
+                                    <th className="px-6 py-4 text-center">{text.status}</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-
                                 {result.subjectResults.map((sub, index) => {
-
-                                    const subPercent = sub.totalMarks > 0
-                                        ? Math.round((sub.marksObtained / sub.totalMarks) * 100)
-                                        : 0;
+                                    const subPercent =
+                                        sub.totalMarks > 0
+                                            ? Math.round(
+                                                  (sub.marksObtained / sub.totalMarks) * 100
+                                              )
+                                            : 0;
 
                                     return (
-
-                                        <tr key={index} className="border-t hover:bg-gray-50 transition">
-
+                                        <tr
+                                            key={index}
+                                            className="border-t transition hover:bg-gray-50"
+                                        >
                                             <td className="px-6 py-4 font-semibold text-gray-800">
                                                 {sub.subject}
                                             </td>
@@ -347,186 +411,273 @@ const StudentResult = () => {
                                             </td>
 
                                             <td className="px-6 py-4 text-center">
-
                                                 <div className="flex items-center justify-center gap-2">
-
-                                                    <div className="w-16 h-2 rounded-full bg-gray-100 overflow-hidden">
+                                                    <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-100">
                                                         <div
-                                                            className={"h-full rounded-full " + (subPercent >= 75 ? "bg-green-500" : subPercent >= 50 ? "bg-yellow-500" : "bg-red-500")}
-                                                            style={{ width: subPercent + "%" }}
+                                                            className={
+                                                                "h-full rounded-full " +
+                                                                (subPercent >= 75
+                                                                    ? "bg-green-500"
+                                                                    : subPercent >= 50
+                                                                    ? "bg-yellow-500"
+                                                                    : "bg-red-500")
+                                                            }
+                                                            style={{
+                                                                width: subPercent + "%"
+                                                            }}
                                                         ></div>
                                                     </div>
 
-                                                    <span className={"text-sm font-semibold " + getPercentColor(subPercent)}>
+                                                    <span
+                                                        className={
+                                                            "text-sm font-semibold " +
+                                                            getPercentColor(subPercent)
+                                                        }
+                                                    >
                                                         {subPercent}%
                                                     </span>
-
                                                 </div>
-
                                             </td>
 
                                             <td className="px-6 py-4 text-center">
-                                                <span className={"px-3 py-1 rounded-full text-xs font-bold " + (GRADE_STYLE[sub.grade] || "bg-gray-100 text-gray-600")}>
+                                                <span
+                                                    className={
+                                                        "rounded-full px-3 py-1 text-xs font-bold " +
+                                                        (GRADE_STYLE[sub.grade] ||
+                                                            "bg-gray-100 text-gray-600")
+                                                    }
+                                                >
                                                     {sub.grade}
                                                 </span>
                                             </td>
 
                                             <td className="px-6 py-4 text-center">
                                                 {sub.isPassed ? (
-                                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                                        Pass
+                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                                        {text.pass}
                                                     </span>
                                                 ) : (
-                                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                                        Fail
+                                                    <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                                        {text.fail}
                                                     </span>
                                                 )}
                                             </td>
-
                                         </tr>
-
                                     );
-
                                 })}
-
                             </tbody>
 
                             {/* Totals Row */}
 
                             <tfoot className="bg-indigo-50">
                                 <tr>
-                                    <td className="px-6 py-4 font-bold text-indigo-800">Total</td>
-                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">{result.totalMarks}</td>
+                                    <td className="px-6 py-4 font-bold text-indigo-800">
+                                        {text.total}
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">
+                                        {result.totalMarks}
+                                    </td>
                                     <td className="px-6 py-4 text-center text-gray-400">-</td>
-                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">{result.totalObtained}</td>
-                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">{result.percentage}%</td>
-                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">{result.grade}</td>
+                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">
+                                        {result.totalObtained}
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">
+                                        {result.percentage}%
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-indigo-800">
+                                        {result.grade}
+                                    </td>
                                     <td className="px-6 py-4 text-center">
                                         {result.isPassed ? (
-                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Pass</span>
+                                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                                {text.pass}
+                                            </span>
                                         ) : (
-                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Fail</span>
+                                            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                                {text.fail}
+                                            </span>
                                         )}
                                     </td>
                                 </tr>
                             </tfoot>
-
                         </table>
-
                     </div>
 
+                    {/* Mobile cards */}
+                    <div className="space-y-3 sm:hidden">
+                        {result.subjectResults.map((sub, index) => {
+                            const subPercent =
+                                sub.totalMarks > 0
+                                    ? Math.round((sub.marksObtained / sub.totalMarks) * 100)
+                                    : 0;
+
+                            return (
+                                <div
+                                    key={index}
+                                    className="rounded-2xl border border-gray-100 p-4"
+                                >
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <p className="font-semibold text-gray-800">
+                                            {sub.subject}
+                                        </p>
+
+                                        <span
+                                            className={
+                                                "rounded-full px-3 py-1 text-xs font-bold " +
+                                                (GRADE_STYLE[sub.grade] ||
+                                                    "bg-gray-100 text-gray-600")
+                                            }
+                                        >
+                                            {sub.grade}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                                        <span>
+                                            {text.obtained}: {sub.marksObtained} /{" "}
+                                            {sub.totalMarks}
+                                        </span>
+                                        <span className={"font-semibold " + getPercentColor(subPercent)}>
+                                            {subPercent}%
+                                        </span>
+                                        {sub.isPassed ? (
+                                            <span className="rounded-full bg-green-100 px-3 py-1 font-semibold text-green-700">
+                                                {text.pass}
+                                            </span>
+                                        ) : (
+                                            <span className="rounded-full bg-red-100 px-3 py-1 font-semibold text-red-700">
+                                                {text.fail}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        <div className="rounded-2xl bg-indigo-50 p-4">
+                            <div className="mb-2 flex items-center justify-between">
+                                <p className="font-bold text-indigo-800">{text.total}</p>
+                                <span
+                                    className={
+                                        "rounded-full px-3 py-1 text-xs font-semibold " +
+                                        (result.isPassed
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700")
+                                    }
+                                >
+                                    {result.isPassed ? text.pass : text.fail}
+                                </span>
+                            </div>
+                            <div className="flex flex-wrap gap-3 text-xs font-semibold text-indigo-700">
+                                <span>
+                                    {result.totalObtained} / {result.totalMarks}
+                                </span>
+                                <span>{result.percentage}%</span>
+                                <span>{result.grade}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Performance Bar Chart */}
 
-                <div className="px-8 pb-8">
-
-                    <div className="flex items-center gap-3 mb-6">
-
-                        <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                <div className="px-5 pb-5 sm:px-8 sm:pb-8">
+                    <div className="mb-6 flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-100">
                             <Award size={20} className="text-purple-600" />
                         </div>
 
-                        <h2 className="text-xl font-bold">Performance Overview</h2>
-
+                        <h2 className="text-xl font-bold">{text.performanceOverview}</h2>
                     </div>
 
                     <div className="space-y-4">
-
                         {result.subjectResults.map((sub, index) => {
-
-                            const subPercent = sub.totalMarks > 0
-                                ? Math.round((sub.marksObtained / sub.totalMarks) * 100)
-                                : 0;
+                            const subPercent =
+                                sub.totalMarks > 0
+                                    ? Math.round((sub.marksObtained / sub.totalMarks) * 100)
+                                    : 0;
 
                             return (
-
                                 <div key={index}>
-
-                                    <div className="flex justify-between mb-2">
-
-                                        <span className="font-semibold text-gray-700">{sub.subject}</span>
-
-                                        <span className={"font-bold " + getPercentColor(subPercent)}>
-                                            {sub.marksObtained} / {sub.totalMarks} ({subPercent}%)
+                                    <div className="mb-2 flex flex-wrap justify-between gap-1">
+                                        <span className="font-semibold text-gray-700">
+                                            {sub.subject}
                                         </span>
 
+                                        <span
+                                            className={
+                                                "font-bold " + getPercentColor(subPercent)
+                                            }
+                                        >
+                                            {sub.marksObtained} / {sub.totalMarks} ({subPercent}
+                                            %)
+                                        </span>
                                     </div>
 
-                                    <div className="h-4 rounded-full bg-gray-100 overflow-hidden">
-
+                                    <div className="h-4 overflow-hidden rounded-full bg-gray-100">
                                         <div
-                                            className={"h-full rounded-full transition-all duration-700 " + (subPercent >= 75 ? "bg-green-500" : subPercent >= 50 ? "bg-yellow-500" : "bg-red-500")}
+                                            className={
+                                                "h-full rounded-full transition-all duration-700 " +
+                                                (subPercent >= 75
+                                                    ? "bg-green-500"
+                                                    : subPercent >= 50
+                                                    ? "bg-yellow-500"
+                                                    : "bg-red-500")
+                                            }
                                             style={{ width: subPercent + "%" }}
                                         ></div>
-
                                     </div>
-
                                 </div>
-
                             );
-
                         })}
-
                     </div>
-
                 </div>
 
                 {/* Footer Signature */}
 
-                <div className="border-t px-8 py-6">
-
-                    <div className="grid grid-cols-3 gap-8 text-center">
-
+                <div className="border-t px-5 py-6 sm:px-8">
+                    <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-3 sm:gap-8">
                         <div>
-                            <div className="h-10 border-b border-gray-300 mb-2"></div>
-                            <p className="text-sm text-gray-500">Class Teacher</p>
+                            <div className="mb-2 h-10 border-b border-gray-300"></div>
+                            <p className="text-sm text-gray-500">{text.classTeacher}</p>
                         </div>
 
                         <div>
-                            <div className="h-10 border-b border-gray-300 mb-2"></div>
-                            <p className="text-sm text-gray-500">Principal</p>
+                            <div className="mb-2 h-10 border-b border-gray-300"></div>
+                            <p className="text-sm text-gray-500">{text.principal}</p>
                         </div>
 
                         <div>
-                            <div className="h-10 border-b border-gray-300 mb-2"></div>
-                            <p className="text-sm text-gray-500">Parent / Guardian</p>
+                            <div className="mb-2 h-10 border-b border-gray-300"></div>
+                            <p className="text-sm text-gray-500">{text.parentGuardian}</p>
                         </div>
-
                     </div>
 
-                    <p className="text-center text-xs text-gray-400 mt-6">
-                        This is a computer-generated report card. No signature required.
+                    <p className="mt-6 text-center text-xs text-gray-400">
+                        {text.computerGenerated}
                     </p>
-
                 </div>
-
             </div>
 
             {/* ============================== Bottom Actions ============================== */}
 
-            <div className="mt-7 flex justify-end gap-4 no-print">
-
+            <div className="no-print mt-7 flex flex-col gap-4 sm:flex-row sm:justify-end">
                 <button
                     onClick={() => navigate("/exams/results/" + examId)}
-                    className="px-8 py-3 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 font-medium"
+                    className="rounded-xl border border-gray-300 bg-white px-8 py-3 font-medium hover:bg-gray-100"
                 >
-                    Back to Class Results
+                    {text.backToResults}
                 </button>
 
                 <button
                     onClick={handlePrint}
-                    className="px-8 py-3 rounded-xl bg-[#5B2EFF] hover:bg-[#4724db] text-white font-semibold"
+                    className="rounded-xl bg-[#5B2EFF] px-8 py-3 font-semibold text-white hover:bg-[#4724db]"
                 >
-                    🖨 Print Report Card
+                    {text.printReport}
                 </button>
-
             </div>
-
         </div>
-
     );
-
 };
 
 export default StudentResult;

@@ -7,10 +7,12 @@ import {
     AlertTriangle,
     CheckCircle,
     Eye,
-    BarChart3
+    BarChart3,
+    Loader2
 } from "lucide-react";
 
 import { getNoticeDashboard } from "../../services/noticeService";
+import { useLanguage } from "../../context/LanguageContext";
 
 const PRIORITY_STYLE = {
     Low: "bg-gray-100 text-gray-600",
@@ -39,285 +41,309 @@ const AUDIENCE_COLORS = {
 };
 
 const NoticeDashboard = () => {
-
     const navigate = useNavigate();
+    const { language } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [data, setData] = useState(null);
-
     const [loading, setLoading] = useState(true);
 
+    const text = {
+        loading: isGujarati ? "લોડ થઈ રહ્યું છે..." : "Loading...",
+        pageTitle: isGujarati ? "નોટિસ ડેશબોર્ડ" : "Notice Dashboard",
+        pageSubtitle: isGujarati
+            ? "તમામ નોટિસ અને એનાલિટિક્સનું વિહંગાવલોકન."
+            : "Overview of all notices and analytics.",
+        archived: isGujarati ? "આર્કાઇવ" : "Archived",
+        createNotice: isGujarati ? "નોટિસ બનાવો" : "Create Notice",
+        total: isGujarati ? "કુલ" : "Total",
+        active: isGujarati ? "સક્રિય" : "Active",
+        urgent: isGujarati ? "તાત્કાલિક" : "Urgent",
+        totalViews: isGujarati ? "કુલ વ્યુ" : "Total Views",
+        categoryBreakdown: isGujarati ? "શ્રેણી વિભાજન" : "Category Breakdown",
+        noticesPerCategory: isGujarati
+            ? "શ્રેણી દીઠ નોટિસ"
+            : "Notices per category",
+        noDataYet: isGujarati ? "હજુ કોઈ નોટિસ ડેટા નથી" : "No notice data yet",
+        notice: isGujarati ? "નોટિસ" : "notice",
+        notices: isGujarati ? "નોટિસ" : "notices",
+        audienceDistribution: isGujarati
+            ? "પ્રેક્ષક વિતરણ"
+            : "Audience Distribution",
+        whoReceives: isGujarati
+            ? "દરેક નોટિસ કોને મળે છે"
+            : "Who receives each notice",
+        quickActions: isGujarati ? "ઝડપી ક્રિયાઓ" : "Quick Actions",
+        allNotices: isGujarati ? "બધી નોટિસ" : "All Notices",
+        noticeBoard: isGujarati ? "નોટિસ બોર્ડ" : "Notice Board",
+        recentNotices: isGujarati ? "તાજેતરની નોટિસ" : "Recent Notices",
+        last7Notices: isGujarati
+            ? "છેલ્લી 7 નોટિસ પ્રકાશિત થઈ"
+            : "Last 7 notices published",
+        viewAll: isGujarati ? "બધું જુઓ" : "View All",
+        noNoticesPublished: isGujarati
+            ? "હજુ સુધી કોઈ નોટિસ પ્રકાશિત થઈ નથી"
+            : "No notices published yet",
+        title: isGujarati ? "શીર્ષક" : "Title",
+        category: isGujarati ? "શ્રેણી" : "Category",
+        priority: isGujarati ? "પ્રાધાન્યતા" : "Priority",
+        audience: isGujarati ? "પ્રેક્ષક" : "Audience",
+        views: isGujarati ? "વ્યુ" : "Views",
+        date: isGujarati ? "તારીખ" : "Date",
+        action: isGujarati ? "ક્રિયા" : "Action",
+        view: isGujarati ? "જુઓ" : "View"
+    };
+
     useEffect(() => {
-
         loadDashboard();
-
     }, []);
 
     const loadDashboard = async () => {
-
         try {
-
             setLoading(true);
 
             const response = await getNoticeDashboard();
-
             setData(response);
-
         } catch (error) {
-
             console.log(error);
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     if (loading) {
-
         return (
-
-            <div className="h-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="flex min-h-full flex-col items-center justify-center gap-3">
+                <Loader2 size={38} className="animate-spin text-[#5B2EFF]" />
+                <p className="font-medium text-slate-500">{text.loading}</p>
             </div>
-
         );
-
     }
 
     const stats = data?.stats || {};
-
     const recentNotices = data?.recentNotices || [];
-
     const categoryWise = data?.categoryWise || [];
-
     const audienceWise = data?.audienceWise || [];
 
-    const maxCategoryCount = categoryWise.length > 0
-        ? Math.max(...categoryWise.map((c) => c.count))
-        : 1;
+    const maxCategoryCount =
+        categoryWise.length > 0
+            ? Math.max(...categoryWise.map((c) => c.count))
+            : 1;
 
-    const totalAudienceCount = audienceWise.reduce((sum, a) => sum + a.count, 0);
+    const totalAudienceCount = audienceWise.reduce(
+        (sum, a) => sum + a.count,
+        0
+    );
+
+    const formatDate = (dateValue) =>
+        new Date(dateValue).toLocaleDateString(isGujarati ? "gu-IN" : "en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
 
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
             {/* ============================== Header ============================== */}
-
-            <div className="flex items-center justify-between mb-8">
-
+            <div className="mb-7 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-4xl font-bold text-slate-800">Notice Dashboard</h1>
-                    <p className="mt-2 text-slate-500">Overview of all notices and analytics.</p>
+                    <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                        {text.pageTitle}
+                    </h1>
+                    <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                        {text.pageSubtitle}
+                    </p>
                 </div>
 
-                <div className="flex gap-3">
-
+                <div className="flex flex-wrap gap-3">
                     <button
                         onClick={() => navigate("/notices/archived")}
-                        className="flex items-center gap-2 bg-white border border-gray-200 shadow px-5 py-3 rounded-xl hover:bg-gray-50 font-medium transition"
+                        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 font-medium shadow-sm transition hover:bg-gray-50"
                     >
                         <Archive size={16} />
-                        Archived
+                        {text.archived}
                     </button>
 
                     <button
                         onClick={() => navigate("/notices/create")}
-                        className="flex items-center gap-2 bg-[#5B2EFF] hover:bg-[#4724db] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition"
+                        className="flex items-center gap-2 rounded-xl bg-[#5B2EFF] px-6 py-3 font-semibold text-white shadow-lg transition hover:scale-105 hover:bg-[#4724db]"
                     >
                         <Plus size={18} />
-                        Create Notice
+                        {text.createNotice}
                     </button>
-
                 </div>
-
             </div>
 
             {/* ============================== Stat Cards ============================== */}
-
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 mb-8">
-
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
+            <div className="mb-7 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 xl:grid-cols-5">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Total</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.totalNotices || 0}</h3>
+                            <p className="text-sm text-gray-500">{text.total}</p>
+                            <h3 className="mt-1 text-2xl font-bold text-gray-800 sm:text-3xl">
+                                {stats.totalNotices || 0}
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100">
                             <Bell size={22} className="text-indigo-600" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Active</p>
-                            <h3 className="text-3xl font-bold text-green-600 mt-1">{stats.activeNotices || 0}</h3>
+                            <p className="text-sm text-gray-500">{text.active}</p>
+                            <h3 className="mt-1 text-2xl font-bold text-green-600 sm:text-3xl">
+                                {stats.activeNotices || 0}
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-100">
                             <CheckCircle size={22} className="text-green-600" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Urgent</p>
-                            <h3 className="text-3xl font-bold text-red-600 mt-1">{stats.urgentNotices || 0}</h3>
+                            <p className="text-sm text-gray-500">{text.urgent}</p>
+                            <h3 className="mt-1 text-2xl font-bold text-red-600 sm:text-3xl">
+                                {stats.urgentNotices || 0}
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100">
                             <AlertTriangle size={22} className="text-red-600" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Archived</p>
-                            <h3 className="text-3xl font-bold text-gray-500 mt-1">{stats.archivedNotices || 0}</h3>
+                            <p className="text-sm text-gray-500">{text.archived}</p>
+                            <h3 className="mt-1 text-2xl font-bold text-gray-500 sm:text-3xl">
+                                {stats.archivedNotices || 0}
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-100">
                             <Archive size={22} className="text-gray-500" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Total Views</p>
-                            <h3 className="text-3xl font-bold text-purple-600 mt-1">{stats.totalViews || 0}</h3>
+                            <p className="text-sm text-gray-500">{text.totalViews}</p>
+                            <h3 className="mt-1 text-2xl font-bold text-purple-600 sm:text-3xl">
+                                {stats.totalViews || 0}
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-100">
                             <Eye size={22} className="text-purple-600" />
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {/* ============================== Charts Row ============================== */}
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-7 mb-7">
-
+            <div className="mb-7 grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-7">
                 {/* Category Wise Chart */}
-
-                <div className="bg-white rounded-3xl shadow border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-3 mb-8">
-
-                        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+                    <div className="mb-7 flex items-center gap-3 sm:mb-8">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100">
                             <BarChart3 size={20} className="text-indigo-600" />
                         </div>
 
                         <div>
-                            <h2 className="text-xl font-bold">Category Breakdown</h2>
-                            <p className="text-gray-500 text-sm">Notices per category</p>
+                            <h2 className="text-lg font-bold sm:text-xl">
+                                {text.categoryBreakdown}
+                            </h2>
+                            <p className="text-sm text-gray-500">
+                                {text.noticesPerCategory}
+                            </p>
                         </div>
-
                     </div>
 
                     {categoryWise.length === 0 && (
-
                         <div className="py-12 text-center text-gray-400">
-                            No notice data yet
+                            {text.noDataYet}
                         </div>
-
                     )}
 
                     {categoryWise.length > 0 && (
-
                         <div className="space-y-5">
-
                             {categoryWise.map((item, index) => {
-
-                                const percent = Math.round((item.count / maxCategoryCount) * 100);
+                                const percent = Math.round(
+                                    (item.count / maxCategoryCount) * 100
+                                );
 
                                 return (
-
                                     <div key={item._id}>
-
-                                        <div className="flex justify-between mb-2">
-
-                                            <span className="font-semibold text-gray-700">
+                                        <div className="mb-2 flex justify-between gap-2">
+                                            <span className="truncate font-semibold text-gray-700">
                                                 {item._id}
                                             </span>
 
-                                            <span className="font-semibold text-gray-500">
-                                                {item.count} notice{item.count !== 1 ? "s" : ""}
+                                            <span className="shrink-0 font-semibold text-gray-500">
+                                                {item.count}{" "}
+                                                {item.count !== 1 ? text.notices : text.notice}
                                             </span>
-
                                         </div>
 
-                                        <div className="h-3 rounded-full bg-gray-100 overflow-hidden">
-
+                                        <div className="h-3 overflow-hidden rounded-full bg-gray-100">
                                             <div
-                                                className={"h-full rounded-full transition-all duration-700 " + CATEGORY_COLORS[index % CATEGORY_COLORS.length]}
-                                                style={{ width: percent + "%" }}
+                                                className={`h-full rounded-full transition-all duration-700 ${
+                                                    CATEGORY_COLORS[index % CATEGORY_COLORS.length]
+                                                }`}
+                                                style={{ width: `${percent}%` }}
                                             ></div>
-
                                         </div>
-
                                     </div>
-
                                 );
-
                             })}
-
                         </div>
-
                     )}
-
                 </div>
 
                 {/* Audience Distribution */}
-
-                <div className="bg-white rounded-3xl shadow border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-3 mb-8">
-
-                        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+                    <div className="mb-7 flex items-center gap-3 sm:mb-8">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100">
                             <Bell size={20} className="text-blue-600" />
                         </div>
 
                         <div>
-                            <h2 className="text-xl font-bold">Audience Distribution</h2>
-                            <p className="text-gray-500 text-sm">Who receives each notice</p>
+                            <h2 className="text-lg font-bold sm:text-xl">
+                                {text.audienceDistribution}
+                            </h2>
+                            <p className="text-sm text-gray-500">{text.whoReceives}</p>
                         </div>
-
                     </div>
 
                     {audienceWise.length === 0 && (
-
                         <div className="py-12 text-center text-gray-400">
-                            No notice data yet
+                            {text.noDataYet}
                         </div>
-
                     )}
 
                     {audienceWise.length > 0 && (
-
                         <div className="space-y-6">
-
                             {audienceWise.map((item) => {
+                                const percent =
+                                    totalAudienceCount > 0
+                                        ? Math.round(
+                                              (item.count / totalAudienceCount) * 100
+                                          )
+                                        : 0;
 
-                                const percent = totalAudienceCount > 0
-                                    ? Math.round((item.count / totalAudienceCount) * 100)
-                                    : 0;
-
-                                const barColor = AUDIENCE_COLORS[item._id] || "bg-gray-500";
+                                const barColor =
+                                    AUDIENCE_COLORS[item._id] || "bg-gray-500";
 
                                 return (
-
                                     <div key={item._id}>
-
-                                        <div className="flex justify-between mb-2">
-
+                                        <div className="mb-2 flex justify-between gap-2">
                                             <span className="font-semibold text-gray-700">
                                                 {item._id}
                                             </span>
@@ -325,198 +351,231 @@ const NoticeDashboard = () => {
                                             <span className="font-semibold text-gray-500">
                                                 {item.count} ({percent}%)
                                             </span>
-
                                         </div>
 
-                                        <div className="h-4 rounded-full bg-gray-100 overflow-hidden">
-
+                                        <div className="h-4 overflow-hidden rounded-full bg-gray-100">
                                             <div
-                                                className={"h-full rounded-full transition-all duration-700 " + barColor}
-                                                style={{ width: percent + "%" }}
+                                                className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                                                style={{ width: `${percent}%` }}
                                             ></div>
-
                                         </div>
-
                                     </div>
-
                                 );
-
                             })}
 
                             <div className="flex flex-wrap gap-4 pt-2">
-
                                 {Object.entries(AUDIENCE_COLORS).map(([label, color]) => (
-
                                     <div key={label} className="flex items-center gap-2">
-
-                                        <div className={"w-3 h-3 rounded-full " + color}></div>
-
+                                        <div className={`h-3 w-3 rounded-full ${color}`}></div>
                                         <span className="text-sm text-gray-600">{label}</span>
-
                                     </div>
-
                                 ))}
-
                             </div>
-
                         </div>
-
                     )}
-
                 </div>
-
             </div>
 
             {/* ============================== Quick Actions ============================== */}
+            <div className="mb-7 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+                <h2 className="mb-6 text-lg font-bold sm:text-xl">
+                    {text.quickActions}
+                </h2>
 
-            <div className="bg-white rounded-3xl shadow border border-gray-100 p-8 mb-7">
-
-                <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-
+                <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4">
                     <button
                         onClick={() => navigate("/notices/list")}
-                        className="h-24 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold transition hover:scale-105"
+                        className="h-20 rounded-2xl bg-indigo-500 px-2 text-sm font-semibold text-white transition hover:scale-105 hover:bg-indigo-600 sm:h-24 sm:text-base"
                     >
-                        All Notices
+                        {text.allNotices}
                     </button>
 
                     <button
                         onClick={() => navigate("/notices/create")}
-                        className="h-24 rounded-2xl bg-purple-500 hover:bg-purple-600 text-white font-semibold transition hover:scale-105"
+                        className="h-20 rounded-2xl bg-purple-500 px-2 text-sm font-semibold text-white transition hover:scale-105 hover:bg-purple-600 sm:h-24 sm:text-base"
                     >
-                        Create Notice
+                        {text.createNotice}
                     </button>
 
                     <button
                         onClick={() => navigate("/notices/board")}
-                        className="h-24 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-semibold transition hover:scale-105"
+                        className="h-20 rounded-2xl bg-green-500 px-2 text-sm font-semibold text-white transition hover:scale-105 hover:bg-green-600 sm:h-24 sm:text-base"
                     >
-                        Notice Board
+                        {text.noticeBoard}
                     </button>
 
                     <button
                         onClick={() => navigate("/notices/archived")}
-                        className="h-24 rounded-2xl bg-gray-500 hover:bg-gray-600 text-white font-semibold transition hover:scale-105"
+                        className="h-20 rounded-2xl bg-gray-500 px-2 text-sm font-semibold text-white transition hover:scale-105 hover:bg-gray-600 sm:h-24 sm:text-base"
                     >
-                        Archived
+                        {text.archived}
                     </button>
-
                 </div>
-
             </div>
 
             {/* ============================== Recent Notices ============================== */}
-
-            <div className="bg-white rounded-3xl shadow border border-gray-100 overflow-hidden">
-
-                <div className="flex items-center justify-between p-7 border-b">
-
+            <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+                <div className="flex flex-col gap-3 border-b p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
                     <div>
-                        <h2 className="text-xl font-bold">Recent Notices</h2>
-                        <p className="text-gray-500 mt-1">Last 7 notices published</p>
+                        <h2 className="text-lg font-bold sm:text-xl">
+                            {text.recentNotices}
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            {text.last7Notices}
+                        </p>
                     </div>
 
                     <button
                         onClick={() => navigate("/notices/list")}
-                        className="text-indigo-600 font-semibold hover:underline text-sm"
+                        className="w-fit text-sm font-semibold text-indigo-600 hover:underline"
                     >
-                        View All
+                        {text.viewAll}
                     </button>
-
                 </div>
 
                 {recentNotices.length === 0 && (
-
                     <div className="py-16 text-center">
-                        <Bell size={50} className="mx-auto text-gray-300 mb-4" />
-                        <p className="text-gray-500">No notices published yet</p>
+                        <Bell size={50} className="mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-500">{text.noNoticesPublished}</p>
                     </div>
-
                 )}
 
                 {recentNotices.length > 0 && (
+                    <>
+                        <div className="hidden overflow-x-auto lg:block">
+                            <table className="w-full min-w-[900px]">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left">{text.title}</th>
+                                        <th className="px-6 py-4 text-left">{text.category}</th>
+                                        <th className="px-6 py-4 text-left">{text.priority}</th>
+                                        <th className="px-6 py-4 text-left">{text.audience}</th>
+                                        <th className="px-6 py-4 text-left">{text.views}</th>
+                                        <th className="px-6 py-4 text-left">{text.date}</th>
+                                        <th className="px-6 py-4 text-center">{text.action}</th>
+                                    </tr>
+                                </thead>
 
-                    <table className="w-full">
-
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="text-left px-6 py-4">Title</th>
-                                <th className="text-left px-6 py-4">Category</th>
-                                <th className="text-left px-6 py-4">Priority</th>
-                                <th className="text-left px-6 py-4">Audience</th>
-                                <th className="text-left px-6 py-4">Views</th>
-                                <th className="text-left px-6 py-4">Date</th>
-                                <th className="text-center px-6 py-4">Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            {recentNotices.map((notice) => (
-
-                                <tr key={notice._id} className="border-t hover:bg-gray-50 transition">
-
-                                    <td className="px-6 py-4">
-                                        <p className="font-semibold text-gray-800 max-w-xs truncate">
-                                            {notice.title}
-                                        </p>
-                                    </td>
-
-                                    <td className="px-6 py-4">
-                                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
-                                            {notice.category}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-6 py-4">
-                                        <span className={"px-3 py-1 rounded-full text-xs font-semibold " + (PRIORITY_STYLE[notice.priority] || "bg-gray-100 text-gray-600")}>
-                                            {notice.priority}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-6 py-4 text-gray-600">
-                                        {notice.audience}
-                                    </td>
-
-                                    <td className="px-6 py-4 text-gray-600">
-                                        {notice.views}
-                                    </td>
-
-                                    <td className="px-6 py-4 text-gray-600">
-                                        {new Date(notice.createdAt).toLocaleDateString(undefined, {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric"
-                                        })}
-                                    </td>
-
-                                    <td className="px-6 py-4 text-center">
-                                        <button
-                                            onClick={() => navigate("/notices/" + notice._id)}
-                                            className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm transition"
+                                <tbody>
+                                    {recentNotices.map((notice) => (
+                                        <tr
+                                            key={notice._id}
+                                            className="border-t transition hover:bg-gray-50"
                                         >
-                                            View
+                                            <td className="px-6 py-4">
+                                                <p className="max-w-xs truncate font-semibold text-gray-800">
+                                                    {notice.title}
+                                                </p>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                                    {notice.category}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                        PRIORITY_STYLE[notice.priority] ||
+                                                        "bg-gray-100 text-gray-600"
+                                                    }`}
+                                                >
+                                                    {notice.priority}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-6 py-4 text-gray-600">
+                                                {notice.audience}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-gray-600">
+                                                {notice.views}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-gray-600">
+                                                {formatDate(notice.createdAt)}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-center">
+                                                <button
+                                                    onClick={() =>
+                                                        navigate(`/notices/${notice._id}`)
+                                                    }
+                                                    className="rounded-lg bg-indigo-500 px-4 py-2 text-sm text-white transition hover:bg-indigo-600"
+                                                >
+                                                    {text.view}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="divide-y divide-gray-100 lg:hidden">
+                            {recentNotices.map((notice) => (
+                                <div key={notice._id} className="p-4 sm:p-5">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="truncate font-semibold text-gray-800">
+                                                {notice.title}
+                                            </p>
+
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                                    {notice.category}
+                                                </span>
+
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                        PRIORITY_STYLE[notice.priority] ||
+                                                        "bg-gray-100 text-gray-600"
+                                                    }`}
+                                                >
+                                                    {notice.priority}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => navigate(`/notices/${notice._id}`)}
+                                            className="shrink-0 rounded-lg bg-indigo-500 px-4 py-2 text-sm text-white transition hover:bg-indigo-600"
+                                        >
+                                            {text.view}
                                         </button>
-                                    </td>
+                                    </div>
 
-                                </tr>
+                                    <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+                                        <div>
+                                            <p className="text-gray-400">{text.audience}</p>
+                                            <p className="mt-1 font-medium text-gray-700">
+                                                {notice.audience}
+                                            </p>
+                                        </div>
 
+                                        <div>
+                                            <p className="text-gray-400">{text.views}</p>
+                                            <p className="mt-1 font-medium text-gray-700">
+                                                {notice.views}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-gray-400">{text.date}</p>
+                                            <p className="mt-1 font-medium text-gray-700">
+                                                {formatDate(notice.createdAt)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
-
-                        </tbody>
-
-                    </table>
-
+                        </div>
+                    </>
                 )}
-
             </div>
-
         </div>
-
     );
-
 };
 
 export default NoticeDashboard;

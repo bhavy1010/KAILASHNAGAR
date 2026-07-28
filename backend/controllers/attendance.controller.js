@@ -373,6 +373,17 @@ const getStudentAttendanceReport = async (req, res) => {
 
         const { month, year } = req.query;
 
+        if (req.user?.role === "student" && req.user.id !== studentId) {
+
+            return res.status(403).json({
+
+                success: false,
+                message: "You are not allowed to view another student's attendance report."
+
+            });
+
+        }
+
         const filter = {
             "records.studentId": studentId
         };

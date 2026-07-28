@@ -6,7 +6,6 @@ import {
     PlusCircle,
     FileText,
     BookOpen,
-    Upload,
     Star,
     BarChart3,
     ChevronRight
@@ -49,23 +48,12 @@ const ALL_FEATURES = [
 
     {
         title: "My Homework",
-        description: "View all homework assigned to your class with due dates and status.",
+        description: "View all homework assigned to your class, then submit answers or check details right from the list.",
         path: "/homework/my",
         icon: BookOpen,
         color: "from-green-500 to-green-400",
         bg: "bg-green-50",
         iconColor: "text-green-600",
-        roles: ["student"]
-    },
-
-    {
-        title: "Submit Homework",
-        description: "Upload your answer or file for a homework assignment.",
-        path: "/homework/my",
-        icon: Upload,
-        color: "from-teal-500 to-teal-400",
-        bg: "bg-teal-50",
-        iconColor: "text-teal-600",
         roles: ["student"]
     },
 
@@ -99,7 +87,7 @@ const ALL_FEATURES = [
         color: "from-cyan-500 to-cyan-400",
         bg: "bg-cyan-50",
         iconColor: "text-cyan-600",
-        roles: ["admin", "teacher", "student"]
+        roles: ["admin", "teacher"]
     }
 
 ];

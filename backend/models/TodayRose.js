@@ -2,15 +2,39 @@ const mongoose = require("mongoose");
 
 const todayRoseSchema = new mongoose.Schema(
     {
-        student: {
+        studentId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Student",
             required: true
         },
 
+        studentName: {
+            type: String,
+            required: true,
+            trim: true
+        },
+
+        grNumber: {
+            type: String,
+            required: true,
+            trim: true
+        },
+
+        standard: {
+            type: Number,
+            required: true
+        },
+
+        division: {
+            type: String,
+            required: true,
+            trim: true
+        },
+
         title: {
             type: String,
-            default: "Today's Rose"
+            default: "Today's Rose",
+            trim: true
         },
 
         reason: {
@@ -26,13 +50,13 @@ const todayRoseSchema = new mongoose.Schema(
 
         awardDate: {
             type: Date,
-            required: true,
-            default: Date.now
+            required: true
         },
 
-        isPublished: {
-            type: Boolean,
-            default: true
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
         }
     },
     {
@@ -40,12 +64,8 @@ const todayRoseSchema = new mongoose.Schema(
     }
 );
 
-todayRoseSchema.index(
-    { awardDate: 1 },
-    { unique: true }
-);
+// A student can only receive one "Today's Rose" per calendar day,
+// but multiple different students can each receive one on the same day.
+todayRoseSchema.index({ studentId: 1, awardDate: 1 }, { unique: true });
 
-module.exports = mongoose.model(
-    "TodayRose",
-    todayRoseSchema
-);
+module.exports = mongoose.model("TodayRose", todayRoseSchema);

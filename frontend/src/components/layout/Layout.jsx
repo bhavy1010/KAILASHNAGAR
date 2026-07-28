@@ -1,25 +1,23 @@
-import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useState } from "react";
 
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-slate-50">
             <Sidebar
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
             />
 
-            <div className="flex min-w-0 flex-1 flex-col lg:ml-72">
-                <Navbar
-                    onMenuClick={() => setIsSidebarOpen(true)}
-                />
+            <div className="min-h-screen transition-all duration-300 lg:ml-72">
+                <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
 
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+                <main className="mx-auto w-full max-w-[1700px] p-4 sm:p-6 lg:p-8">
                     <Outlet />
                 </main>
             </div>

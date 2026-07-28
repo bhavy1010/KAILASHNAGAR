@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, RefreshCw, Bell, Paperclip } from "lucide-react";
+import { Search, Plus, RefreshCw, Bell, Paperclip, Loader2 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
-import { getAllNotices, deleteNotice, archiveNotice, searchNotices } from "../../services/noticeService";
+import { useLanguage } from "../../context/LanguageContext";
+import {
+    getAllNotices,
+    deleteNotice,
+    archiveNotice,
+    searchNotices
+} from "../../services/noticeService";
 
 const PRIORITY_STYLE = {
     Low: "bg-gray-100 text-gray-600",
@@ -32,15 +38,14 @@ const AUDIENCE_STYLE = {
 };
 
 const NoticeList = () => {
-
     const navigate = useNavigate();
 
     const { user } = useAuth();
+    const { language } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [notices, setNotices] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [search, setSearch] = useState("");
 
     const [filters, setFilters] = useState({
@@ -49,416 +54,428 @@ const NoticeList = () => {
         audience: ""
     });
 
+    const text = {
+        pageTitle: isGujarati ? "બધી નોટિસ" : "All Notices",
+        total: isGujarati ? "કુલ" : "Total",
+        notices: isGujarati ? "નોટિસ" : "notices",
+        createNotice: isGujarati ? "નોટિસ બનાવો" : "Create Notice",
+        searchPlaceholder: isGujarati ? "નોટિસ શોધો..." : "Search notices...",
+        search: isGujarati ? "શોધો" : "Search",
+        allCategories: isGujarati ? "બધી શ્રેણીઓ" : "All Categories",
+        general: isGujarati ? "સામાન્ય" : "General",
+        academic: isGujarati ? "શૈક્ષણિક" : "Academic",
+        exam: isGujarati ? "પરીક્ષા" : "Exam",
+        holiday: isGujarati ? "રજા" : "Holiday",
+        event: isGujarati ? "કાર્યક્રમ" : "Event",
+        sports: isGujarati ? "રમતગમત" : "Sports",
+        fee: isGujarati ? "ફી" : "Fee",
+        urgent: isGujarati ? "તાત્કાલિક" : "Urgent",
+        other: isGujarati ? "અન્ય" : "Other",
+        allPriorities: isGujarati ? "બધી પ્રાધાન્યતાઓ" : "All Priorities",
+        low: isGujarati ? "ઓછું" : "Low",
+        medium: isGujarati ? "મધ્યમ" : "Medium",
+        high: isGujarati ? "ઊંચું" : "High",
+        allAudiences: isGujarati ? "બધા પ્રેક્ષકો" : "All Audiences",
+        all: isGujarati ? "બધા" : "All",
+        teachers: isGujarati ? "શિક્ષકો" : "Teachers",
+        students: isGujarati ? "વિદ્યાર્થીઓ" : "Students",
+        parents: isGujarati ? "વાલીઓ" : "Parents",
+        reset: isGujarati ? "રીસેટ" : "Reset",
+        applyFilters: isGujarati ? "ફિલ્ટર લાગુ કરો" : "Apply Filters",
+        loading: isGujarati ? "નોટિસ લોડ થઈ રહી છે..." : "Loading notices...",
+        noNoticesFound: isGujarati ? "કોઈ નોટિસ મળી નથી" : "No Notices Found",
+        noNoticesText: isGujarati
+            ? "ફિલ્ટર બદલો અથવા નવી નોટિસ બનાવો."
+            : "Try changing filters or create a new notice.",
+        priorityLabel: isGujarati ? "પ્રાધાન્યતા" : "Priority",
+        forLabel: isGujarati ? "માટે" : "For",
+        expired: isGujarati ? "સમાપ્ત" : "Expired",
+        attachment: isGujarati ? "જોડાણ" : "Attachment",
+        by: isGujarati ? "દ્વારા" : "By",
+        views: isGujarati ? "વ્યુ" : "views",
+        expires: isGujarati ? "સમાપ્તિ" : "Expires",
+        view: isGujarati ? "જુઓ" : "View",
+        edit: isGujarati ? "સંપાદિત કરો" : "Edit",
+        archive: isGujarati ? "આર્કાઇવ" : "Archive",
+        delete: isGujarati ? "ડિલીટ કરો" : "Delete",
+        confirmDelete: isGujarati
+            ? "આ નોટિસ કાયમ માટે ડિલીટ કરવી છે?"
+            : "Delete this notice permanently?",
+        confirmArchive: isGujarati
+            ? "આ નોટિસ આર્કાઇવ કરવી છે?"
+            : "Archive this notice?",
+        alertDeleteError: isGujarati
+            ? "નોટિસ ડિલીટ કરવામાં અસમર્થ"
+            : "Unable to delete notice",
+        alertArchiveError: isGujarati
+            ? "નોટિસ આર્કાઇવ કરવામાં અસમર્થ"
+            : "Unable to archive notice"
+    };
+
+    const categoryLabel = {
+        General: text.general,
+        Academic: text.academic,
+        Exam: text.exam,
+        Holiday: text.holiday,
+        Event: text.event,
+        Sports: text.sports,
+        Fee: text.fee,
+        Urgent: text.urgent,
+        Other: text.other
+    };
+
+    const priorityLabel = {
+        Low: text.low,
+        Medium: text.medium,
+        High: text.high,
+        Urgent: text.urgent
+    };
+
+    const audienceLabel = {
+        All: text.all,
+        Teachers: text.teachers,
+        Students: text.students,
+        Parents: text.parents
+    };
+
     useEffect(() => {
-
         loadNotices();
-
     }, []);
 
     const loadNotices = async (activeFilters = filters) => {
-
         try {
-
             setLoading(true);
 
             const response = await getAllNotices(activeFilters);
-
             setNotices(response.notices || []);
-
         } catch (error) {
-
             console.log(error);
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     const handleSearch = async () => {
-
         if (!search.trim()) {
             loadNotices();
             return;
         }
 
         try {
-
             setLoading(true);
 
             const response = await searchNotices(search);
-
             setNotices(response.notices || []);
-
         } catch (error) {
-
             console.log(error);
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     const handleFilterChange = (key, value) => {
-
         const updated = { ...filters, [key]: value };
         setFilters(updated);
-
     };
 
     const handleReset = () => {
-
         const reset = { category: "", priority: "", audience: "" };
         setFilters(reset);
         setSearch("");
         loadNotices(reset);
-
     };
 
     const handleDelete = async (id) => {
-
-        if (!window.confirm("Delete this notice permanently?")) return;
+        if (!window.confirm(text.confirmDelete)) return;
 
         try {
-
             await deleteNotice(id);
             loadNotices();
-
         } catch (error) {
-
-            alert(error.response?.data?.message || "Unable to delete notice");
-
+            alert(error.response?.data?.message || text.alertDeleteError);
         }
-
     };
 
     const handleArchive = async (id) => {
-
-        if (!window.confirm("Archive this notice?")) return;
+        if (!window.confirm(text.confirmArchive)) return;
 
         try {
-
             await archiveNotice(id);
             loadNotices();
-
         } catch (error) {
-
-            alert(error.response?.data?.message || "Unable to archive notice");
-
+            alert(error.response?.data?.message || text.alertArchiveError);
         }
-
     };
 
     const isExpired = (expiryDate) => {
-
         if (!expiryDate) return false;
         return new Date(expiryDate) < new Date();
-
     };
 
-    const isAdmin = user?.role === "admin";
+    const formatDate = (dateValue) =>
+        new Date(dateValue).toLocaleDateString(isGujarati ? "gu-IN" : "en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
 
-    const isTeacherOrAdmin =
-        user?.role === "admin" || user?.role === "teacher";
+    const isAdmin = user?.role === "admin";
+    const isTeacherOrAdmin = user?.role === "admin" || user?.role === "teacher";
 
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
             {/* ============================== Header ============================== */}
-
-            <div className="flex items-center justify-between mb-8">
-
+            <div className="mb-7 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-4xl font-bold text-slate-800">All Notices</h1>
-                    <p className="mt-2 text-slate-500">Total : {notices.length} notices</p>
+                    <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                        {text.pageTitle}
+                    </h1>
+                    <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                        {text.total} : {notices.length} {text.notices}
+                    </p>
                 </div>
 
                 {isTeacherOrAdmin && (
-
                     <button
                         onClick={() => navigate("/notices/create")}
-                        className="flex items-center gap-2 bg-[#5B2EFF] hover:bg-[#4724db] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition"
+                        className="flex w-fit items-center gap-2 rounded-xl bg-[#5B2EFF] px-6 py-3 font-semibold text-white shadow-lg transition hover:scale-105 hover:bg-[#4724db]"
                     >
                         <Plus size={18} />
-                        Create Notice
+                        {text.createNotice}
                     </button>
-
                 )}
-
             </div>
 
             {/* ============================== Filters ============================== */}
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-7">
-
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-                    <div className="flex items-center bg-gray-100 rounded-xl px-4">
-                        <Search size={18} className="text-gray-500" />
+            <div className="mb-7 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <div className="flex items-center rounded-xl bg-gray-100 px-4">
+                        <Search size={18} className="shrink-0 text-gray-500" />
                         <input
                             type="text"
-                            placeholder="Search notices..."
+                            placeholder={text.searchPlaceholder}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1 bg-transparent px-3 py-3 outline-none"
+                            className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none"
                         />
                         <button
                             onClick={handleSearch}
-                            className="bg-[#5B2EFF] hover:bg-[#4724db] text-white px-4 py-2 rounded-lg text-sm transition"
+                            className="shrink-0 rounded-lg bg-[#5B2EFF] px-4 py-2 text-sm text-white transition hover:bg-[#4724db]"
                         >
-                            Search
+                            {text.search}
                         </button>
                     </div>
 
                     <select
                         value={filters.category}
                         onChange={(e) => handleFilterChange("category", e.target.value)}
-                        className="border rounded-xl px-4 py-3 outline-none"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                     >
-                        <option value="">All Categories</option>
-                        <option value="General">General</option>
-                        <option value="Academic">Academic</option>
-                        <option value="Exam">Exam</option>
-                        <option value="Holiday">Holiday</option>
-                        <option value="Event">Event</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Fee">Fee</option>
-                        <option value="Urgent">Urgent</option>
-                        <option value="Other">Other</option>
+                        <option value="">{text.allCategories}</option>
+                        <option value="General">{text.general}</option>
+                        <option value="Academic">{text.academic}</option>
+                        <option value="Exam">{text.exam}</option>
+                        <option value="Holiday">{text.holiday}</option>
+                        <option value="Event">{text.event}</option>
+                        <option value="Sports">{text.sports}</option>
+                        <option value="Fee">{text.fee}</option>
+                        <option value="Urgent">{text.urgent}</option>
+                        <option value="Other">{text.other}</option>
                     </select>
 
                     <select
                         value={filters.priority}
                         onChange={(e) => handleFilterChange("priority", e.target.value)}
-                        className="border rounded-xl px-4 py-3 outline-none"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                     >
-                        <option value="">All Priorities</option>
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Urgent">Urgent</option>
+                        <option value="">{text.allPriorities}</option>
+                        <option value="Low">{text.low}</option>
+                        <option value="Medium">{text.medium}</option>
+                        <option value="High">{text.high}</option>
+                        <option value="Urgent">{text.urgent}</option>
                     </select>
 
                     <select
                         value={filters.audience}
                         onChange={(e) => handleFilterChange("audience", e.target.value)}
-                        className="border rounded-xl px-4 py-3 outline-none"
+                        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 outline-none transition focus:border-[#5B2EFF] focus:ring-2 focus:ring-violet-100"
                     >
-                        <option value="">All Audiences</option>
-                        <option value="All">All</option>
-                        <option value="Teachers">Teachers</option>
-                        <option value="Students">Students</option>
-                        <option value="Parents">Parents</option>
+                        <option value="">{text.allAudiences}</option>
+                        <option value="All">{text.all}</option>
+                        <option value="Teachers">{text.teachers}</option>
+                        <option value="Students">{text.students}</option>
+                        <option value="Parents">{text.parents}</option>
                     </select>
-
                 </div>
 
-                <div className="flex justify-end gap-3 mt-5">
-
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-xl transition"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-gray-700 px-5 py-2 text-white transition hover:bg-gray-800"
                     >
                         <RefreshCw size={16} />
-                        Reset
+                        {text.reset}
                     </button>
 
                     <button
                         onClick={() => loadNotices(filters)}
-                        className="px-6 py-2 rounded-xl bg-[#5B2EFF] hover:bg-[#4724db] text-white font-semibold transition"
+                        className="rounded-xl bg-[#5B2EFF] px-6 py-2 font-semibold text-white transition hover:bg-[#4724db]"
                     >
-                        Apply Filters
+                        {text.applyFilters}
                     </button>
-
                 </div>
-
             </div>
 
-            {/* ============================== Notice Cards / Table ============================== */}
-
+            {/* ============================== Notice Cards ============================== */}
             {loading && (
-
-                <div className="py-20 flex justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="flex min-h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-100 bg-white py-16 shadow-sm">
+                    <Loader2 size={38} className="animate-spin text-[#5B2EFF]" />
+                    <p className="font-medium text-slate-500">{text.loading}</p>
                 </div>
-
             )}
 
             {!loading && notices.length === 0 && (
-
-                <div className="bg-white rounded-3xl p-16 text-center shadow">
-                    <Bell size={56} className="mx-auto text-gray-300 mb-4" />
-                    <h2 className="text-xl font-semibold text-gray-600">No Notices Found</h2>
-                    <p className="text-gray-400 mt-2">Try changing filters or create a new notice.</p>
+                <div className="rounded-3xl border border-gray-100 bg-white p-10 text-center shadow-sm sm:p-16">
+                    <Bell size={56} className="mx-auto mb-4 text-gray-300" />
+                    <h2 className="text-xl font-semibold text-gray-600">
+                        {text.noNoticesFound}
+                    </h2>
+                    <p className="mx-auto mt-2 max-w-md text-sm text-gray-400 sm:text-base">
+                        {text.noNoticesText}
+                    </p>
                 </div>
-
             )}
 
             {!loading && notices.length > 0 && (
-
                 <div className="space-y-4">
-
                     {notices.map((notice) => (
-
                         <div
                             key={notice._id}
-                            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition"
+                            className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md sm:p-6"
                         >
-
-                            <div className="flex flex-col lg:flex-row lg:items-start gap-5">
-
+                            <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
                                 {/* Left Icon */}
-
-                                <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-100">
                                     <Bell size={22} className="text-indigo-600" />
                                 </div>
 
                                 {/* Content */}
-
-                                <div className="flex-1">
-
-                                    <div className="flex flex-wrap items-center gap-3 mb-3">
-
-                                        <span className={"px-3 py-1 rounded-full text-xs font-semibold " + (CATEGORY_STYLE[notice.category] || "bg-gray-100 text-gray-600")}>
-                                            {notice.category}
+                                <div className="min-w-0 flex-1">
+                                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                                        <span
+                                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                CATEGORY_STYLE[notice.category] ||
+                                                "bg-gray-100 text-gray-600"
+                                            }`}
+                                        >
+                                            {categoryLabel[notice.category] || notice.category}
                                         </span>
 
-                                        <span className={"px-3 py-1 rounded-full text-xs font-semibold " + (PRIORITY_STYLE[notice.priority] || "bg-gray-100 text-gray-600")}>
-                                            {notice.priority} Priority
+                                        <span
+                                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                PRIORITY_STYLE[notice.priority] ||
+                                                "bg-gray-100 text-gray-600"
+                                            }`}
+                                        >
+                                            {priorityLabel[notice.priority] || notice.priority}{" "}
+                                            {text.priorityLabel}
                                         </span>
 
-                                        <span className={"px-3 py-1 rounded-full text-xs font-semibold " + (AUDIENCE_STYLE[notice.audience] || "bg-gray-100 text-gray-600")}>
-                                            For: {notice.audience}
+                                        <span
+                                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                AUDIENCE_STYLE[notice.audience] ||
+                                                "bg-gray-100 text-gray-600"
+                                            }`}
+                                        >
+                                            {text.forLabel}:{" "}
+                                            {audienceLabel[notice.audience] || notice.audience}
                                         </span>
 
                                         {isExpired(notice.expiryDate) && (
-
-                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-600">
-                                                Expired
+                                            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">
+                                                {text.expired}
                                             </span>
-
                                         )}
 
                                         {notice.attachment && (
-
                                             <span className="flex items-center gap-1 text-xs text-gray-400">
                                                 <Paperclip size={12} />
-                                                Attachment
+                                                {text.attachment}
                                             </span>
-
                                         )}
-
                                     </div>
 
-                                    <h3 className="text-lg font-bold text-gray-800 mb-2">
+                                    <h3 className="mb-2 text-lg font-bold text-gray-800">
                                         {notice.title}
                                     </h3>
 
-                                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+                                    <p className="line-clamp-2 text-sm leading-relaxed text-gray-500">
                                         {notice.description}
                                     </p>
 
-                                    <div className="flex flex-wrap items-center gap-4 mt-4 text-xs text-gray-400">
-
+                                    <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
                                         <span>
-                                            By: {notice.publishedBy}
+                                            {text.by}: {notice.publishedBy}
                                         </span>
 
-                                        <span>
-                                            {new Date(notice.createdAt).toLocaleDateString(undefined, {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric"
-                                            })}
-                                        </span>
+                                        <span>{formatDate(notice.createdAt)}</span>
 
                                         <span>
-                                            {notice.views} views
+                                            {notice.views} {text.views}
                                         </span>
 
                                         {notice.expiryDate && (
-
                                             <span>
-                                                Expires: {new Date(notice.expiryDate).toLocaleDateString(undefined, {
-                                                    day: "2-digit",
-                                                    month: "short",
-                                                    year: "numeric"
-                                                })}
+                                                {text.expires}: {formatDate(notice.expiryDate)}
                                             </span>
-
                                         )}
-
                                     </div>
-
                                 </div>
 
                                 {/* Actions */}
-
-                                <div className="flex flex-wrap gap-2 shrink-0">
-
+                                <div className="flex flex-wrap gap-2 lg:shrink-0">
                                     <button
-                                        onClick={() => navigate("/notices/" + notice._id)}
-                                        className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm transition"
+                                        onClick={() => navigate(`/notices/${notice._id}`)}
+                                        className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white transition hover:bg-blue-600"
                                     >
-                                        View
+                                        {text.view}
                                     </button>
 
                                     {isTeacherOrAdmin && (
-
                                         <button
-                                            onClick={() => navigate("/notices/edit/" + notice._id)}
-                                            className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm transition"
+                                            onClick={() => navigate(`/notices/edit/${notice._id}`)}
+                                            className="rounded-lg bg-amber-500 px-4 py-2 text-sm text-white transition hover:bg-amber-600"
                                         >
-                                            Edit
+                                            {text.edit}
                                         </button>
-
                                     )}
 
                                     {isAdmin && (
-
                                         <button
                                             onClick={() => handleArchive(notice._id)}
-                                            className="px-4 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white text-sm transition"
+                                            className="rounded-lg bg-gray-500 px-4 py-2 text-sm text-white transition hover:bg-gray-600"
                                         >
-                                            Archive
+                                            {text.archive}
                                         </button>
-
                                     )}
 
                                     {isAdmin && (
-
                                         <button
                                             onClick={() => handleDelete(notice._id)}
-                                            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                                            className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition hover:bg-red-700"
                                         >
-                                            Delete
+                                            {text.delete}
                                         </button>
-
                                     )}
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     ))}
-
                 </div>
-
             )}
-
         </div>
-
     );
-
 };
 
 export default NoticeList;

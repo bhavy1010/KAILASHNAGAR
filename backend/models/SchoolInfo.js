@@ -4,13 +4,13 @@ const schoolInfoSchema = new mongoose.Schema(
     {
         schoolName: {
             type: String,
-            default: "KailashNagar School",
+            default: "",
             trim: true
         },
 
         tagline: {
             type: String,
-            default: "Learn • Grow • Achieve",
+            default: "",
             trim: true
         },
 
@@ -18,6 +18,11 @@ const schoolInfoSchema = new mongoose.Schema(
             type: String,
             default: "",
             trim: true
+        },
+
+        logo: {
+            type: String,
+            default: ""
         },
 
         phone: {
@@ -50,7 +55,4 @@ const schoolInfoSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model(
-    "SchoolInfo",
-    schoolInfoSchema
-);
+module.exports = mongoose.model("SchoolInfo", schoolInfoSchema);

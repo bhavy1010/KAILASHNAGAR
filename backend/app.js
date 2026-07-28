@@ -25,8 +25,17 @@ const homeRoutes = require("./routes/home.routes");
 
 const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        credentials: true
+    })
+);
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
@@ -49,13 +58,27 @@ app.use("/api/leave", leaveRoutes);
 app.use("/api/academic-years", academicYearRoutes);
 app.use("/api/home", homeRoutes);
 
-app.use(
-    "/uploads",
-    express.static(path.join(__dirname, "uploads"))
-);
-
 app.get("/", (req, res) => {
-    res.send("School Management API Running");
+    res.json({
+        success: true,
+        message: "School Management API is running."
+    });
+});
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found."
+    });
+});
+
+app.use((error, req, res, next) => {
+    console.error(error);
+
+    res.status(error.status || 500).json({
+        success: false,
+        message: error.message || "Internal server error."
+    });
 });
 
 module.exports = app;

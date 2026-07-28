@@ -243,6 +243,17 @@ const getAllResultsForStudent = async (req, res) => {
 
     try {
 
+        if (req.user?.role === "student" && req.user.id !== req.params.studentId) {
+
+            return res.status(403).json({
+
+                success: false,
+                message: "You are not allowed to view another student's results."
+
+            });
+
+        }
+
         const results = await Result.find({
 
             studentId: req.params.studentId

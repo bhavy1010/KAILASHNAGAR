@@ -1,16 +1,10 @@
 const Student = require("../models/Student");
 
-// ======================================================
-// Student Password from Date of Birth
-// Example: 10/10/2005 = 101005
-// ======================================================
-
 const createDobPassword = (dateOfBirth) => {
     const rawDate = String(dateOfBirth);
 
     if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
         const [year, month, day] = rawDate.split("-");
-
         return `${day}${month}${year.slice(-2)}`;
     }
 
@@ -27,11 +21,6 @@ const createDobPassword = (dateOfBirth) => {
     return `${day}${month}${year}`;
 };
 
-// ======================================================
-// Create Student
-// Password is automatically generated from DOB
-// ======================================================
-
 const createStudent = async (req, res) => {
     try {
         const {
@@ -44,7 +33,6 @@ const createStudent = async (req, res) => {
             parentMobile,
             standard,
             division,
-            classId,
             address,
             admissionDate,
             status,
@@ -61,7 +49,6 @@ const createStudent = async (req, res) => {
             !parentMobile ||
             !standard ||
             !division ||
-            !classId ||
             !address
         ) {
             return res.status(400).json({
@@ -70,9 +57,9 @@ const createStudent = async (req, res) => {
             });
         }
 
-        const studentPassword = createDobPassword(dateOfBirth);
+        const password = createDobPassword(dateOfBirth);
 
-        if (!studentPassword) {
+        if (!password) {
             return res.status(400).json({
                 success: false,
                 message: "Please enter a valid date of birth."
@@ -98,48 +85,40 @@ const createStudent = async (req, res) => {
             gender,
             dateOfBirth,
             parentMobile: parentMobile.trim(),
-            password: studentPassword,
-            standard,
-            division,
-            classId,
+            password,
+            standard: Number(standard),
+            division: division.trim().toUpperCase(),
             address: address.trim(),
-            admissionDate,
-            status,
-            photo
+            admissionDate: admissionDate || new Date(),
+            status: status || "Active",
+            photo: photo || ""
         });
 
         res.status(201).json({
             success: true,
-            message: "Student created successfully. Student password is their date of birth.",
+            message:
+                "Student created successfully. Password is generated from date of birth.",
             student
         });
-
     } catch (error) {
+        console.error("Create student error:", error);
+
         res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message || "Unable to create student."
         });
     }
 };
 
-// ======================================================
-// Get All Students
-// ======================================================
-
 const getAllStudents = async (req, res) => {
     try {
-        const students = await Student.find()
-            .populate("classId")
-            .sort({
-                createdAt: -1
-            });
+        const students = await Student.find().sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
             count: students.length,
             students
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -148,20 +127,14 @@ const getAllStudents = async (req, res) => {
     }
 };
 
-// ======================================================
-// Get Student By ID
-// ======================================================
-
 const getStudentById = async (req, res) => {
     try {
-        const student = await Student.findById(
-            req.params.id
-        ).populate("classId");
+        const student = await Student.findById(req.params.id);
 
         if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Student Not Found"
+                message: "Student not found."
             });
         }
 
@@ -169,7 +142,6 @@ const getStudentById = async (req, res) => {
             success: true,
             student
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -177,21 +149,17 @@ const getStudentById = async (req, res) => {
         });
     }
 };
-
-// ======================================================
-// Get Student By GR Number
-// ======================================================
 
 const getStudentByGR = async (req, res) => {
     try {
         const student = await Student.findOne({
             grNumber: req.params.grNumber
-        }).populate("classId");
+        });
 
         if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Student Not Found"
+                message: "Student not found."
             });
         }
 
@@ -199,7 +167,6 @@ const getStudentByGR = async (req, res) => {
             success: true,
             student
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -207,10 +174,6 @@ const getStudentByGR = async (req, res) => {
         });
     }
 };
-
-// ======================================================
-// Get Student By Name
-// ======================================================
 
 const getStudentByName = async (req, res) => {
     try {
@@ -219,21 +182,13 @@ const getStudentByName = async (req, res) => {
                 $regex: req.params.fullName,
                 $options: "i"
             }
-        }).populate("classId");
-
-        if (students.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No Student Found"
-            });
-        }
+        }).sort({ fullName: 1 });
 
         res.status(200).json({
             success: true,
             count: students.length,
             students
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -241,10 +196,6 @@ const getStudentByName = async (req, res) => {
         });
     }
 };
-
-// ======================================================
-// Search Students
-// ======================================================
 
 const searchStudents = async (req, res) => {
     try {
@@ -271,18 +222,13 @@ const searchStudents = async (req, res) => {
                     }
                 }
             ]
-        })
-            .populate("classId")
-            .sort({
-                fullName: 1
-            });
+        }).sort({ fullName: 1 });
 
         res.status(200).json({
             success: true,
             count: students.length,
             students
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -291,25 +237,19 @@ const searchStudents = async (req, res) => {
     }
 };
 
-// ======================================================
-// Pagination
-// ======================================================
-
 const getStudentsPagination = async (req, res) => {
     try {
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 10;
+        const page = Math.max(Number(req.query.page) || 1, 1);
+        const limit = Math.max(Number(req.query.limit) || 10, 1);
         const skip = (page - 1) * limit;
 
-        const totalStudents = await Student.countDocuments();
-
-        const students = await Student.find()
-            .populate("classId")
-            .skip(skip)
-            .limit(limit)
-            .sort({
-                createdAt: -1
-            });
+        const [totalStudents, students] = await Promise.all([
+            Student.countDocuments(),
+            Student.find()
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+        ]);
 
         res.status(200).json({
             success: true,
@@ -318,7 +258,6 @@ const getStudentsPagination = async (req, res) => {
             totalStudents,
             students
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -327,11 +266,6 @@ const getStudentsPagination = async (req, res) => {
     }
 };
 
-// ======================================================
-// Update Student
-// If DOB changes, student password changes automatically
-// ======================================================
-
 const updateStudent = async (req, res) => {
     try {
         const student = await Student.findById(req.params.id);
@@ -339,7 +273,7 @@ const updateStudent = async (req, res) => {
         if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Student Not Found"
+                message: "Student not found."
             });
         }
 
@@ -354,15 +288,15 @@ const updateStudent = async (req, res) => {
             if (existingStudent) {
                 return res.status(400).json({
                     success: false,
-                    message: "GR Number Already Exists"
+                    message: "GR Number already exists."
                 });
             }
         }
 
         if (req.body.dateOfBirth) {
-            const studentPassword = createDobPassword(req.body.dateOfBirth);
+            const password = createDobPassword(req.body.dateOfBirth);
 
-            if (!studentPassword) {
+            if (!password) {
                 return res.status(400).json({
                     success: false,
                     message: "Please enter a valid date of birth."
@@ -370,44 +304,27 @@ const updateStudent = async (req, res) => {
             }
 
             student.dateOfBirth = req.body.dateOfBirth;
-            student.password = studentPassword;
+            student.password = password;
         }
 
-        student.grNumber =
-            req.body.grNumber?.trim() || student.grNumber;
-
-        student.fullName =
-            req.body.fullName?.trim() || student.fullName;
-
+        student.grNumber = req.body.grNumber?.trim() || student.grNumber;
+        student.fullName = req.body.fullName?.trim() || student.fullName;
         student.fatherName =
             req.body.fatherName?.trim() || student.fatherName;
-
         student.motherName =
             req.body.motherName?.trim() || student.motherName;
-
-        student.gender =
-            req.body.gender || student.gender;
-
+        student.gender = req.body.gender || student.gender;
         student.parentMobile =
             req.body.parentMobile?.trim() || student.parentMobile;
-
         student.standard =
-            req.body.standard || student.standard;
-
+            Number(req.body.standard) || student.standard;
         student.division =
-            req.body.division || student.division;
-
-        student.classId =
-            req.body.classId || student.classId;
-
-        student.address =
-            req.body.address?.trim() || student.address;
-
-        student.status =
-            req.body.status || student.status;
-
-        student.photo =
-            req.body.photo || student.photo;
+            req.body.division?.trim().toUpperCase() || student.division;
+        student.address = req.body.address?.trim() || student.address;
+        student.admissionDate =
+            req.body.admissionDate || student.admissionDate;
+        student.status = req.body.status || student.status;
+        student.photo = req.body.photo || student.photo;
 
         await student.save();
 
@@ -416,37 +333,31 @@ const updateStudent = async (req, res) => {
             message: "Student updated successfully.",
             student
         });
-
     } catch (error) {
+        console.error("Update student error:", error);
+
         res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message || "Unable to update student."
         });
     }
 };
 
-// ======================================================
-// Delete Student
-// ======================================================
-
 const deleteStudent = async (req, res) => {
     try {
-        const student = await Student.findById(req.params.id);
+        const student = await Student.findByIdAndDelete(req.params.id);
 
         if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Student Not Found"
+                message: "Student not found."
             });
         }
 
-        await student.deleteOne();
-
         res.status(200).json({
             success: true,
-            message: "Student Deleted Successfully"
+            message: "Student deleted successfully."
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,

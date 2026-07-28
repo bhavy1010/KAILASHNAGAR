@@ -1,574 +1,571 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, RefreshCw, Users } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
 import {
+    Eye,
+    Loader2,
+    Pencil,
+    Plus,
+    RefreshCw,
+    Search,
+    Trash2,
+    Users
+} from "lucide-react";
 
-    getStudents,
-
+import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
+import {
     deleteStudent,
-
+    getStudents,
     searchStudents
-
 } from "../../services/studentService";
 
 const Students = () => {
-
     const navigate = useNavigate();
-
     const { user } = useAuth();
+    const { t } = useLanguage();
 
     const [students, setStudents] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [search, setSearch] = useState("");
-
     const [standard, setStandard] = useState("");
-
     const [division, setDivision] = useState("");
-
     const [status, setStatus] = useState("");
+    const [message, setMessage] = useState("");
 
-    useEffect(() => {
+    const serverUrl = (
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+    ).replace(/\/api\/?$/, "");
 
-        loadStudents();
+    const canManageStudents =
+        user?.role === "admin" || user?.role === "teacher";
 
-    }, []);
+    const canDeleteStudents = user?.role === "admin";
+
+    const showMessage = (text) => {
+        setMessage(text);
+
+        window.setTimeout(() => {
+            setMessage("");
+        }, 3500);
+    };
+
+    const getStudentPhoto = (photo) => {
+        if (!photo) return "";
+
+        if (photo.startsWith("http://") || photo.startsWith("https://")) {
+            return photo;
+        }
+
+        if (photo.startsWith("/")) {
+            return `${serverUrl}${photo}`;
+        }
+
+        return `${serverUrl}/uploads/students/${photo}`;
+    };
 
     const loadStudents = async () => {
-
         try {
-
             setLoading(true);
 
             const response = await getStudents();
-
             setStudents(response.students || []);
-
         } catch (error) {
-
-            console.log(error);
-
+            console.error(error);
+            showMessage(
+                error.response?.data?.message || "Unable to load students."
+            );
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
+    useEffect(() => {
+        loadStudents();
+    }, []);
+
+    const classOptions = useMemo(() => {
+        const classes = students
+            .filter((student) => student.standard !== undefined)
+            .map((student) => String(student.standard));
+
+        return [...new Set(classes)].sort(
+            (first, second) => Number(first) - Number(second)
+        );
+    }, [students]);
+
+    const divisionOptions = useMemo(() => {
+        const divisions = students
+            .filter((student) => student.division)
+            .map((student) => String(student.division).toUpperCase());
+
+        return [...new Set(divisions)].sort();
+    }, [students]);
+
+    const filteredStudents = useMemo(() => {
+        const query = search.trim().toLowerCase();
+
+        return students.filter((student) => {
+            const searchMatch =
+                !query ||
+                student.fullName?.toLowerCase().includes(query) ||
+                student.grNumber?.toLowerCase().includes(query) ||
+                student.parentMobile?.includes(query);
+
+            const standardMatch = standard
+                ? String(student.standard) === standard
+                : true;
+
+            const divisionMatch = division
+                ? String(student.division).toUpperCase() === division
+                : true;
+
+            const statusMatch = status ? student.status === status : true;
+
+            return (
+                searchMatch &&
+                standardMatch &&
+                divisionMatch &&
+                statusMatch
+            );
+        });
+    }, [students, search, standard, division, status]);
+
     const handleSearch = async () => {
-
         if (!search.trim()) {
-
             loadStudents();
-
             return;
-
         }
 
         try {
+            setLoading(true);
 
             const response = await searchStudents(search);
-
             setStudents(response.students || []);
-
         } catch (error) {
-
-            console.log(error);
-
+            console.error(error);
+            showMessage(
+                error.response?.data?.message || "Unable to search students."
+            );
+        } finally {
+            setLoading(false);
         }
-
     };
 
     const handleDelete = async (id) => {
+        const confirmed = window.confirm("Do you want to delete this student?");
 
-        if (!window.confirm("Delete this student?")) {
-
-            return;
-
-        }
+        if (!confirmed) return;
 
         try {
-
             await deleteStudent(id);
 
-            loadStudents();
+            setStudents((previousStudents) =>
+                previousStudents.filter((student) => student._id !== id)
+            );
 
+            showMessage(t("students.studentDeleted"));
         } catch (error) {
-
-            console.log(error);
-
+            console.error(error);
+            showMessage(
+                error.response?.data?.message || "Unable to delete student."
+            );
         }
-
     };
 
-    const filteredStudents = students.filter((student) => {
-
-        const standardMatch = standard
-            ? String(student.standard) === standard
-            : true;
-
-        const divisionMatch = division
-            ? student.division === division
-            : true;
-
-        const statusMatch = status
-            ? student.status === status
-            : true;
-
-        return standardMatch && divisionMatch && statusMatch;
-
-    });
+    const resetFilters = () => {
+        setSearch("");
+        setStandard("");
+        setDivision("");
+        setStatus("");
+        loadStudents();
+    };
 
     return (
-
-        <div className="space-y-6">
-
-            <div className="flex items-center justify-between">
-
+        <div className="space-y-6 pb-10">
+            <section className="flex flex-col gap-4 rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
                 <div>
-
-                    <h1 className="text-3xl font-bold text-gray-800">
-
-                        Students
-
-                    </h1>
-
-                    <p className="text-gray-500 mt-1">
-
-                        Total Students : {filteredStudents.length}
-
+                    <p className="flex items-center gap-2 text-sm font-semibold text-blue-100">
+                        <Users className="h-4 w-4" />
+                        {t("sidebar.students")}
                     </p>
 
+                    <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+                        {t("students.students")}
+                    </h1>
+
+                    <p className="mt-2 text-sm text-blue-100 sm:text-base">
+                        {filteredStudents.length} students found
+                    </p>
                 </div>
 
-                {
+                {canManageStudents && (
+                    <button
+                        type="button"
+                        onClick={() => navigate("/students/add")}
+                        className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 font-bold text-indigo-700 shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-50"
+                    >
+                        <Plus className="h-5 w-5" />
+                        {t("students.addStudent")}
+                    </button>
+                )}
+            </section>
 
-                    (user?.role === "admin" || user?.role === "teacher") && (
+            {message && (
+                <div className="rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 text-sm font-semibold text-indigo-700">
+                    {message}
+                </div>
+            )}
 
-                        <button
-                            onClick={() => navigate("/students/add")}
-                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl transition"
-                        >
-
-                            <Plus size={18} />
-
-                            Add Student
-
-                        </button>
-
-                    )
-
-                }
-
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                      <div className="md:col-span-2">
-
-                        <div className="flex items-center bg-gray-100 rounded-xl px-4">
-
-                            <Search
-                                size={18}
-                                className="text-gray-500"
-                            />
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="grid gap-4 lg:grid-cols-12">
+                    <div className="lg:col-span-4">
+                        <div className="flex rounded-xl border border-slate-300 bg-slate-50 p-1 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-100">
+                            <div className="flex items-center px-3 text-slate-400">
+                                <Search className="h-5 w-5" />
+                            </div>
 
                             <input
                                 type="text"
-                                placeholder="Search by Student Name..."
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="flex-1 bg-transparent px-3 py-3 outline-none"
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        handleSearch();
+                                    }
+                                }}
+                                placeholder={`${t("common.search")} by name or GR number`}
+                                className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none"
                             />
 
                             <button
+                                type="button"
                                 onClick={handleSearch}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-indigo-700"
                             >
-
-                                Search
-
+                                {t("common.search")}
                             </button>
-
                         </div>
-
                     </div>
 
                     <select
                         value={standard}
-                        onChange={(e) => setStandard(e.target.value)}
-                        className="border rounded-xl px-4 py-3 outline-none"
+                        onChange={(event) => setStandard(event.target.value)}
+                        className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 lg:col-span-2"
                     >
+                        <option value="">All Classes</option>
 
-                        <option value="">
-
-                            All Standards
-
-                        </option>
-
-                        {
-
-                            [...Array(12)].map((_, index) => (
-
-                                <option
-                                    key={index + 1}
-                                    value={index + 1}
-                                >
-
-                                    Standard {index + 1}
-
-                                </option>
-
-                            ))
-
-                        }
-
+                        {classOptions.map((item) => (
+                            <option key={item} value={item}>
+                                Class {item}
+                            </option>
+                        ))}
                     </select>
 
                     <select
                         value={division}
-                        onChange={(e) => setDivision(e.target.value)}
-                        className="border rounded-xl px-4 py-3 outline-none"
+                        onChange={(event) => setDivision(event.target.value)}
+                        className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 lg:col-span-2"
                     >
+                        <option value="">All Divisions</option>
 
-                        <option value="">
-
-                            All Divisions
-
-                        </option>
-
-                        <option value="A">A</option>
-
-                        <option value="B">B</option>
-
-                        <option value="C">C</option>
-
-                        <option value="D">D</option>
-
+                        {divisionOptions.map((item) => (
+                            <option key={item} value={item}>
+                                Division {item}
+                            </option>
+                        ))}
                     </select>
 
                     <select
                         value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className="border rounded-xl px-4 py-3 outline-none"
+                        onChange={(event) => setStatus(event.target.value)}
+                        className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 lg:col-span-2"
                     >
-
-                        <option value="">
-
-                            All Status
-
-                        </option>
-
-                        <option value="Active">
-
-                            Active
-
-                        </option>
-
+                        <option value="">All Status</option>
+                        <option value="Active">{t("students.active")}</option>
                         <option value="Inactive">
-
-                            Inactive
-
+                            {t("students.inactive")}
                         </option>
-
                     </select>
 
-                </div>
-
-                <div className="flex justify-end mt-5">
-
                     <button
-                        onClick={() => {
-
-                            setSearch("");
-
-                            setStandard("");
-
-                            setDivision("");
-
-                            setStatus("");
-
-                            loadStudents();
-
-                        }}
-                        className="flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-xl transition"
+                        type="button"
+                        onClick={resetFilters}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-950 lg:col-span-2"
                     >
-
-                        <RefreshCw size={18} />
-
-                        Reset Filters
-
+                        <RefreshCw className="h-4 w-4" />
+                        {t("common.reset")}
                     </button>
-
                 </div>
+            </section>
 
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-
-                {
-
-                    loading ? (
-
-                        <div className="py-20 flex justify-center">
-
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-
+            <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                {loading ? (
+                    <div className="flex min-h-80 items-center justify-center">
+                        <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+                    </div>
+                ) : filteredStudents.length === 0 ? (
+                    <div className="flex min-h-80 flex-col items-center justify-center p-8 text-center">
+                        <div className="rounded-3xl bg-slate-100 p-5 text-slate-400">
+                            <Users className="h-12 w-12" />
                         </div>
 
-                    ) : (
+                        <h2 className="mt-5 text-xl font-bold text-slate-700">
+                            {t("common.noData")}
+                        </h2>
 
-                        <table className="w-full">
+                        <p className="mt-2 text-sm text-slate-500">
+                            Try changing the search or filter options.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="hidden overflow-x-auto lg:block">
+                            <table className="w-full">
+                                <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    <tr>
+                                        <th className="px-6 py-4">Student</th>
+                                        <th className="px-6 py-4">
+                                            {t("students.grNumber")}
+                                        </th>
+                                        <th className="px-6 py-4">
+                                            {t("students.class")}
+                                        </th>
+                                        <th className="px-6 py-4">
+                                            {t("students.parentMobile")}
+                                        </th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4 text-center">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
 
-                            <thead className="bg-gray-100">
-
-                                <tr>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Photo
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        GR Number
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Student
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Class
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Parent Mobile
-
-                                    </th>
-
-                                    <th className="text-left px-6 py-4">
-
-                                        Status
-
-                                    </th>
-
-                                    <th className="text-center px-6 py-4">
-
-                                        Actions
-
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-                                                              {
-
-                                    filteredStudents.length === 0 ? (
-
-                                        <tr>
-
-                                            <td
-                                                colSpan="7"
-                                                className="text-center py-16"
-                                            >
-
-                                                <Users
-                                                    size={60}
-                                                    className="mx-auto text-gray-300 mb-4"
-                                                />
-
-                                                <h2 className="text-xl font-semibold text-gray-600">
-
-                                                    No Students Found
-
-                                                </h2>
-
-                                                <p className="text-gray-400 mt-2">
-
-                                                    Try changing the search or filters.
-
-                                                </p>
-
-                                            </td>
-
-                                        </tr>
-
-                                    ) : (
-
-                                        filteredStudents.map((student) => (
-
-                                            <tr
-                                                key={student._id}
-                                                className="border-t hover:bg-gray-50 transition"
-                                            >
-
-                                                <td className="px-6 py-4">
-
-                                                    {
-
-                                                        student.photo ? (
-
-                                                            <img
-                                                                src={`http://localhost:5000/uploads/students/${student.photo}`}
-                                                                alt={student.fullName}
-                                                                className="w-12 h-12 rounded-full object-cover"
-                                                            />
-
-                                                        ) : (
-
-                                                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">
-
-                                                                {student.fullName.charAt(0)}
-
-                                                            </div>
-
-                                                        )
-
-                                                    }
-
-                                                </td>
-
-                                                <td className="px-6 py-4 font-medium">
-
-                                                    {student.grNumber}
-
-                                                </td>
-
-                                                <td className="px-6 py-4">
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredStudents.map((student) => (
+                                        <tr
+                                            key={student._id}
+                                            className="transition hover:bg-indigo-50/40"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    {student.photo ? (
+                                                        <img
+                                                            src={getStudentPhoto(
+                                                                student.photo
+                                                            )}
+                                                            alt={
+                                                                student.fullName
+                                                            }
+                                                            className="h-11 w-11 rounded-xl object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 font-extrabold text-indigo-600">
+                                                            {student.fullName
+                                                                ?.charAt(0)
+                                                                ?.toUpperCase()}
+                                                        </div>
+                                                    )}
 
                                                     <div>
-
-                                                        <p className="font-semibold text-gray-800">
-
+                                                        <p className="font-bold text-slate-800">
                                                             {student.fullName}
-
                                                         </p>
-
-                                                        <p className="text-sm text-gray-500">
-
-                                                            {student.gender}
-
+                                                        <p className="text-xs text-slate-500">
+                                                            {student.gender ||
+                                                                "—"}
                                                         </p>
-
                                                     </div>
+                                                </div>
+                                            </td>
 
-                                                </td>
+                                            <td className="px-6 py-4 font-semibold text-slate-700">
+                                                {student.grNumber}
+                                            </td>
 
-                                                <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-sm text-slate-700">
+                                                Class {student.standard} -{" "}
+                                                {student.division}
+                                            </td>
 
-                                                    Std {student.standard} - {student.division}
+                                            <td className="px-6 py-4 text-sm text-slate-700">
+                                                {student.parentMobile || "—"}
+                                            </td>
 
-                                                </td>
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                                                        student.status ===
+                                                        "Active"
+                                                            ? "bg-emerald-100 text-emerald-700"
+                                                            : "bg-rose-100 text-rose-700"
+                                                    }`}
+                                                >
+                                                    {student.status ||
+                                                        t("students.active")}
+                                                </span>
+                                            </td>
 
-                                                <td className="px-6 py-4">
-
-                                                    {student.parentMobile}
-
-                                                </td>
-
-                                                <td className="px-6 py-4">
-
-                                                    <span
-                                                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            student.status === "Active"
-                                                                ? "bg-green-100 text-green-700"
-                                                                : "bg-red-100 text-red-700"
-                                                        }`}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/students/${student._id}`
+                                                            )
+                                                        }
+                                                        className="rounded-lg bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-600 hover:text-white"
+                                                        title={t("common.view")}
                                                     >
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
 
-                                                        {student.status}
-
-                                                    </span>
-
-                                                </td>
-
-                                                <td className="px-6 py-4">
-
-                                                    <div className="flex items-center justify-center gap-2">
-
+                                                    {canManageStudents && (
                                                         <button
-                                                            onClick={() => navigate(`/students/${student._id}`)}
-                                                            className="px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm transition"
+                                                            type="button"
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/students/edit/${student._id}`
+                                                                )
+                                                            }
+                                                            className="rounded-lg bg-amber-100 p-2 text-amber-700 transition hover:bg-amber-500 hover:text-white"
+                                                            title={t(
+                                                                "common.edit"
+                                                            )}
                                                         >
-
-                                                            View
-
+                                                            <Pencil className="h-4 w-4" />
                                                         </button>
+                                                    )}
 
-                                                        {
+                                                    {canDeleteStudents && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    student._id
+                                                                )
+                                                            }
+                                                            className="rounded-lg bg-rose-100 p-2 text-rose-700 transition hover:bg-rose-600 hover:text-white"
+                                                            title={t(
+                                                                "common.delete"
+                                                            )}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
-                                                            (user?.role === "admin" || user?.role === "teacher") && (
+                        <div className="divide-y divide-slate-100 lg:hidden">
+                            {filteredStudents.map((student) => (
+                                <article
+                                    key={student._id}
+                                    className="p-5 transition hover:bg-indigo-50/40"
+                                >
+                                    <div className="flex gap-3">
+                                        {student.photo ? (
+                                            <img
+                                                src={getStudentPhoto(
+                                                    student.photo
+                                                )}
+                                                alt={student.fullName}
+                                                className="h-14 w-14 rounded-2xl object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 font-extrabold text-indigo-600">
+                                                {student.fullName
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase()}
+                                            </div>
+                                        )}
 
-                                                                <button
-                                                                    onClick={() => navigate(`/students/edit/${student._id}`)}
-                                                                    className="px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm transition"
-                                                                >
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="min-w-0">
+                                                    <h3 className="truncate font-bold text-slate-800">
+                                                        {student.fullName}
+                                                    </h3>
+                                                    <p className="text-sm text-slate-500">
+                                                        GR: {student.grNumber}
+                                                    </p>
+                                                </div>
 
-                                                                    Edit
+                                                <span
+                                                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
+                                                        student.status ===
+                                                        "Active"
+                                                            ? "bg-emerald-100 text-emerald-700"
+                                                            : "bg-rose-100 text-rose-700"
+                                                    }`}
+                                                >
+                                                    {student.status ||
+                                                        t("students.active")}
+                                                </span>
+                                            </div>
 
-                                                                </button>
+                                            <p className="mt-2 text-sm text-slate-600">
+                                                Class {student.standard} -{" "}
+                                                {student.division}
+                                            </p>
 
+                                            <div className="mt-4 flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/students/${student._id}`
+                                                        )
+                                                    }
+                                                    className="rounded-lg bg-blue-100 p-2 text-blue-700"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </button>
+
+                                                {canManageStudents && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/students/edit/${student._id}`
                                                             )
-
                                                         }
+                                                        className="rounded-lg bg-amber-100 p-2 text-amber-700"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </button>
+                                                )}
 
-                                                        {
-
-                                                            user?.role === "admin" && (
-
-                                                                <button
-                                                                    onClick={() => handleDelete(student._id)}
-                                                                    className="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
-                                                                >
-
-                                                                    Delete
-
-                                                                </button>
-
+                                                {canDeleteStudents && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                student._id
                                                             )
-
                                                         }
-
-                                                    </div>
-
-                                                </td>
-
-                                            </tr>
-
-                                        ))
-
-                                    )
-
-                                }
-
-                            </tbody>
-
-                        </table>
-
-                    )
-
-                }
-
-            </div>
-
+                                                        className="rounded-lg bg-rose-100 p-2 text-rose-700"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </section>
         </div>
-
     );
-
 };
 
 export default Students;

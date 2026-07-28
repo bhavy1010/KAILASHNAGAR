@@ -2,15 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// ======================================================
-// Create Upload Folder if not exists
-// ======================================================
-
-const createUploader = (
-    folderName,
-    allowedTypes,
-    maxSizeMB
-) => {
+const createUploader = (folderName, allowedTypes, maxSizeMB) => {
     const uploadPath = path.join(
         __dirname,
         "..",
@@ -19,9 +11,7 @@ const createUploader = (
     );
 
     if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, {
-            recursive: true
-        });
+        fs.mkdirSync(uploadPath, { recursive: true });
     }
 
     const storage = multer.diskStorage({
@@ -30,11 +20,10 @@ const createUploader = (
         },
 
         filename: (req, file, cb) => {
-            const uniqueName =
-                Date.now() +
-                "-" +
-                Math.round(Math.random() * 1e9) +
-                path.extname(file.originalname);
+            const extension = path.extname(file.originalname);
+            const uniqueName = `${Date.now()}-${Math.round(
+                Math.random() * 1e9
+            )}${extension}`;
 
             cb(null, uniqueName);
         }
@@ -46,7 +35,9 @@ const createUploader = (
         } else {
             cb(
                 new Error(
-                    `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`
+                    `Invalid file type. Allowed types: ${allowedTypes.join(
+                        ", "
+                    )}`
                 ),
                 false
             );
@@ -62,10 +53,6 @@ const createUploader = (
     });
 };
 
-// ======================================================
-// Image Types
-// ======================================================
-
 const IMAGE_TYPES = [
     "image/jpeg",
     "image/jpg",
@@ -73,11 +60,7 @@ const IMAGE_TYPES = [
     "image/webp"
 ];
 
-// ======================================================
-// Document Types
-// ======================================================
-
-const DOC_TYPES = [
+const DOCUMENT_TYPES = [
     ...IMAGE_TYPES,
     "application/pdf",
     "application/msword",
@@ -86,59 +69,36 @@ const DOC_TYPES = [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 ];
 
-// ======================================================
-// Uploaders
-// ======================================================
+// Student photo upload
+const upload = createUploader("students", IMAGE_TYPES, 2);
+const uploadStudent = upload;
 
-// Student Photo
-const upload = createUploader(
-    "students",
-    IMAGE_TYPES,
-    2
-);
+// Teacher photo upload
+const uploadTeacher = createUploader("teachers", IMAGE_TYPES, 2);
 
-// Teacher Photo
-const uploadTeacher = createUploader(
-    "teachers",
-    IMAGE_TYPES,
-    2
-);
+// School logo, achievement photo, and Today's Rose photo
+const uploadHome = createUploader("home", IMAGE_TYPES, 5);
 
-// Public Home Page:
-// Achievement photos and Today's Rose photos
-const uploadHome = createUploader(
-    "home",
-    IMAGE_TYPES,
-    5
-);
-
-// Homework Question Upload
+// Homework question/attachment upload
 const uploadHomework = createUploader(
     "homework/questions",
-    DOC_TYPES,
+    DOCUMENT_TYPES,
     10
 );
 
-// Homework Submission Upload
+// Student homework submission upload
 const uploadSubmission = createUploader(
     "homework/submissions",
-    DOC_TYPES,
+    DOCUMENT_TYPES,
     10
 );
 
-// Notice Attachment Upload
-const uploadNotice = createUploader(
-    "notices",
-    DOC_TYPES,
-    10
-);
-
-// ======================================================
-// Export All Uploaders
-// ======================================================
+// Notice attachment upload
+const uploadNotice = createUploader("notices", DOCUMENT_TYPES, 10);
 
 module.exports = {
     upload,
+    uploadStudent,
     uploadTeacher,
     uploadHome,
     uploadHomework,

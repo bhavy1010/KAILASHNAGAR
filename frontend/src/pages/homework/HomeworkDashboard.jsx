@@ -8,475 +8,627 @@ import {
     AlertTriangle,
     Star,
     ListChecks,
-    TrendingUp
+    TrendingUp,
+    Loader2,
+    Eye
 } from "lucide-react";
 
 import { getHomeworkDashboard } from "../../services/homeworkService";
+import { useLanguage } from "../../context/LanguageContext";
+
+const BAR_COLORS = [
+    "bg-indigo-500",
+    "bg-blue-500",
+    "bg-purple-500",
+    "bg-cyan-500",
+    "bg-teal-500",
+    "bg-violet-500",
+    "bg-sky-500",
+    "bg-fuchsia-500"
+];
 
 const HomeworkDashboard = () => {
-
     const navigate = useNavigate();
+    const { language } = useLanguage();
+    const isGujarati = language === "gu";
 
     const [data, setData] = useState(null);
-
     const [loading, setLoading] = useState(true);
 
+    const text = {
+        title: isGujarati ? "હોમવર્ક ડેશબોર્ડ" : "Homework Dashboard",
+        subtitle: isGujarati
+            ? "બધા હોમવર્ક અને સબમિશનનો સારાંશ."
+            : "Overview of all homework and submissions.",
+        createHomework: isGujarati ? "હોમવર્ક બનાવો" : "Create Homework",
+        total: isGujarati ? "કુલ" : "Total",
+        active: isGujarati ? "સક્રિય" : "Active",
+        overdue: isGujarati ? "મુદત પૂર્ણ" : "Overdue",
+        submissions: isGujarati ? "સબમિશન" : "Submissions",
+        graded: isGujarati ? "ચકાસેલ" : "Graded",
+        pendingGrade: isGujarati ? "ચકાસણી બાકી" : "Pending Grade",
+        subjectWise: isGujarati
+            ? "વિષય પ્રમાણે હોમવર્ક"
+            : "Subject-wise Homework",
+        subjectWiseText: isGujarati
+            ? "દરેક વિષય માટે હોમવર્કની સંખ્યા"
+            : "Number of assignments per subject",
+        noHomeworkData: isGujarati
+            ? "હજુ સુધી કોઈ હોમવર્ક ડેટા નથી."
+            : "No homework data yet",
+        assignment: isGujarati ? "હોમવર્ક" : "assignment",
+        assignments: isGujarati ? "હોમવર્ક" : "assignments",
+        quickActions: isGujarati ? "ઝડપી વિકલ્પો" : "Quick Actions",
+        allHomework: isGujarati ? "બધું હોમવર્ક" : "All Homework",
+        createNew: isGujarati ? "નવું બનાવો" : "Create New",
+        closed: isGujarati ? "બંધ" : "Closed",
+        submissionOverview: isGujarati
+            ? "સબમિશનનો સારાંશ"
+            : "Submission Overview",
+        pendingGrading: isGujarati
+            ? "ચકાસણી બાકી"
+            : "Pending Grading",
+        recentHomework: isGujarati
+            ? "તાજેતરનું હોમવર્ક"
+            : "Recent Homework",
+        recentHomeworkText: isGujarati
+            ? "છેલ્લા 7 બનાવેલા હોમવર્ક"
+            : "Last 7 assignments created",
+        viewAll: isGujarati ? "બધું જુઓ" : "View All",
+        noHomework: isGujarati
+            ? "હજુ સુધી કોઈ હોમવર્ક બનાવવામાં આવ્યું નથી."
+            : "No homework created yet",
+        homeworkTitle: isGujarati ? "શીર્ષક" : "Title",
+        subject: isGujarati ? "વિષય" : "Subject",
+        teacher: isGujarati ? "શિક્ષક" : "Teacher",
+        dueDate: isGujarati ? "છેલ્લી તારીખ" : "Due Date",
+        status: isGujarati ? "સ્થિતિ" : "Status",
+        action: isGujarati ? "કાર્ય" : "Action",
+        view: isGujarati ? "જુઓ" : "View",
+        loading: isGujarati
+            ? "હોમવર્ક ડેશબોર્ડ લોડ થઈ રહ્યું છે..."
+            : "Loading homework dashboard..."
+    };
+
+    const statusLabel = {
+        Active: text.active,
+        Closed: text.closed
+    };
+
     useEffect(() => {
-
         loadDashboard();
-
     }, []);
 
     const loadDashboard = async () => {
-
         try {
-
             setLoading(true);
 
             const response = await getHomeworkDashboard();
-
-            setData(response);
-
+            setData(response || {});
         } catch (error) {
-
             console.log(error);
-
+            setData({});
         } finally {
-
             setLoading(false);
-
         }
+    };
 
+    const stats = data?.stats || {};
+    const recentHomework = data?.recentHomework || [];
+    const subjectWise = data?.subjectWise || [];
+
+    const maxSubjectCount =
+        subjectWise.length > 0
+            ? Math.max(...subjectWise.map((item) => Number(item.count || 0)))
+            : 1;
+
+    const totalSubmissions = Number(stats.totalSubmissions || 0);
+    const gradedSubmissions = Number(stats.gradedSubmissions || 0);
+    const pendingGrading = Number(stats.pendingGrading || 0);
+
+    const gradedPercent =
+        totalSubmissions > 0
+            ? Math.round((gradedSubmissions / totalSubmissions) * 100)
+            : 0;
+
+    const pendingPercent =
+        totalSubmissions > 0
+            ? Math.round((pendingGrading / totalSubmissions) * 100)
+            : 0;
+
+    const formatDate = (date) => {
+        if (!date) return "-";
+
+        return new Date(date).toLocaleDateString(
+            isGujarati ? "gu-IN" : "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
     };
 
     if (loading) {
-
         return (
-
-            <div className="h-full flex items-center justify-center">
-
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-
+            <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 bg-[#F5F7FB] px-4">
+                <Loader2 size={40} className="animate-spin text-[#5B2EFF]" />
+                <p className="font-medium text-slate-500">{text.loading}</p>
             </div>
-
         );
-
     }
 
-    const stats = data?.stats || {};
-
-    const recentHomework = data?.recentHomework || [];
-
-    const subjectWise = data?.subjectWise || [];
-
-    const maxSubjectCount = subjectWise.length > 0
-        ? Math.max(...subjectWise.map((s) => s.count))
-        : 1;
+    const statCards = [
+        {
+            title: text.total,
+            value: stats.totalHomework || 0,
+            icon: BookOpen,
+            iconClass: "bg-indigo-100 text-indigo-600",
+            valueClass: "text-slate-800"
+        },
+        {
+            title: text.active,
+            value: stats.activeHomework || 0,
+            icon: CheckCircle,
+            iconClass: "bg-green-100 text-green-600",
+            valueClass: "text-green-600"
+        },
+        {
+            title: text.overdue,
+            value: stats.overdueHomework || 0,
+            icon: AlertTriangle,
+            iconClass: "bg-red-100 text-red-600",
+            valueClass: "text-red-600"
+        },
+        {
+            title: text.submissions,
+            value: stats.totalSubmissions || 0,
+            icon: ListChecks,
+            iconClass: "bg-blue-100 text-blue-600",
+            valueClass: "text-blue-600"
+        },
+        {
+            title: text.graded,
+            value: stats.gradedSubmissions || 0,
+            icon: Star,
+            iconClass: "bg-purple-100 text-purple-600",
+            valueClass: "text-purple-600"
+        },
+        {
+            title: text.pendingGrade,
+            value: stats.pendingGrading || 0,
+            icon: Clock,
+            iconClass: "bg-orange-100 text-orange-600",
+            valueClass: "text-orange-600"
+        }
+    ];
 
     return (
-
-        <div className="p-8 bg-[#F5F7FB] min-h-full">
-
-            {/* ============================== Header ============================== */}
-
-            <div className="flex items-center justify-between mb-8">
-
+        <div className="min-h-full bg-[#F5F7FB] p-4 sm:p-6 lg:p-8">
+            <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
+                    <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
+                        {text.title}
+                    </h1>
 
-                    <h1 className="text-4xl font-bold text-slate-800">Homework Dashboard</h1>
-
-                    <p className="mt-2 text-slate-500">Overview of all homework and submissions.</p>
-
+                    <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                        {text.subtitle}
+                    </p>
                 </div>
 
                 <button
                     onClick={() => navigate("/homework/create")}
-                    className="flex items-center gap-2 bg-[#5B2EFF] hover:bg-[#4724db] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#5B2EFF] px-5 py-3 font-semibold text-white shadow-lg transition hover:scale-[1.02] hover:bg-[#4724db] sm:w-auto"
                 >
-
                     <Plus size={18} />
-
-                    Create Homework
-
+                    {text.createHomework}
                 </button>
-
             </div>
 
-            {/* ============================== Stat Cards ============================== */}
+            <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+                {statCards.map((card) => {
+                    const Icon = card.icon;
 
-            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-5 mb-8">
+                    return (
+                        <div
+                            key={card.title}
+                            className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
+                        >
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-sm text-slate-500">
+                                        {card.title}
+                                    </p>
 
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-500">Total</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.totalHomework || 0}</h3>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-                            <BookOpen size={22} className="text-indigo-600" />
-                        </div>
-                    </div>
-                </div>
+                                    <h3
+                                        className={`mt-1 text-3xl font-bold ${card.valueClass}`}
+                                    >
+                                        {card.value}
+                                    </h3>
+                                </div>
 
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-500">Active</p>
-                            <h3 className="text-3xl font-bold text-green-600 mt-1">{stats.activeHomework || 0}</h3>
+                                <div
+                                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}
+                                >
+                                    <Icon size={22} />
+                                </div>
+                            </div>
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                            <CheckCircle size={22} className="text-green-600" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-500">Overdue</p>
-                            <h3 className="text-3xl font-bold text-red-600 mt-1">{stats.overdueHomework || 0}</h3>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
-                            <AlertTriangle size={22} className="text-red-600" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-500">Submissions</p>
-                            <h3 className="text-3xl font-bold text-blue-600 mt-1">{stats.totalSubmissions || 0}</h3>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                            <ListChecks size={22} className="text-blue-600" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-500">Graded</p>
-                            <h3 className="text-3xl font-bold text-purple-600 mt-1">{stats.gradedSubmissions || 0}</h3>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <Star size={22} className="text-purple-600" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow border border-gray-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-500">Pending Grade</p>
-                            <h3 className="text-3xl font-bold text-orange-600 mt-1">{stats.pendingGrading || 0}</h3>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                            <Clock size={22} className="text-orange-600" />
-                        </div>
-                    </div>
-                </div>
-
+                    );
+                })}
             </div>
 
-            {/* ============================== Charts Row ============================== */}
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-7 mb-7">
-
-                {/* Subject-wise chart */}
-
-                <div className="bg-white rounded-3xl shadow border border-gray-100 p-8">
-
-                    <div className="flex items-center gap-3 mb-8">
-
-                        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+            <div className="mb-7 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">
+                    <div className="mb-7 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
                             <TrendingUp size={20} className="text-indigo-600" />
                         </div>
 
                         <div>
-                            <h2 className="text-xl font-bold">Subject-wise Homework</h2>
-                            <p className="text-gray-500 text-sm">Number of assignments per subject</p>
-                        </div>
+                            <h2 className="text-xl font-bold text-slate-800">
+                                {text.subjectWise}
+                            </h2>
 
+                            <p className="text-sm text-slate-500">
+                                {text.subjectWiseText}
+                            </p>
+                        </div>
                     </div>
 
-                    {subjectWise.length === 0 && (
-
-                        <div className="py-12 text-center text-gray-400">
-                            No homework data yet
+                    {subjectWise.length === 0 ? (
+                        <div className="py-12 text-center text-slate-400">
+                            {text.noHomeworkData}
                         </div>
-
-                    )}
-
-                    {subjectWise.length > 0 && (
-
+                    ) : (
                         <div className="space-y-5">
-
                             {subjectWise.map((item, index) => {
-
-                                const percent = Math.round((item.count / maxSubjectCount) * 100);
-
-                                const colors = [
-                                    "bg-indigo-500",
-                                    "bg-blue-500",
-                                    "bg-purple-500",
-                                    "bg-cyan-500",
-                                    "bg-teal-500",
-                                    "bg-violet-500",
-                                    "bg-sky-500",
-                                    "bg-fuchsia-500"
-                                ];
-
-                                const color = colors[index % colors.length];
-
-                                return (
-
-                                    <div key={item._id}>
-
-                                        <div className="flex justify-between mb-2">
-
-                                            <span className="font-semibold text-gray-700">
-                                                {item._id}
-                                            </span>
-
-                                            <span className="font-semibold text-gray-500">
-                                                {item.count} assignment{item.count !== 1 ? "s" : ""}
-                                            </span>
-
-                                        </div>
-
-                                        <div className="h-3 rounded-full bg-gray-100 overflow-hidden">
-
-                                            <div
-                                                className={"h-full rounded-full " + color + " transition-all duration-700"}
-                                                style={{ width: percent + "%" }}
-                                            ></div>
-
-                                        </div>
-
-                                    </div>
-
+                                const count = Number(item.count || 0);
+                                const percent = Math.round(
+                                    (count / maxSubjectCount) * 100
                                 );
 
+                                return (
+                                    <div key={item._id || index}>
+                                        <div className="mb-2 flex items-center justify-between gap-3">
+                                            <span className="truncate font-semibold text-slate-700">
+                                                {item._id || "-"}
+                                            </span>
+
+                                            <span className="shrink-0 text-sm font-semibold text-slate-500">
+                                                {count}{" "}
+                                                {count === 1
+                                                    ? text.assignment
+                                                    : text.assignments}
+                                            </span>
+                                        </div>
+
+                                        <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                                            <div
+                                                className={`h-full rounded-full ${
+                                                    BAR_COLORS[
+                                                        index % BAR_COLORS.length
+                                                    ]
+                                                } transition-all duration-700`}
+                                                style={{ width: `${percent}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
                             })}
-
                         </div>
-
                     )}
-
                 </div>
 
-                {/* Quick Stats Panel */}
+                <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">
+                    <h2 className="mb-6 text-xl font-bold text-slate-800">
+                        {text.quickActions}
+                    </h2>
 
-                <div className="bg-white rounded-3xl shadow border border-gray-100 p-8">
-
-                    <h2 className="text-xl font-bold mb-8">Quick Actions</h2>
-
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-
+                    <div className="mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <button
                             onClick={() => navigate("/homework/list")}
-                            className="h-24 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold transition hover:scale-105"
+                            className="min-h-24 rounded-2xl bg-indigo-500 px-4 py-5 font-semibold text-white transition hover:-translate-y-1 hover:bg-indigo-600"
                         >
-                            All Homework
+                            {text.allHomework}
                         </button>
 
                         <button
                             onClick={() => navigate("/homework/create")}
-                            className="h-24 rounded-2xl bg-purple-500 hover:bg-purple-600 text-white font-semibold transition hover:scale-105"
+                            className="min-h-24 rounded-2xl bg-purple-500 px-4 py-5 font-semibold text-white transition hover:-translate-y-1 hover:bg-purple-600"
                         >
-                            Create New
+                            {text.createNew}
                         </button>
 
                         <button
                             onClick={() => navigate("/homework/list")}
-                            className="h-24 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-semibold transition hover:scale-105"
+                            className="min-h-24 rounded-2xl bg-orange-500 px-4 py-5 font-semibold text-white transition hover:-translate-y-1 hover:bg-orange-600"
                         >
-                            Pending Grade
+                            {text.pendingGrade}
                         </button>
 
                         <button
-                            onClick={() => navigate("/homework/list?status=Closed")}
-                            className="h-24 rounded-2xl bg-gray-500 hover:bg-gray-600 text-white font-semibold transition hover:scale-105"
+                            onClick={() =>
+                                navigate("/homework/list?status=Closed")
+                            }
+                            className="min-h-24 rounded-2xl bg-slate-500 px-4 py-5 font-semibold text-white transition hover:-translate-y-1 hover:bg-slate-600"
                         >
-                            Closed
+                            {text.closed}
                         </button>
-
                     </div>
 
-                    {/* Submission overview */}
+                    <div className="rounded-2xl bg-slate-50 p-5">
+                        <p className="mb-4 text-sm font-semibold text-slate-600">
+                            {text.submissionOverview}
+                        </p>
 
-                    <div className="bg-gray-50 rounded-2xl p-5">
+                        <div className="space-y-4">
+                            <div>
+                                <div className="mb-2 flex items-center justify-between gap-3">
+                                    <span className="text-sm text-slate-500">
+                                        {text.graded}
+                                    </span>
 
-                        <p className="text-sm font-semibold text-gray-600 mb-4">Submission Overview</p>
+                                    <span className="font-bold text-green-600">
+                                        {gradedSubmissions}
+                                    </span>
+                                </div>
 
-                        <div className="space-y-3">
-
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-500">Graded</span>
-                                <span className="font-bold text-green-600">{stats.gradedSubmissions || 0}</span>
+                                <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                                    <div
+                                        className="h-full rounded-full bg-green-500 transition-all duration-700"
+                                        style={{ width: `${gradedPercent}%` }}
+                                    />
+                                </div>
                             </div>
 
-                            <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
-                                <div
-                                    className="h-full rounded-full bg-green-500"
-                                    style={{ width: stats.totalSubmissions > 0 ? Math.round((stats.gradedSubmissions / stats.totalSubmissions) * 100) + "%" : "0%" }}
-                                ></div>
-                            </div>
+                            <div>
+                                <div className="mb-2 flex items-center justify-between gap-3">
+                                    <span className="text-sm text-slate-500">
+                                        {text.pendingGrading}
+                                    </span>
 
-                            <div className="flex justify-between items-center mt-2">
-                                <span className="text-sm text-gray-500">Pending Grading</span>
-                                <span className="font-bold text-orange-600">{stats.pendingGrading || 0}</span>
-                            </div>
+                                    <span className="font-bold text-orange-600">
+                                        {pendingGrading}
+                                    </span>
+                                </div>
 
-                            <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
-                                <div
-                                    className="h-full rounded-full bg-orange-500"
-                                    style={{ width: stats.totalSubmissions > 0 ? Math.round((stats.pendingGrading / stats.totalSubmissions) * 100) + "%" : "0%" }}
-                                ></div>
+                                <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                                    <div
+                                        className="h-full rounded-full bg-orange-500 transition-all duration-700"
+                                        style={{ width: `${pendingPercent}%` }}
+                                    />
+                                </div>
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
 
-            {/* ============================== Recent Homework Table ============================== */}
-
-            <div className="bg-white rounded-3xl shadow border border-gray-100 overflow-hidden">
-
-                <div className="flex items-center justify-between p-7 border-b">
-
+            <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+                <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
                     <div>
-                        <h2 className="text-xl font-bold">Recent Homework</h2>
-                        <p className="text-gray-500 mt-1">Last 7 assignments created</p>
+                        <h2 className="text-xl font-bold text-slate-800">
+                            {text.recentHomework}
+                        </h2>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                            {text.recentHomeworkText}
+                        </p>
                     </div>
 
                     <button
                         onClick={() => navigate("/homework/list")}
-                        className="text-indigo-600 font-semibold hover:underline text-sm"
+                        className="font-semibold text-indigo-600 transition hover:underline"
                     >
-                        View All
+                        {text.viewAll}
                     </button>
-
                 </div>
 
-                {recentHomework.length === 0 && (
+                {recentHomework.length === 0 ? (
+                    <div className="px-5 py-16 text-center">
+                        <BookOpen
+                            size={50}
+                            className="mx-auto mb-4 text-slate-300"
+                        />
 
-                    <div className="py-16 text-center">
-
-                        <BookOpen size={50} className="mx-auto text-gray-300 mb-4" />
-
-                        <p className="text-gray-500">No homework created yet</p>
-
+                        <p className="text-slate-500">{text.noHomework}</p>
                     </div>
+                ) : (
+                    <>
+                        <div className="hidden overflow-x-auto lg:block">
+                            <table className="w-full min-w-[900px]">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.homeworkTitle}
+                                        </th>
 
-                )}
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.subject}
+                                        </th>
 
-                {recentHomework.length > 0 && (
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.teacher}
+                                        </th>
 
-                    <table className="w-full">
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.dueDate}
+                                        </th>
 
-                        <thead className="bg-gray-50">
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                                            {text.status}
+                                        </th>
 
-                            <tr>
+                                        <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+                                            {text.action}
+                                        </th>
+                                    </tr>
+                                </thead>
 
-                                <th className="text-left px-6 py-4">Title</th>
+                                <tbody>
+                                    {recentHomework.map((homework) => {
+                                        const overdue =
+                                            homework.status === "Active" &&
+                                            new Date(homework.dueDate) <
+                                                new Date();
 
-                                <th className="text-left px-6 py-4">Subject</th>
+                                        return (
+                                            <tr
+                                                key={homework._id}
+                                                className="border-t border-slate-100 transition hover:bg-slate-50"
+                                            >
+                                                <td className="px-6 py-4">
+                                                    <p className="font-semibold text-slate-800">
+                                                        {homework.title}
+                                                    </p>
+                                                </td>
 
-                                <th className="text-left px-6 py-4">Teacher</th>
+                                                <td className="px-6 py-4">
+                                                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                                        {homework.subject || "-"}
+                                                    </span>
+                                                </td>
 
-                                <th className="text-left px-6 py-4">Due Date</th>
+                                                <td className="px-6 py-4 text-slate-600">
+                                                    {homework.teacherId?.fullName ||
+                                                        "-"}
+                                                </td>
 
-                                <th className="text-left px-6 py-4">Status</th>
+                                                <td className="px-6 py-4">
+                                                    <p
+                                                        className={`text-sm font-semibold ${
+                                                            overdue
+                                                                ? "text-red-600"
+                                                                : "text-slate-700"
+                                                        }`}
+                                                    >
+                                                        {formatDate(homework.dueDate)}
+                                                    </p>
 
-                                <th className="text-center px-6 py-4">Action</th>
+                                                    {overdue && (
+                                                        <p className="mt-1 text-xs text-red-400">
+                                                            {text.overdue}
+                                                        </p>
+                                                    )}
+                                                </td>
 
-                            </tr>
+                                                <td className="px-6 py-4">
+                                                    <span
+                                                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                            homework.status === "Active"
+                                                                ? "bg-green-100 text-green-700"
+                                                                : "bg-slate-100 text-slate-600"
+                                                        }`}
+                                                    >
+                                                        {statusLabel[homework.status] ||
+                                                            homework.status}
+                                                    </span>
+                                                </td>
 
-                        </thead>
+                                                <td className="px-6 py-4 text-center">
+                                                    <button
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/homework/${homework._id}`
+                                                            )
+                                                        }
+                                                        className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                                                    >
+                                                        <Eye size={16} />
+                                                        {text.view}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
 
-                        <tbody>
-
-                            {recentHomework.map((hw) => {
-
-                                const overdue = hw.status === "Active" && new Date(hw.dueDate) < new Date();
+                        <div className="divide-y divide-slate-100 lg:hidden">
+                            {recentHomework.map((homework) => {
+                                const overdue =
+                                    homework.status === "Active" &&
+                                    new Date(homework.dueDate) < new Date();
 
                                 return (
+                                    <div
+                                        key={homework._id}
+                                        className="p-4 sm:p-5"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="truncate font-semibold text-slate-800">
+                                                    {homework.title}
+                                                </p>
 
-                                    <tr key={hw._id} className="border-t hover:bg-gray-50 transition">
+                                                <p className="mt-1 text-sm text-slate-500">
+                                                    {homework.teacherId?.fullName ||
+                                                        "-"}
+                                                </p>
+                                            </div>
 
-                                        <td className="px-6 py-4">
-                                            <p className="font-semibold text-gray-800">{hw.title}</p>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
-                                                {hw.subject}
-                                            </span>
-                                        </td>
-
-                                        <td className="px-6 py-4 text-gray-600">
-                                            {hw.teacherId?.fullName || "-"}
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <p className={"font-semibold text-sm " + (overdue ? "text-red-600" : "text-gray-700")}>
-                                                {new Date(hw.dueDate).toLocaleDateString(undefined, {
-                                                    day: "2-digit",
-                                                    month: "short",
-                                                    year: "numeric"
-                                                })}
-                                            </p>
-                                            {overdue && (
-                                                <p className="text-xs text-red-400 mt-1">Overdue</p>
-                                            )}
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            {hw.status === "Active" ? (
-                                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                                    Active
-                                                </span>
-                                            ) : (
-                                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                                    Closed
-                                                </span>
-                                            )}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={() => navigate("/homework/" + hw._id)}
-                                                className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm transition"
+                                            <span
+                                                className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                                                    homework.status === "Active"
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-slate-100 text-slate-600"
+                                                }`}
                                             >
-                                                View
-                                            </button>
-                                        </td>
+                                                {statusLabel[homework.status] ||
+                                                    homework.status}
+                                            </span>
+                                        </div>
 
-                                    </tr>
+                                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-slate-400">
+                                                    {text.subject}
+                                                </p>
 
+                                                <p className="mt-1 font-medium text-slate-700">
+                                                    {homework.subject || "-"}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-slate-400">
+                                                    {text.dueDate}
+                                                </p>
+
+                                                <p
+                                                    className={`mt-1 font-medium ${
+                                                        overdue
+                                                            ? "text-red-600"
+                                                            : "text-slate-700"
+                                                    }`}
+                                                >
+                                                    {formatDate(homework.dueDate)}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() =>
+                                                navigate(
+                                                    `/homework/${homework._id}`
+                                                )
+                                            }
+                                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                                        >
+                                            <Eye size={16} />
+                                            {text.view}
+                                        </button>
+                                    </div>
                                 );
-
                             })}
-
-                        </tbody>
-
-                    </table>
-
+                        </div>
+                    </>
                 )}
-
             </div>
-
         </div>
-
     );
-
 };
 
 export default HomeworkDashboard;
