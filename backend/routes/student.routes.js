@@ -4,6 +4,8 @@ const authMiddleware = require("../middlewares/auth.middleware");
 
 const roleMiddleware = require("../middlewares/role.middleware");
 
+const validate = require("../middlewares/validate.middleware");
+
 const router = express.Router();
 
 const {
@@ -26,6 +28,11 @@ const {
 
 } = require("../controllers/student.controller");
 
+const {
+    createStudentSchema,
+    updateStudentSchema
+} = require("../validators/student.validator");
+
 router.post(
 
     "/add",
@@ -33,6 +40,8 @@ router.post(
     authMiddleware,
 
     roleMiddleware("admin", "teacher"),
+
+    validate(createStudentSchema),
 
     createStudent
 
@@ -85,6 +94,8 @@ router.put(
     authMiddleware,
 
     roleMiddleware("admin", "teacher"),
+
+    validate(updateStudentSchema),
 
     updateStudent
 

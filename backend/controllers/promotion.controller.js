@@ -16,6 +16,41 @@ const promoteStudents = async (
 
         } = req.body;
 
+        if (!fromClassId || !toClassId) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                "fromClassId and toClassId are required"
+
+            });
+
+        }
+
+        // Resolve both Class documents up front - the Student model
+        // has no classId field, so students are matched by their
+        // standard + division instead (same as the rest of the app,
+        // e.g. getHomeworkForStudent).
+        const sourceClass =
+        await Class.findById(
+            fromClassId
+        );
+
+        if (!sourceClass) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                "Source Class Not Found"
+
+            });
+
+        }
+
         const targetClass =
         await Class.findById(
             toClassId
@@ -34,13 +69,20 @@ const promoteStudents = async (
 
         }
 
+        const studentFilter = {
+
+            standard:
+            sourceClass.standard,
+
+            division:
+            sourceClass.division
+
+        };
+
         const students =
-        await Student.find({
-
-            classId:
-            fromClassId
-
-        });
+        await Student.find(
+            studentFilter
+        );
 
         if (
             students.length === 0
@@ -59,17 +101,11 @@ const promoteStudents = async (
 
         await Student.updateMany(
 
-            {
-                classId:
-                fromClassId
-            },
+            studentFilter,
 
             {
 
                 $set: {
-
-                    classId:
-                    targetClass._id,
 
                     standard:
                     targetClass.standard,

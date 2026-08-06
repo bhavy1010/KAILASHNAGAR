@@ -28,6 +28,8 @@
   "navbar": {
     "searchPlaceholder": "Search anything...",
     "notifications": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "You're all caught up",
     "profile": "Profile",
     "logout": "Logout",
     "switchToGujarati": "ગુજરાતી",
@@ -48,7 +50,8 @@
     "logout": "Logout",
     "adminPanel": "Admin Panel",
     "teacherPanel": "Teacher Panel",
-    "studentPanel": "Student Panel"
+    "studentPanel": "Student Panel",
+    "library": "Library"
   },
   "dashboard": {
     "dashboard": "Dashboard",
@@ -160,6 +163,9 @@
     "important": "Important",
     "normal": "Normal"
   },
+  "timetable": {
+    "title": "Class Timetable", "academicSchedule": "Academic Schedule", "subtitle": "Plan periods and multiple break times for each class.", "selectClass": "Select class", "create": "Create Timetable", "edit": "Edit Timetable", "print": "Print / Save PDF", "weeklySchedule": "Weekly Schedule", "chooseClass": "Choose a class", "time": "Time", "loading": "Loading timetable…", "noTimetable": "No timetable yet", "noTimetableAdmin": "Create the weekly schedule for this class.", "noTimetableStudent": "Please ask your teacher or administrator to add it.", "chooseClassMessage": "Choose a class to view its timetable.", "editor": "Timetable Editor", "editorSubtitle": "Add class periods or as many breaks as you need.", "day": "Day", "start": "Start", "end": "End", "type": "Type", "subjectBreak": "Subject / Break", "teacher": "Teacher", "class": "Class", "break": "Break", "selectTeacher": "Select teacher", "breakTime": "Break time", "addEntry": "Add period or break", "save": "Save Timetable", "cancel": "Cancel", "monday": "Monday", "tuesday": "Tuesday", "wednesday": "Wednesday", "thursday": "Thursday", "friday": "Friday", "saturday": "Saturday"
+  },
   "home": {
     "welcome": "Welcome to",
     "about": "About Our School",
@@ -187,6 +193,8 @@
     "login": "Login",
     "signup": "Sign Up",
     "logout": "Logout",
+     "getStarted": "Get Started",
+    "goToDashboard": "Go to Dashboard",
     "mobileNumber": "Mobile Number",
     "grNumber": "GR Number",
     "password": "Password",

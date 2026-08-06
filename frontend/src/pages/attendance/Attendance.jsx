@@ -82,13 +82,15 @@ const ALL_FEATURES = [
 
     {
         title: "Leave Management",
+        studentTitle: "My Leaves",
         description: "Review, approve or reject student leave requests in one place.",
+        studentDescription: "Apply for leave and track the status of your requests.",
         path: "/attendance/leaves",
         icon: Plane,
         color: "from-orange-500 to-orange-400",
         bg: "bg-orange-50",
         iconColor: "text-orange-600",
-        roles: ["admin", "teacher"]
+        roles: ["admin", "teacher", "student"]
     },
 
     {
@@ -270,13 +272,17 @@ const Attendance = () => {
 
                                 <h3 className="text-xl font-bold text-gray-800 mb-3">
 
-                                    {feature.title}
+                                    {user?.role === "student" && feature.studentTitle
+                                        ? feature.studentTitle
+                                        : feature.title}
 
                                 </h3>
 
                                 <p className="text-gray-500 text-sm leading-relaxed">
 
-                                    {feature.description}
+                                    {user?.role === "student" && feature.studentDescription
+                                        ? feature.studentDescription
+                                        : feature.description}
 
                                 </p>
 

@@ -2,7 +2,8 @@
 
 const Attendance = require("../models/Attendance");
 const Student = require("../models/Student");
-const XLSX = require("xlsx");
+const ExcelJS = require("exceljs");
+const { isClassTeacherOf } = require("../services/classTeacher.service");
 // ======================================================
 // Mark / Update Class Attendance (Upsert)
 // POST /api/attendance/class
@@ -19,6 +20,27 @@ const markClassAttendance = async (req, res) => {
             records,
             academicYearId
         } = req.body;
+
+        // Only admins, or the teacher formally assigned as this
+        // class's Class Teacher, can mark attendance for it.
+        if (req.user.role === "teacher") {
+
+            const authorized = await isClassTeacherOf(
+                req.user.id,
+                standard,
+                division
+            );
+
+            if (!authorized) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: `You are not the assigned Class Teacher for Standard ${standard} - ${division}, so you can't mark attendance for this class.`
+                });
+
+            }
+
+        }
 
         const attendance = await Attendance.findOneAndUpdate(
 
@@ -66,8 +88,7 @@ const markClassAttendance = async (req, res) => {
         res.status(500).json({
 
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
 
         });
 
@@ -812,6 +833,8 @@ const exportAttendanceExcel = async (req, res) => {
                         doc.attendanceDate
                     ).toLocaleDateString("en-IN"),
 
+                    dateValue: doc.attendanceDate,
+
                     "Student Name": record.fullName || "",
 
                     "GR Number": record.grNumber || "",
@@ -833,32 +856,162 @@ const exportAttendanceExcel = async (req, res) => {
             );
         }
 
-        const workbook = XLSX.utils.book_new();
+        // ==================================================
+        // Group rows class-wise (Standard + Division) so each
+        // class gets its own sheet in the workbook, instead of
+        // one flat sheet mixing every class together.
+        // ==================================================
 
-        const worksheet = XLSX.utils.json_to_sheet(
-            excelRows
+        const classGroups = new Map();
+
+        excelRows.forEach((row) => {
+            const key = `${row.Standard}-${row.Division}`;
+
+            if (!classGroups.has(key)) {
+                classGroups.set(key, {
+                    standard: row.Standard,
+                    division: row.Division,
+                    rows: []
+                });
+            }
+
+            classGroups.get(key).rows.push(row);
+        });
+
+        // Sort classes by Standard (numeric) then Division (alphabetic)
+        const sortedGroups = Array.from(classGroups.values()).sort(
+            (a, b) => {
+                if (a.standard !== b.standard) {
+                    return Number(a.standard) - Number(b.standard);
+                }
+
+                return String(a.division).localeCompare(
+                    String(b.division)
+                );
+            }
         );
 
-        worksheet["!cols"] = [
-            { wch: 14 },
-            { wch: 28 },
-            { wch: 16 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 14 },
-            { wch: 35 }
+        const workbook = new ExcelJS.Workbook();
+
+        const usedSheetNames = new Set();
+
+        const buildSheetName = (standard, division) => {
+            // Excel sheet names: max 31 chars, no \ / ? * [ ] :
+            let name = `Std ${standard} - ${division}`
+                .replace(/[\\/?*\[\]:]/g, "-")
+                .slice(0, 31);
+
+            let finalName = name;
+            let suffix = 1;
+
+            while (usedSheetNames.has(finalName)) {
+                suffix += 1;
+
+                const suffixText = ` (${suffix})`;
+
+                finalName =
+                    name.slice(0, 31 - suffixText.length) + suffixText;
+            }
+
+            usedSheetNames.add(finalName);
+
+            return finalName;
+        };
+
+        const HEADERS = [
+            "Date",
+            "Student Name",
+            "GR Number",
+            "Status",
+            "Remarks"
         ];
 
-        XLSX.utils.book_append_sheet(
-            workbook,
-            worksheet,
-            "Attendance Report"
-        );
+        const HEADER_WIDTHS = [14, 28, 16, 14, 35];
 
-        const excelBuffer = XLSX.write(workbook, {
-            bookType: "xlsx",
-            type: "buffer"
-        });
+        // Applies the bold-header styling + column widths every
+        // sheet in this workbook uses.
+        const addHeaderRow = (worksheet) => {
+
+            worksheet.columns = HEADERS.map((header, index) => ({
+                header,
+                width: HEADER_WIDTHS[index]
+            }));
+
+            const headerRow = worksheet.getRow(1);
+
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true };
+            });
+
+        };
+
+        if (sortedGroups.length === 0) {
+            // No data matched the filters - still ship a usable file
+            // with headers instead of an empty/broken workbook.
+            const emptySheet = workbook.addWorksheet(
+                "Attendance Report"
+            );
+
+            addHeaderRow(emptySheet);
+
+        } else {
+
+            sortedGroups.forEach((group) => {
+
+                // Sort within the class: date desc, then name asc
+                const sortedRows = [...group.rows].sort((a, b) => {
+                    const dateDiff =
+                        new Date(b.dateValue) - new Date(a.dateValue);
+
+                    if (dateDiff !== 0) {
+                        return dateDiff;
+                    }
+
+                    return String(a["Student Name"]).localeCompare(
+                        String(b["Student Name"])
+                    );
+                });
+
+                const sheetName = buildSheetName(
+                    group.standard,
+                    group.division
+                );
+
+                const worksheet = workbook.addWorksheet(sheetName);
+
+                addHeaderRow(worksheet);
+
+                // Add rows, inserting one blank spacer row every
+                // time the date changes so each day is visually
+                // separated from the next.
+                let previousDate = null;
+
+                sortedRows.forEach((row) => {
+
+                    if (
+                        previousDate !== null &&
+                        previousDate !== row.Date
+                    ) {
+                        worksheet.addRow([]);
+                    }
+
+                    worksheet.addRow([
+                        row.Date,
+                        row["Student Name"],
+                        row["GR Number"],
+                        row.Status,
+                        row.Remarks
+                    ]);
+
+                    previousDate = row.Date;
+
+                });
+
+            });
+
+        }
+
+        const excelBuffer = await workbook.xlsx.writeBuffer();
 
         const fileName =
             `attendance-report-${Date.now()}.xlsx`;

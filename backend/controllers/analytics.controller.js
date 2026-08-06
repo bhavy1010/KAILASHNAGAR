@@ -1,5 +1,6 @@
 const Result = require("../models/Result");
 const Student = require("../models/Student");
+const Class = require("../models/Class");
 
 const getClassAnalytics = async (
     req,
@@ -11,9 +12,31 @@ const getClassAnalytics = async (
         const classId =
         req.params.classId;
 
+        // Student has no classId field - resolve the Class doc to
+        // its standard + division and match students that way
+        // instead (same pattern as getHomeworkForStudent).
+        const classDoc =
+        await Class.findById(
+            classId
+        );
+
+        if (!classDoc) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                "Class Not Found"
+
+            });
+
+        }
+
         const students =
         await Student.find({
-            classId
+            standard: classDoc.standard,
+            division: classDoc.division
         });
 
         const rankings = [];

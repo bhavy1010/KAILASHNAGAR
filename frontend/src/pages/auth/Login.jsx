@@ -66,9 +66,9 @@ const Login = () => {
         forgotAdminPassword: isGujarati
             ? "એડમિન પાસવર્ડ ભૂલી ગયા?"
             : "Forgot Admin Password?",
-        teacherForgotHint: isGujarati
-            ? "પાસવર્ડ ભૂલી ગયા? કૃપા કરીને એડમિનનો સંપર્ક કરો."
-            : "Forgot password? Please contact the Admin.",
+        forgotTeacherPassword: isGujarati
+            ? "શિક્ષક પાસવર્ડ ભૂલી ગયા?"
+            : "Forgot Teacher Password?",
         loggingIn: isGujarati ? "લોગિન થઈ રહ્યું છે..." : "Logging In...",
         login: isGujarati ? "લોગિન" : "Login",
         newAdmin: isGujarati ? "નવા એડમિનિસ્ટ્રેટર?" : "New administrator?",
@@ -169,7 +169,7 @@ const Login = () => {
     const isAdmin = role === "admin";
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-[#2B1CFF] via-[#4328FF] to-[#5D1FFF]">
+        <div className="auth-shell flex min-h-screen bg-gradient-to-br from-[#160a45] via-[#3120a2] to-[#7c2ad8]">
             {/* ============================== Left Panel ============================== */}
 
             <div className="hidden w-1/2 flex-col justify-between p-10 text-white lg:flex xl:p-14">
@@ -242,7 +242,7 @@ const Login = () => {
             {/* ============================== Right Panel — Form ============================== */}
 
             <div className="flex flex-1 items-center justify-center p-4 sm:p-8">
-                <div className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl sm:p-10">
+                <div className="auth-card w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl sm:p-10">
                     <div className="mb-2 flex items-start justify-between gap-3 lg:hidden">
                         <div className="flex items-center gap-2">
                             <ShieldCheck size={22} className="text-[#5B2EFF]" />
@@ -388,9 +388,12 @@ const Login = () => {
                             )}
 
                             {role === "teacher" && (
-                                <p className="text-xs text-gray-500">
-                                    {text.teacherForgotHint}
-                                </p>
+                                <Link
+                                    to="/teacher/forgot-password"
+                                    className="font-semibold text-[#5B2EFF] hover:underline"
+                                >
+                                    {text.forgotTeacherPassword}
+                                </Link>
                             )}
                         </div>
 

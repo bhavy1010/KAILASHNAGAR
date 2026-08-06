@@ -10,6 +10,7 @@ import Home from "./pages/home/Home";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotAdminPassword from "./pages/auth/ForgotAdminPassword";
+import ForgotTeacherPassword from "./pages/auth/ForgotTeacherpassword";
 
 import Dashboard from "./pages/dashboard/Dashboard";
 
@@ -65,6 +66,8 @@ import StudentNoticeBoard from "./pages/notices/StudentNoticeBoard";
 import HomeManagement from "./pages/home/HomeManagement";
 
 import Settings from "./pages/settings/Settings";
+import TimetableDashboard from "./pages/timetable/TimetableDashboard";
+import Library from "./pages/library/Library";
 
 const App = () => {
     return (
@@ -89,6 +92,11 @@ const App = () => {
             <Route
                 path="/admin/forgot-password"
                 element={<ForgotAdminPassword />}
+            />
+
+            <Route
+                path="/teacher/forgot-password"
+                element={<ForgotTeacherPassword />}
             />
 
             {/* Protected Pages */}
@@ -555,6 +563,16 @@ const App = () => {
                 />
 
                 {/* Settings: will be replaced later by Home Content Management */}
+
+                <Route
+                    path="/timetable"
+                    element={
+                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                            <TimetableDashboard />
+                        </RoleRoute>
+                    }
+                />
+                <Route path="/library" element={<RoleRoute roles={["admin", "teacher", "student"]}><Library /></RoleRoute>} />
 
                 <Route
                     path="/settings"

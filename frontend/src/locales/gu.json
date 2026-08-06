@@ -28,6 +28,8 @@
   "navbar": {
     "searchPlaceholder": "કંઈપણ શોધો...",
     "notifications": "સૂચનાઓ",
+    "markAllRead": "બધું વાંચેલું ચિહ્નિત કરો",
+    "noNotifications": "તમે બધું જોઈ લીધું છે",
     "profile": "પ્રોફાઇલ",
     "logout": "લૉગ આઉટ",
     "switchToGujarati": "ગુજરાતી",
@@ -48,7 +50,8 @@
     "logout": "લૉગ આઉટ",
     "adminPanel": "એડમિન પેનલ",
     "teacherPanel": "શિક્ષક પેનલ",
-    "studentPanel": "વિદ્યાર્થી પેનલ"
+    "studentPanel": "વિદ્યાર્થી પેનલ",
+    "library": "લાઇબ્રેરી"
   },
   "dashboard": {
     "dashboard": "ડેશબોર્ડ",
@@ -160,6 +163,9 @@
     "important": "મહત્વપૂર્ણ",
     "normal": "સામાન્ય"
   },
+  "timetable": {
+    "title": "વર્ગ સમયપત્રક", "academicSchedule": "શૈક્ષણિક સમયસૂચિ", "subtitle": "દરેક વર્ગ માટે પિરિયડ અને એકથી વધુ વિરામ સમય ગોઠવો.", "selectClass": "વર્ગ પસંદ કરો", "create": "સમયપત્રક બનાવો", "edit": "સમયપત્રક સંપાદિત કરો", "print": "પ્રિન્ટ / PDF સાચવો", "weeklySchedule": "સાપ્તાહિક સમયપત્રક", "chooseClass": "વર્ગ પસંદ કરો", "time": "સમય", "loading": "સમયપત્રક લોડ થઈ રહ્યું છે…", "noTimetable": "હજુ સમયપત્રક નથી", "noTimetableAdmin": "આ વર્ગ માટે સાપ્તાહિક સમયપત્રક બનાવો.", "noTimetableStudent": "કૃપા કરીને શિક્ષક અથવા એડમિનને સમયપત્રક ઉમેરવા કહો.", "chooseClassMessage": "સમયપત્રક જોવા માટે વર્ગ પસંદ કરો.", "editor": "સમયપત્રક સંપાદક", "editorSubtitle": "વર્ગના પિરિયડ અથવા જરૂરી હોય તેટલા વિરામ ઉમેરો.", "day": "દિવસ", "start": "શરૂઆત", "end": "અંત", "type": "પ્રકાર", "subjectBreak": "વિષય / વિરામ", "teacher": "શિક્ષક", "class": "વર્ગ", "break": "વિરામ", "selectTeacher": "શિક્ષક પસંદ કરો", "breakTime": "વિરામ સમય", "addEntry": "પિરિયડ અથવા વિરામ ઉમેરો", "save": "સમયપત્રક સાચવો", "cancel": "રદ કરો", "monday": "સોમવાર", "tuesday": "મંગળવાર", "wednesday": "બુધવાર", "thursday": "ગુરુવાર", "friday": "શુક્રવાર", "saturday": "શનિવાર"
+  },
   "home": {
     "welcome": "સ્વાગત છે",
     "about": "અમારી શાળા વિશે",
@@ -187,6 +193,8 @@
     "login": "લૉગ ઇન",
     "signup": "સાઇન અપ",
     "logout": "લૉગ આઉટ",
+     "getStarted": "શરૂ કરો",
+    "goToDashboard": "ડેશબોર્ડ પર જાઓ",
     "mobileNumber": "મોબાઇલ નંબર",
     "grNumber": "GR નંબર",
     "password": "પાસવર્ડ",

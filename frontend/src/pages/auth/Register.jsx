@@ -120,8 +120,8 @@ const Register = () => {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#2B1CFF] via-[#4328FF] to-[#5D1FFF] p-4 sm:p-8">
-            <div className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl sm:p-10">
+        <div className="auth-shell flex min-h-screen items-center justify-center bg-gradient-to-br from-[#160a45] via-[#3120a2] to-[#7c2ad8] p-4 sm:p-8">
+            <div className="auth-card w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl sm:p-10">
                 <div className="mb-3 flex justify-end">
                     <button
                         onClick={toggleLanguage}

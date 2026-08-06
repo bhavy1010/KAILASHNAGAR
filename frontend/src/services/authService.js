@@ -42,13 +42,25 @@ export const resetAdminPassword = async (resetData) => {
     return response.data;
 };
 
+export const resetTeacherPassword = async (resetData) => {
+    const response = await api.post(
+        "/auth/reset-teacher-password",
+        resetData
+    );
+
+    return response.data;
+};
+
 // ======================================================
 // Save Authentication
+// The real session lives in an httpOnly cookie the server
+// sets on login - JS can't read/write that cookie, and
+// that's intentional (protects against XSS token theft).
+// We only cache the user's display info here for fast UI
+// hydration; actual auth is always re-verified via /auth/me.
 // ======================================================
 
 export const saveAuth = (token, user) => {
-    localStorage.setItem("token", token);
-
     localStorage.setItem(
         "user",
         JSON.stringify(user)
@@ -56,7 +68,7 @@ export const saveAuth = (token, user) => {
 };
 
 // ======================================================
-// Get Current User
+// Get Current User (cached, for instant UI paint)
 // ======================================================
 
 export const getCurrentUser = () => {
@@ -66,26 +78,40 @@ export const getCurrentUser = () => {
 };
 
 // ======================================================
-// Get Token
+// Restore Session
+// Asks the backend to verify the httpOnly cookie and
+// return the logged-in user. This is what actually decides
+// whether the user is still logged in - the cookie persists
+// across browser restarts until they log out.
 // ======================================================
 
-export const getToken = () => {
-    return localStorage.getItem("token");
-};
+export const fetchCurrentUser = async () => {
+    try {
+        const response = await api.get("/auth/me");
 
-// ======================================================
-// Check Authentication
-// ======================================================
+        if (response.data.success) {
+            return response.data.user;
+        }
 
-export const isAuthenticated = () => {
-    return !!localStorage.getItem("token");
+        return null;
+    } catch (error) {
+        return null;
+    }
 };
 
 // ======================================================
 // Logout
+// Tells the backend to clear the auth cookie, then clears
+// the locally cached user info.
 // ======================================================
 
-export const logoutUser = () => {
-    localStorage.removeItem("token");
+export const logoutUser = async () => {
+    try {
+        await api.post("/auth/logout");
+    } catch (error) {
+        // Even if the request fails (e.g. offline), still clear
+        // local state below so the UI reflects a logged-out state.
+    }
+
     localStorage.removeItem("user");
 };

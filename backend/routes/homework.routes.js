@@ -4,6 +4,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
+const validate = require("../middlewares/validate.middleware");
 const { uploadHomework } = require("../middlewares/upload.middleware");
 
 const {
@@ -18,6 +19,11 @@ const {
     getHomeworkDashboard
 
 } = require("../controllers/homework.controller");
+
+const {
+    createHomeworkSchema,
+    updateHomeworkSchema
+} = require("../validators/homework.validator");
 
 // Dashboard — specific routes before dynamic :id
 router.get(
@@ -50,6 +56,7 @@ router.post(
     authMiddleware,
     roleMiddleware("admin", "teacher"),
     uploadHomework.single("attachment"),
+    validate(createHomeworkSchema),
     createHomework
 );
 
@@ -64,6 +71,7 @@ router.put(
     authMiddleware,
     roleMiddleware("admin", "teacher"),
     uploadHomework.single("attachment"),
+    validate(updateHomeworkSchema),
     updateHomework
 );
 

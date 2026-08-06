@@ -48,6 +48,26 @@ const saveResult = async (req, res) => {
 
         }
 
+        // Validate up front - a subject with totalMarks <= 0 can't
+        // produce a meaningful percentage/grade, so reject it with a
+        // clear error instead of silently computing NaN -> "F" later.
+        const invalidSubject = (subjectResults || []).find(
+            (sub) => !(sub.totalMarks > 0)
+        );
+
+        if (invalidSubject) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    `Subject "${invalidSubject.subjectName || invalidSubject.subject || ""}" must have totalMarks greater than 0`
+
+            });
+
+        }
+
         // Calculate totals
         let totalMarks = 0;
         let totalObtained = 0;
@@ -59,9 +79,11 @@ const saveResult = async (req, res) => {
 
             if (!isPassed) allPassed = false;
 
-            const subPercent = Math.round(
-                (sub.marksObtained / sub.totalMarks) * 100
-            );
+            const subPercent = sub.totalMarks > 0
+                ? Math.round(
+                    (sub.marksObtained / sub.totalMarks) * 100
+                )
+                : 0;
 
             totalMarks += sub.totalMarks;
             totalObtained += sub.marksObtained;
@@ -119,8 +141,7 @@ const saveResult = async (req, res) => {
         res.status(500).json({
 
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
 
         });
 

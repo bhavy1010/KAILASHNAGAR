@@ -11,7 +11,12 @@ const connectDB = async () => {
 
     } catch (error) {
 
-        console.log(error)
+        // Don't let the server silently boot with no database - every
+        // request would just hang/timeout later with a confusing error.
+        // Fail loudly and immediately instead.
+        console.error("MongoDB connection failed:", error.message)
+
+        process.exit(1)
 
     }
 }

@@ -4,7 +4,13 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
+const validate = require("../middlewares/validate.middleware");
 const { uploadSubmission } = require("../middlewares/upload.middleware");
+
+const {
+    submitHomeworkSchema,
+    gradeSubmissionSchema
+} = require("../validators/homeworkSubmission.validator");
 
 const {
 
@@ -42,6 +48,7 @@ router.post(
     authMiddleware,
     roleMiddleware("student"),
     uploadSubmission.single("fileAttachment"),
+    validate(submitHomeworkSchema),
     submitHomework
 );
 
@@ -49,6 +56,7 @@ router.put(
     "/:id/grade",
     authMiddleware,
     roleMiddleware("admin", "teacher"),
+    validate(gradeSubmissionSchema),
     gradeSubmission
 );
 

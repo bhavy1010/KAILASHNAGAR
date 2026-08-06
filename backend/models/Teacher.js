@@ -130,7 +130,7 @@ teacherSchema.methods.generateAuthToken = function () {
         process.env.JWT_SECRET,
 
         {
-            expiresIn: "7d"
+            expiresIn: "30d"
         }
 
     );

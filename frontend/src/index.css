@@ -10,6 +10,76 @@
 
 @import "tailwindcss";
 
+.field {
+    height: 2.75rem;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: #fff;
+    padding: 0 0.75rem;
+    color: #334155;
+    outline: none;
+}
+
+.field:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px #e0e7ff;
+}
+
+@media print {
+    .no-print, aside, header { display: none !important; }
+    body { background: #fff !important; }
+    table { min-width: 0 !important; font-size: 10px; }
+}
+
+/* Auth pages: layered glass background and refined form card. */
+.auth-shell {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.auth-shell::before,
+.auth-shell::after {
+    position: absolute;
+    z-index: -1;
+    width: 30rem;
+    height: 30rem;
+    border-radius: 9999px;
+    content: "";
+    filter: blur(20px);
+    opacity: .5;
+}
+
+.auth-shell::before {
+    top: -12rem;
+    left: -10rem;
+    background: radial-gradient(circle, #52d8ff 0%, transparent 68%);
+}
+
+.auth-shell::after {
+    right: -12rem;
+    bottom: -14rem;
+    background: radial-gradient(circle, #ff79c6 0%, transparent 67%);
+}
+
+.auth-card {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, .72);
+    box-shadow: 0 32px 90px rgba(13, 7, 52, .38), 0 3px 0 rgba(255, 255, 255, .55) inset;
+}
+
+.auth-card::before {
+    position: absolute;
+    top: 0;
+    right: 2.25rem;
+    left: 2.25rem;
+    height: 4px;
+    border-radius: 0 0 99px 99px;
+    background: linear-gradient(90deg, #23c4ff, #6453ff 48%, #e761c8);
+    content: "";
+}
+
 /* ==========================================================
    Theme Tokens
 ========================================================== */
@@ -75,4 +145,3 @@
 .input:focus {
     border-color: #5b2eff;
 }
-

@@ -3,6 +3,9 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
+const validate = require("../middlewares/validate.middleware");
+
+const { saveResultSchema } = require("../validators/result.validator");
 
 const {
     saveResult,
@@ -19,6 +22,6 @@ router.get("/entry/:examId", authMiddleware, roleMiddleware("admin", "teacher"),
 router.get("/class/:examId", authMiddleware, getClassResults);
 router.get("/student/:studentId/exam/:examId", authMiddleware, getStudentResult);
 router.get("/student/:studentId", authMiddleware, getAllResultsForStudent);
-router.post("/save", authMiddleware, roleMiddleware("admin", "teacher"), saveResult);
+router.post("/save", authMiddleware, roleMiddleware("admin", "teacher"), validate(saveResultSchema), saveResult);
 
 module.exports = router;

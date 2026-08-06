@@ -4,6 +4,11 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
+const validate = require("../middlewares/validate.middleware");
+
+const {
+    markClassAttendanceSchema
+} = require("../validators/attendance.validator");
 
 const {
     markClassAttendance,
@@ -25,6 +30,8 @@ router.post(
     authMiddleware,
 
     roleMiddleware("admin", "teacher"),
+
+    validate(markClassAttendanceSchema),
 
     markClassAttendance
 

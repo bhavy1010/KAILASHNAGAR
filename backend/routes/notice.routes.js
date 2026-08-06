@@ -3,6 +3,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
+const validate = require("../middlewares/validate.middleware");
 const { uploadNotice } = require("../middlewares/upload.middleware");
 
 const {
@@ -18,6 +19,11 @@ const {
     getNoticeDashboard
 } = require("../controllers/notice.controller");
 
+const {
+    createNoticeSchema,
+    updateNoticeSchema
+} = require("../validators/notice.validator");
+
 // Specific routes before dynamic :id
 router.get("/dashboard", authMiddleware, roleMiddleware("admin"), getNoticeDashboard);
 router.get("/all", authMiddleware, getAllNotices);
@@ -30,6 +36,7 @@ router.post(
     authMiddleware,
     roleMiddleware("admin", "teacher"),
     uploadNotice.single("attachment"),
+    validate(createNoticeSchema),
     createNotice
 );
 
@@ -40,6 +47,7 @@ router.put(
     authMiddleware,
     roleMiddleware("admin", "teacher"),
     uploadNotice.single("attachment"),
+    validate(updateNoticeSchema),
     updateNotice
 );
 

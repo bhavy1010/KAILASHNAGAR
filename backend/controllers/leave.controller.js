@@ -1,18 +1,42 @@
 const Leave = require("../models/Leave");
+const Teacher = require("../models/Teacher");
+const User = require("../models/User");
+const { notifyUser } = require("../services/notification.service");
+const { isClassTeacherOf } = require("../services/classTeacher.service");
 
 // ======================================================
-// Apply For Leave
+// Apply For Leave (Student only)
 // ======================================================
 
 const createLeave = async (req, res) => {
 
     try {
 
+        if (req.user.role !== "student") {
+
+            // Defense in depth — the route is already locked to the
+            // "student" role via roleMiddleware, but a multer error
+            // could theoretically reach here before that check in some
+            // edge cases, so this stays as a second guard.
+            return res.status(403).json({
+                success: false,
+                message: "Only students can apply for leave"
+            });
+
+        }
+
+        const { leaveType, fromDate, toDate, reason } = req.body;
+
         const leave = await Leave.create({
 
-            ...req.body,
-
-            appliedBy: req.user.id
+            studentId: req.user.id,
+            leaveType,
+            fromDate,
+            toDate,
+            reason,
+            attachment: req.file ? req.file.filename : "",
+            status: "Pending",
+            seenByStudent: true
 
         });
 
@@ -36,7 +60,9 @@ const createLeave = async (req, res) => {
 };
 
 // ======================================================
-// Get All Leaves (filterable by status)
+// Get Leaves
+// Students only see their own leave requests.
+// Teachers / Admins see all leave requests (filterable).
 // ======================================================
 
 const getLeaves = async (req, res) => {
@@ -51,7 +77,11 @@ const getLeaves = async (req, res) => {
 
         }
 
-        if (req.query.studentId) {
+        if (req.user.role === "student") {
+
+            filter.studentId = req.user.id;
+
+        } else if (req.query.studentId) {
 
             filter.studentId = req.query.studentId;
 
@@ -62,6 +92,17 @@ const getLeaves = async (req, res) => {
             .populate("studentId", "fullName grNumber standard division")
 
             .sort({ createdAt: -1 });
+
+        // Mark fetched leaves as seen once the student views their list
+
+        if (req.user.role === "student") {
+
+            await Leave.updateMany(
+                { studentId: req.user.id, seenByStudent: false },
+                { seenByStudent: true }
+            );
+
+        }
 
         res.status(200).json({
 
@@ -83,14 +124,14 @@ const getLeaves = async (req, res) => {
 };
 
 // ======================================================
-// Approve / Reject Leave
+// Approve / Reject Leave (Teacher / Admin only)
 // ======================================================
 
 const updateLeaveStatus = async (req, res) => {
 
     try {
 
-        const { status } = req.body;
+        const { status, remark } = req.body;
 
         if (!["Approved", "Rejected"].includes(status)) {
 
@@ -103,18 +144,74 @@ const updateLeaveStatus = async (req, res) => {
 
         }
 
+        let reviewedByName = "";
+
+        if (req.user.role === "teacher") {
+
+            const teacher = await Teacher.findById(req.user.id).select("fullName");
+            reviewedByName = teacher?.fullName || "Teacher";
+
+        } else if (req.user.role === "admin") {
+
+            const admin = await User.findById(req.user.id).select("name");
+            reviewedByName = admin?.name || "Admin";
+
+        }
+
+        // Fetch the leave first (with the student's class info) so we
+        // can check class-teacher authorization before touching it.
+        const existingLeave = await Leave.findById(req.params.id)
+            .populate("studentId", "standard division");
+
+        if (!existingLeave) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Leave Request Not Found"
+            });
+
+        }
+
+        // Only admins, or the teacher formally assigned as the
+        // requesting student's Class Teacher, can approve/reject.
+        if (req.user.role === "teacher") {
+
+            const authorized = await isClassTeacherOf(
+
+                req.user.id,
+                existingLeave.studentId?.standard,
+                existingLeave.studentId?.division
+
+            );
+
+            if (!authorized) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not the assigned Class Teacher for this student, so you can't approve or reject their leave."
+                });
+
+            }
+
+        }
+
         const leave = await Leave.findByIdAndUpdate(
 
             req.params.id,
 
             {
                 status,
-                approvedBy: req.user.id
+                remark: remark || "",
+                reviewedBy: req.user.id,
+                reviewedByRole: req.user.role,
+                reviewedByName,
+                reviewedAt: new Date(),
+                seenByStudent: false
             },
 
             { new: true }
 
-        );
+        ).populate("studentId", "fullName grNumber standard division");
 
         if (!leave) {
 
@@ -124,6 +221,22 @@ const updateLeaveStatus = async (req, res) => {
             });
 
         }
+
+        notifyUser({
+
+            userId: leave.studentId._id,
+            userRole: "student",
+
+            title: `Leave ${status}`,
+
+            message: remark
+                ? `Your ${leave.leaveType} request has been ${status.toLowerCase()}. Note: ${remark}`
+                : `Your ${leave.leaveType} request has been ${status.toLowerCase()}.`,
+
+            type: "leave",
+            link: "/attendance/leaves"
+
+        });
 
         res.status(200).json({
 

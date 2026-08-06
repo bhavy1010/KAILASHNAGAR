@@ -1,6 +1,7 @@
 const Homework = require("../models/Homework");
 const HomeworkSubmission = require("../models/HomeworkSubmission");
 const Student = require("../models/Student");
+const { notifyStudentsByClass } = require("../services/notification.service");
 
 // ======================================================
 // Create Homework
@@ -23,6 +24,19 @@ const createHomework = async (req, res) => {
 
         const homework = await Homework.create(homeworkData);
 
+        notifyStudentsByClass({
+
+            standard: homework.standard,
+            division: homework.division,
+
+            title: "New Homework Assigned",
+            message: `${homework.subject}: "${homework.title}" — due ${new Date(homework.dueDate).toLocaleDateString("en-IN")}.`,
+
+            type: "homework",
+            link: "/homework"
+
+        });
+
         res.status(201).json({
 
             success: true,
@@ -38,8 +52,7 @@ const createHomework = async (req, res) => {
         res.status(500).json({
 
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
 
         });
 
@@ -361,8 +374,7 @@ const updateHomework = async (req, res) => {
         res.status(500).json({
 
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
 
         });
 

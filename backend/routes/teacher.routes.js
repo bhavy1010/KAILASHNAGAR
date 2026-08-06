@@ -2,6 +2,7 @@ const express = require("express");
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const roleMiddleware = require("../middlewares/role.middleware");
+const validate = require("../middlewares/validate.middleware");
 
 const router = express.Router();
 
@@ -16,6 +17,11 @@ const {
     deleteTeacher
 } = require("../controllers/teacher.controller");
 
+const {
+    createTeacherSchema,
+    updateTeacherSchema
+} = require("../validators/teacher.validator");
+
 router.post(
 
     "/add",
@@ -23,6 +29,8 @@ router.post(
     authMiddleware,
 
     roleMiddleware("admin"),
+
+    validate(createTeacherSchema),
 
     createTeacher
 
@@ -65,6 +73,8 @@ router.put(
     authMiddleware,
 
     roleMiddleware("admin"),
+
+    validate(updateTeacherSchema),
 
     updateTeacher
 

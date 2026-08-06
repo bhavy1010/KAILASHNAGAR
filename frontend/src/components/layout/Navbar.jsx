@@ -1,6 +1,5 @@
 import {
     ArrowLeft,
-    Bell,
     Globe2,
     Menu,
     Search,
@@ -10,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import NotificationBell from "./NotificationBell";
 
 const Navbar = ({ onMenuClick }) => {
     const navigate = useNavigate();
@@ -112,14 +112,7 @@ const Navbar = ({ onMenuClick }) => {
                         </span>
                     </button>
 
-                    <button
-                        type="button"
-                        className="relative rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600"
-                        title={t("navbar.notifications")}
-                    >
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
-                    </button>
+                    <NotificationBell />
 
                     <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 pl-2 sm:pl-3">
                         <div className="hidden text-right sm:block">

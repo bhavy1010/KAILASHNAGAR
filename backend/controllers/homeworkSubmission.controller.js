@@ -1,6 +1,7 @@
 const HomeworkSubmission = require("../models/HomeworkSubmission");
 const Homework = require("../models/Homework");
 const Student = require("../models/Student");
+const { notifyUser } = require("../services/notification.service");
 
 // ======================================================
 // Submit Homework (student)
@@ -93,8 +94,7 @@ const submitHomework = async (req, res) => {
         res.status(500).json({
 
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
 
         });
 
@@ -281,6 +281,22 @@ const gradeSubmission = async (req, res) => {
 
         }
 
+        notifyUser({
+
+            userId: submission.studentId._id,
+            userRole: "student",
+
+            title: "Homework Graded",
+
+            message: feedback
+                ? `Your submission for "${submission.homeworkId?.title || "a homework"}" was graded: ${grade}/${submission.homeworkId?.totalMarks ?? "?"}. ${feedback}`
+                : `Your submission for "${submission.homeworkId?.title || "a homework"}" was graded: ${grade}/${submission.homeworkId?.totalMarks ?? "?"}.`,
+
+            type: "homework",
+            link: "/homework"
+
+        });
+
         res.status(200).json({
 
             success: true,
@@ -296,8 +312,7 @@ const gradeSubmission = async (req, res) => {
         res.status(500).json({
 
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
 
         });
 

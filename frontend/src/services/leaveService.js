@@ -10,7 +10,17 @@ export const createLeave = async (leaveData) => {
 
         "/leave/add",
 
-        leaveData
+        leaveData,
+
+        {
+
+            headers: {
+
+                "Content-Type": "multipart/form-data"
+
+            }
+
+        }
 
     );
 
@@ -48,13 +58,13 @@ export const getLeaves = async (filters = {}) => {
 // Approve / Reject Leave
 // ======================================================
 
-export const updateLeaveStatus = async (id, status) => {
+export const updateLeaveStatus = async (id, status, remark = "") => {
 
     const response = await api.put(
 
         `/leave/${id}/status`,
 
-        { status }
+        { status, remark }
 
     );
 

@@ -1,7 +1,9 @@
 import {
     Bell,
     BookOpen,
+    LibraryBig,
     CalendarCheck2,
+    CalendarDays,
     ClipboardList,
     GraduationCap,
     Home,
@@ -57,9 +59,21 @@ const Sidebar = ({ isOpen, onClose }) => {
             roles: ["admin", "teacher", "student"]
         },
         {
+            label: t("timetable.title"),
+            path: "/timetable",
+            icon: CalendarDays,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
             label: t("sidebar.homework"),
             path: "/homework",
             icon: BookOpen,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.library"),
+            path: "/library",
+            icon: LibraryBig,
             roles: ["admin", "teacher", "student"]
         },
         {

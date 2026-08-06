@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { useLanguage } from "../../context/LanguageContext";
+import { useAuth } from "../../context/AuthContext";
 import { getPublicHomeData } from "../../services/homeService";
 
 /* ============================================================
@@ -142,6 +143,7 @@ const SideDoodles = () => (
 
 const Home = () => {
     const { t } = useLanguage();
+    const { user, loading: authLoading } = useAuth();
 
     const [data, setData] = useState({
         schoolInfo: null,
@@ -346,19 +348,37 @@ const Home = () => {
                     </Link>
 
                     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                        <Link
-                            to="/login"
-                            className="rounded-xl border-2 border-[#6D3AFF] px-3 py-2 text-xs font-bold text-[#6D3AFF] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#6D3AFF]/10 sm:px-5 sm:py-2.5 sm:text-sm"
-                        >
-                            {t("auth.login")}
-                        </Link>
+                        {authLoading ? (
+                            // Still checking the httpOnly session cookie -
+                            // avoid flashing the wrong CTA.
+                            <div className="h-9 w-28 animate-pulse rounded-xl bg-slate-100 sm:h-11 sm:w-36" />
+                        ) : user ? (
+                            // Already logged in (valid session cookie) -
+                            // skip login entirely, go straight to their dashboard.
+                            <Link
+                                to="/dashboard"
+                                className="rounded-xl bg-gradient-to-r from-[#6D3AFF] to-[#2F80ED] px-3 py-2 text-xs font-bold text-white shadow-lg shadow-[#6D3AFF]/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:px-5 sm:py-2.5 sm:text-sm"
+                            >
+                                {t("auth.goToDashboard")}
+                            </Link>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className="rounded-xl border-2 border-[#6D3AFF] px-3 py-2 text-xs font-bold text-[#6D3AFF] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#6D3AFF]/10 sm:px-5 sm:py-2.5 sm:text-sm"
+                                >
+                                    {t("auth.login")}
+                                </Link>
 
-                        <Link
-                            to="/register"
-                            className="rounded-xl bg-gradient-to-r from-[#6D3AFF] to-[#2F80ED] px-3 py-2 text-xs font-bold text-white shadow-lg shadow-[#6D3AFF]/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:px-5 sm:py-2.5 sm:text-sm"
-                        >
-                            {t("auth.signup")}
-                        </Link>
+                                {/* No session yet -> Get Started sends them to log in */}
+                                <Link
+                                    to="/login"
+                                    className="rounded-xl bg-gradient-to-r from-[#6D3AFF] to-[#2F80ED] px-3 py-2 text-xs font-bold text-white shadow-lg shadow-[#6D3AFF]/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:px-5 sm:py-2.5 sm:text-sm"
+                                >
+                                    {t("auth.getStarted")}
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>

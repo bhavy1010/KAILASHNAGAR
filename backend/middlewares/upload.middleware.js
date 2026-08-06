@@ -96,6 +96,11 @@ const uploadSubmission = createUploader(
 // Notice attachment upload
 const uploadNotice = createUploader("notices", DOCUMENT_TYPES, 10);
 
+// Leave request attachment upload (e.g. a medical certificate for
+// sick leave). Same DOCUMENT_TYPES/10MB limit as notices/homework —
+// images or PDF/Word/Excel, nothing executable.
+const uploadLeave = createUploader("leaves", DOCUMENT_TYPES, 10);
+
 module.exports = {
     upload,
     uploadStudent,
@@ -103,5 +108,6 @@ module.exports = {
     uploadHome,
     uploadHomework,
     uploadSubmission,
-    uploadNotice
+    uploadNotice,
+    uploadLeave
 };

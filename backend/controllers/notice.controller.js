@@ -1,4 +1,6 @@
 const Notice = require("../models/Notice");
+const { notifyAudience } = require("../services/notification.service");
+const { isClassTeacherOfAnyClass } = require("../services/classTeacher.service");
 
 // ======================================================
 // Create Notice
@@ -8,6 +10,24 @@ const Notice = require("../models/Notice");
 const createNotice = async (req, res) => {
 
     try {
+
+        // Only admins, or a teacher who is the assigned Class Teacher
+        // for at least one class, can post notices. Regular subject
+        // teachers who aren't a class teacher for any class can't.
+        if (req.user.role === "teacher") {
+
+            const authorized = await isClassTeacherOfAnyClass(req.user.id);
+
+            if (!authorized) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: "Only Class Teachers can post notices. Please contact the Admin if you need one posted."
+                });
+
+            }
+
+        }
 
         const noticeData = { ...req.body };
 
@@ -23,6 +43,18 @@ const createNotice = async (req, res) => {
 
         const notice = await Notice.create(noticeData);
 
+        notifyAudience({
+
+            audience: notice.audience || "All",
+
+            title: "New Notice",
+            message: notice.title,
+
+            type: "notice",
+            link: "/notices"
+
+        });
+
         res.status(201).json({
             success: true,
             message: "Notice Created Successfully",
@@ -35,8 +67,7 @@ const createNotice = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
         });
 
     }
@@ -127,6 +158,21 @@ const updateNotice = async (req, res) => {
 
     try {
 
+        if (req.user.role === "teacher") {
+
+            const authorized = await isClassTeacherOfAnyClass(req.user.id);
+
+            if (!authorized) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: "Only Class Teachers can edit notices."
+                });
+
+            }
+
+        }
+
         const updateData = { ...req.body };
 
         if (req.file) {
@@ -159,8 +205,7 @@ const updateNotice = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: error.message,
-            stack: error.stack
+            message: error.message
         });
 
     }

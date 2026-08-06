@@ -20,6 +20,17 @@ require(
     "../middlewares/role.middleware"
 );
 
+const validate =
+require(
+    "../middlewares/validate.middleware"
+);
+
+const {
+    promoteStudentsSchema
+} = require(
+    "../validators/promotion.validator"
+);
+
 router.post(
 
     "/promote",
@@ -29,6 +40,8 @@ router.post(
     roleMiddleware(
         "admin"
     ),
+
+    validate(promoteStudentsSchema),
 
     promoteStudents
 

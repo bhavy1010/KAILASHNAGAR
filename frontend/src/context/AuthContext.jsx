@@ -22,7 +22,7 @@ import {
 
     getCurrentUser,
 
-    isAuthenticated
+    fetchCurrentUser
 
 } from "../services/authService";
 
@@ -40,19 +40,40 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
 
-        if (isAuthenticated()) {
+        const restoreSession = async () => {
 
-            const currentUser = getCurrentUser();
+            // Show the cached user immediately for a snappy UI...
+            const cachedUser = getCurrentUser();
 
-            if (currentUser) {
+            if (cachedUser) {
+                setUser(cachedUser);
+            }
 
-                setUser(currentUser);
+            // ...then confirm with the server, since the httpOnly
+            // cookie (not localStorage) is the real source of truth.
+            const verifiedUser = await fetchCurrentUser();
+
+            if (verifiedUser) {
+
+                setUser(verifiedUser);
+
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify(verifiedUser)
+                );
+
+            } else {
+
+                setUser(null);
+                localStorage.removeItem("user");
 
             }
 
-        }
+            setLoading(false);
 
-        setLoading(false);
+        };
+
+        restoreSession();
 
     }, []);
 
@@ -96,9 +117,9 @@ export const AuthProvider = ({ children }) => {
     // Logout
     // ======================================================
 
-    const logout = () => {
+    const logout = async () => {
 
-        logoutUser();
+        await logoutUser();
 
         setUser(null);
 
