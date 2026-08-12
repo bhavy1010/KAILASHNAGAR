@@ -64,6 +64,8 @@ const createTeacherSchema = z.object({
         .min(0, "Salary cannot be negative")
         .optional(),
 
+    subjectsHandled: z.array(z.string()).optional(),
+
     classesHandled: z.array(z.string()).optional(),
 
     joiningDate: z

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { ArrowLeft, Save, RotateCcw, Camera } from "lucide-react";
+import { ArrowLeft, Save, RotateCcw, Camera, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { addStudent } from "../../services/studentService";
 import { uploadStudentPhoto } from "../../services/uploadService";
+import CameraModal from "../../components/CameraModal";
 
 const initialFormData = {
     grNumber: "",
@@ -28,6 +29,12 @@ const AddStudent = () => {
     const [preview, setPreview] = useState("");
     const [message, setMessage] = useState("");
     const [formData, setFormData] = useState(initialFormData);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+
+    const handleCameraCapture = (file, dataUrl) => {
+        setSelectedPhoto(file);
+        setPreview(dataUrl);
+    };
 
     const handleChange = (event) => {
         setFormData({
@@ -168,12 +175,12 @@ const AddStudent = () => {
                         Student Information
                     </h2>
 
-                    <div className="mb-12 flex justify-center">
-                        <div className="relative">
+                    <div className="mb-10 flex flex-col items-center">
+                        <div className="relative mb-4">
                             {preview ? (
                                 <img
                                     src={preview}
-                                    alt="Student"
+                                    alt="Preview"
                                     className="h-40 w-40 rounded-full border-[6px] border-white object-cover shadow-2xl"
                                 />
                             ) : (
@@ -188,6 +195,7 @@ const AddStudent = () => {
                             <label
                                 htmlFor="studentPhoto"
                                 className="absolute bottom-2 right-2 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#5B2EFF] text-white shadow-xl transition-all duration-300 hover:scale-110 hover:bg-[#4724db]"
+                                title="Choose Photo from Gallery"
                             >
                                 <Camera size={20} />
                             </label>
@@ -195,11 +203,30 @@ const AddStudent = () => {
                             <input
                                 id="studentPhoto"
                                 type="file"
-                                accept=".jpg,.jpeg,.png,.webp"
+                                accept="image/*"
+                                capture="environment"
                                 className="hidden"
                                 onChange={handlePhoto}
                             />
                         </div>
+
+                        {/* Direct Live Camera Option for Teacher/Admin */}
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsCameraOpen(true)}
+                                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow hover:opacity-90 transition"
+                            >
+                                <Video className="h-4 w-4" />
+                                Take Photo with Phone Camera
+                            </button>
+                        </div>
+
+                        <CameraModal
+                            isOpen={isCameraOpen}
+                            onClose={() => setIsCameraOpen(false)}
+                            onCapture={handleCameraCapture}
+                        />
                     </div>
 
                     <div className="mb-10 text-center">

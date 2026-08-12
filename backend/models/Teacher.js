@@ -46,6 +46,11 @@ const teacherSchema = new mongoose.Schema({
         trim: true
     },
 
+    subjectsHandled: {
+        type: [String],
+        default: []
+    },
+
     experience: {
         type: Number,
         default: 0

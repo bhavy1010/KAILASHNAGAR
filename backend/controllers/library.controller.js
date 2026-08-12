@@ -47,6 +47,25 @@ const createMaterial = async (req, res) => {
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
+const createTextbookLink = async (req, res) => {
+    try {
+        const { classKey, classLabel, subject, title, pdfUrl, description = "" } = req.body;
+        if (!classKey || !classLabel || !subject || !title || !pdfUrl || !req.file) return res.status(400).json({ success: false, message: "Standard, subject, book name, PDF URL and cover image are required." });
+        try {
+            const parsedUrl = new URL(pdfUrl);
+            if (!["http:", "https:"].includes(parsedUrl.protocol)) throw new Error();
+        } catch { return res.status(400).json({ success: false, message: "Please enter a valid PDF URL." }); }
+        const cover = await uploadToCloudinary(req.file);
+        const material = await LibraryMaterial.create({
+            classKey, classLabel, subject, title, description, coverImageUrl: cover.secure_url,
+            coverPublicId: cover.public_id, coverResourceType: cover.resource_type, fileUrl: pdfUrl,
+            sourceType: "textbook-link", fileName: `${title}.pdf`, fileType: "application/pdf",
+            uploadedBy: req.user.id
+        });
+        res.status(201).json({ success: true, material });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
 const getMaterials = async (req, res) => {
     try {
         const filter = {};
@@ -61,10 +80,13 @@ const deleteMaterial = async (req, res) => {
     try {
         const material = await LibraryMaterial.findById(req.params.id);
         if (!material) return res.status(404).json({ success: false, message: "Material not found." });
-        await removeFromCloudinary(material);
+        if (material.sourceType === "upload") await removeFromCloudinary(material);
+        if (material.sourceType === "textbook-link" && material.coverPublicId) {
+            await removeFromCloudinary({ publicId: material.coverPublicId, resourceType: material.coverResourceType });
+        }
         await material.deleteOne();
         res.json({ success: true, message: "Material deleted." });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
-module.exports = { createMaterial, getMaterials, deleteMaterial };
+module.exports = { createMaterial, createTextbookLink, getMaterials, deleteMaterial };

@@ -12,12 +12,25 @@ import { useLanguage } from "../../context/LanguageContext";
 import { addTeacher } from "../../services/teacherService";
 import { uploadTeacherPhoto } from "../../services/uploadService";
 
+const AVAILABLE_CLASSES = [
+    "Std 1", "Std 2", "Std 3", "Std 4", "Std 5", "Std 6",
+    "Std 7", "Std 8", "Std 9", "Std 10", "Std 11", "Std 12"
+];
+
+const AVAILABLE_SUBJECTS = [
+    "Mathematics", "Science", "Gujarati", "English",
+    "Social Science", "Hindi", "Sanskrit", "Computer",
+    "Physics", "Chemistry", "Biology", "Economics", "Account"
+];
+
 const initialFormData = {
     fullName: "",
     mobile: "",
     email: "",
     qualification: "",
     subject: "",
+    subjectsHandled: [],
+    classesHandled: [],
     experience: "",
     salary: "",
     joiningDate: "",
@@ -233,7 +246,7 @@ const AddTeacher = () => {
                         </div>
 
                         <Field label={gu ? "લાયકાત *" : "Qualification *"} name="qualification" form={formData} onChange={handleChange} className={inputClass} required />
-                        <Field label={gu ? "વિષય *" : "Subject *"} name="subject" form={formData} onChange={handleChange} className={inputClass} required />
+                        <Field label={gu ? "મુખ્ય વિષય *" : "Main Subject *"} name="subject" form={formData} onChange={handleChange} className={inputClass} required />
                         <Field label={gu ? "અનુભવ (વર્ષ)" : "Experience (Years)"} name="experience" type="number" form={formData} onChange={handleChange} className={inputClass} />
                         <Field label={gu ? "પગાર" : "Salary"} name="salary" type="number" form={formData} onChange={handleChange} className={inputClass} />
                         <Field label={gu ? "જોડાવાની તારીખ" : "Joining Date"} name="joiningDate" type="date" form={formData} onChange={handleChange} className={inputClass} />
@@ -252,6 +265,79 @@ const AddTeacher = () => {
                                 <option value="Active">{gu ? "સક્રિય" : "Active"}</option>
                                 <option value="Inactive">{gu ? "નિષ્ક્રિય" : "Inactive"}</option>
                             </select>
+                        </div>
+
+                        {/* Assigned Subjects (Multiple Selection) */}
+                        <div className="md:col-span-2 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/10 p-5 border border-indigo-100 dark:border-indigo-900/30">
+                            <label className="mb-2 block text-sm font-bold text-indigo-900 dark:text-indigo-200">
+                                📚 Assigned Subjects (Teacher can create quiz, homework & exams for these)
+                            </label>
+                            <p className="text-xs text-slate-500 mb-3">Click subjects to assign multiple subjects to this teacher:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {AVAILABLE_SUBJECTS.map((sub) => {
+                                    const isSelected = (formData.subjectsHandled || []).includes(sub) || formData.subject === sub;
+                                    return (
+                                        <button
+                                            key={sub}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = formData.subjectsHandled || [];
+                                                const next = isSelected
+                                                    ? current.filter((s) => s !== sub)
+                                                    : [...current, sub];
+                                                setFormData({
+                                                    ...formData,
+                                                    subjectsHandled: next,
+                                                    subject: formData.subject || next[0] || sub
+                                                });
+                                            }}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                                                isSelected
+                                                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                                                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                                            }`}
+                                        >
+                                            {isSelected ? "✓ " : "+ "}{sub}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Assigned Handled Classes (Multiple Selection) */}
+                        <div className="md:col-span-2 rounded-2xl bg-purple-50/50 dark:bg-purple-900/10 p-5 border border-purple-100 dark:border-purple-900/30">
+                            <label className="mb-2 block text-sm font-bold text-purple-900 dark:text-purple-200">
+                                🏫 Assigned Handled Classes (Teacher can access attendance & student data for these)
+                            </label>
+                            <p className="text-xs text-slate-500 mb-3">Click classes to assign multiple standards to this teacher:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {AVAILABLE_CLASSES.map((cls) => {
+                                    const isSelected = (formData.classesHandled || []).includes(cls);
+                                    return (
+                                        <button
+                                            key={cls}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = formData.classesHandled || [];
+                                                const next = isSelected
+                                                    ? current.filter((c) => c !== cls)
+                                                    : [...current, cls];
+                                                setFormData({
+                                                    ...formData,
+                                                    classesHandled: next
+                                                });
+                                            }}
+                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition border ${
+                                                isSelected
+                                                    ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                                                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                                            }`}
+                                        >
+                                            {isSelected ? "✓ " : "+ "}{cls}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         <div className="md:col-span-2">

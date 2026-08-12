@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -12,6 +12,8 @@ import {
 import { getStudents } from "../../services/studentService";
 import { createHomework } from "../../services/homeworkService";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAuth } from "../../context/AuthContext";
+import { getMyTeacherScope } from "../../services/teacherService";
 import api from "../../config/axios";
 
 const SUBJECTS = [
@@ -57,12 +59,28 @@ const todayStr = () => new Date().toISOString().substring(0, 10);
 const CreateHomework = () => {
     const navigate = useNavigate();
     const { language } = useLanguage();
+    const { user } = useAuth();
     const isGujarati = language === "gu";
+    const isTeacher = user?.role === "teacher";
 
     const [classes, setClasses] = useState([]);
     const [academicYears, setAcademicYears] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [availableSubjects, setAvailableSubjects] = useState(SUBJECTS);
+    const [teacherClasses, setTeacherClasses] = useState([]);
+
+    // When teacher has assigned classes, filter out any class not in their scope
+    const visibleClasses = useMemo(() => {
+        if (!isTeacher || teacherClasses.length === 0) return classes;
+        return classes.filter((cls) => {
+            const stdNum = cls.standard;
+            return teacherClasses.some((tc) => {
+                const m = String(tc).match(/\d+/);
+                return m && parseInt(m[0], 10) === stdNum;
+            });
+        });
+    }, [classes, teacherClasses, isTeacher]);
 
     const initialFormData = {
         title: "",
@@ -144,7 +162,21 @@ const CreateHomework = () => {
 
     useEffect(() => {
         loadDependencies();
-    }, []);
+        if (isTeacher) {
+            getMyTeacherScope()
+                .then((data) => {
+                    if (data.success) {
+                        if (data.subjectsHandled?.length > 0) {
+                            setAvailableSubjects(data.subjectsHandled);
+                        }
+                        if (data.classesHandled?.length > 0) {
+                            setTeacherClasses(data.classesHandled);
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadDependencies = async () => {
         try {
@@ -409,10 +441,10 @@ const CreateHomework = () => {
                                                 {text.selectSubject}
                                             </option>
 
-                                            {SUBJECTS.map((subject) => (
+                                            {availableSubjects.map((subject) => (
                                                 <option key={subject} value={subject}>
                                                     {isGujarati
-                                                        ? SUBJECTS_GU[subject]
+                                                        ? SUBJECTS_GU[subject] || subject
                                                         : subject}
                                                 </option>
                                             ))}
@@ -526,7 +558,7 @@ const CreateHomework = () => {
                                             {text.selectClass}
                                         </option>
 
-                                        {classes.map((item) => {
+                                        {visibleClasses.map((item) => {
                                             const key = `${item.standard}-${item.division}`;
 
                                             return (
@@ -538,6 +570,11 @@ const CreateHomework = () => {
                                             );
                                         })}
                                     </select>
+                                    {isTeacher && teacherClasses.length > 0 && (
+                                        <p className="mt-1 text-xs text-indigo-500 font-medium">
+                                            🔒 Only your assigned classes are shown
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>

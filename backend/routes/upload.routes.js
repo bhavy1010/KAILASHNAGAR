@@ -7,12 +7,14 @@ const roleMiddleware = require("../middlewares/role.middleware");
 
 const {
     upload,
-    uploadTeacher
+    uploadTeacher,
+    uploadAdmin
 } = require("../middlewares/upload.middleware");
 
 const {
     uploadStudentPhoto,
-    uploadTeacherPhoto
+    uploadTeacherPhoto,
+    uploadAdminPhoto
 } = require("../controllers/upload.controller");
 
 // ======================================================
@@ -26,7 +28,7 @@ router.post(
 
     authMiddleware,
 
-    roleMiddleware("admin", "teacher"),
+    roleMiddleware("admin", "teacher", "student"),
 
     upload.single("photo"),
 
@@ -45,11 +47,30 @@ router.post(
 
     authMiddleware,
 
-    roleMiddleware("admin"),
+    roleMiddleware("admin", "teacher"),
 
     uploadTeacher.single("photo"),
 
     uploadTeacherPhoto
+
+);
+
+// ======================================================
+// Upload Admin Photo
+// POST : /api/upload/admin-photo/:id
+// ======================================================
+
+router.post(
+
+    "/admin-photo/:id",
+
+    authMiddleware,
+
+    roleMiddleware("admin"),
+
+    uploadAdmin.single("photo"),
+
+    uploadAdminPhoto
 
 );
 

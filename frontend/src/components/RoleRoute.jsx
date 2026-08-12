@@ -47,7 +47,7 @@ const RoleRoute = ({ roles, children }) => {
     // Permission Check
     // ======================================================
 
-    if (!roles.includes(user.role)) {
+    if (!roles.map(r => r.toLowerCase()).includes(user.role?.toLowerCase())) {
 
         // TEMPORARY DEBUG — remove once the redirect issue is resolved.
         // This pops up on screen automatically, no DevTools needed.

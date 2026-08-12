@@ -111,3 +111,30 @@ export const uploadTeacherPhoto = async (
     return response.data;
 
 };
+
+// ======================================================
+// Upload Admin Photo
+// ======================================================
+
+export const uploadAdminPhoto = async (
+    adminId,
+    photo
+) => {
+    const formData = new FormData();
+    formData.append(
+        "photo",
+        photo
+    );
+
+    const response = await api.post(
+        `/upload/admin-photo/${adminId}`,
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        }
+    );
+
+    return response.data;
+};

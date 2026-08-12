@@ -22,6 +22,35 @@ const {
     updateTeacherSchema
 } = require("../validators/teacher.validator");
 
+// GET /api/teachers/me/scope — returns the logged-in teacher's assigned
+// subjects and classes so the frontend can filter dropdowns accordingly.
+router.get("/me/scope", authMiddleware, async (req, res) => {
+    try {
+        const Teacher = require("../models/Teacher");
+        const teacher = await Teacher.findById(req.user.id).select(
+            "subject subjectsHandled classesHandled"
+        );
+
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found." });
+        }
+
+        const allSubjects = [
+            ...new Set(
+                [teacher.subject, ...(teacher.subjectsHandled || [])].filter(Boolean)
+            )
+        ];
+
+        res.json({
+            success: true,
+            subjectsHandled: allSubjects,
+            classesHandled: teacher.classesHandled || []
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 router.post(
 
     "/add",
@@ -35,6 +64,7 @@ router.post(
     createTeacher
 
 );
+
 
 router.get(
     "/all",

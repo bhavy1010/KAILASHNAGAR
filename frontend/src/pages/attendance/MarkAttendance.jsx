@@ -16,14 +16,19 @@ import {
     getClassAttendance
 } from "../../services/attendanceService";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAuth } from "../../context/AuthContext";
+import { getMyTeacherScope } from "../../services/teacherService";
 
 const todayStr = () => new Date().toISOString().substring(0, 10);
 
 const MarkAttendance = () => {
     const { language } = useLanguage();
+    const { user } = useAuth();
     const isGujarati = language === "gu";
+    const isTeacher = user?.role === "teacher";
 
     const [classes, setClasses] = useState([]);
+    const [teacherClasses, setTeacherClasses] = useState([]);
     const [standard, setStandard] = useState("");
     const [division, setDivision] = useState("");
     const [date, setDate] = useState(todayStr());
@@ -100,7 +105,16 @@ const MarkAttendance = () => {
 
     useEffect(() => {
         loadClasses();
-    }, []);
+        if (isTeacher) {
+            getMyTeacherScope()
+                .then((data) => {
+                    if (data.success && data.classesHandled?.length > 0) {
+                        setTeacherClasses(data.classesHandled);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [isTeacher]);
 
     const loadClasses = async () => {
         try {
@@ -299,13 +313,18 @@ const MarkAttendance = () => {
                     item.division === division
             );
 
-            await markClassAttendance({
+            const payload = {
                 attendanceDate: date,
                 standard: Number(standard),
                 division,
-                records,
-                academicYearId: selectedClass?.academicYearId
-            });
+                records
+            };
+
+            if (selectedClass?.academicYearId) {
+                payload.academicYearId = selectedClass.academicYearId;
+            }
+
+            await markClassAttendance(payload);
 
             alert(
                 isGujarati
@@ -359,12 +378,24 @@ const MarkAttendance = () => {
 
                             {[...new Set(classes.map((item) => item.standard))]
                                 .sort((a, b) => a - b)
+                                .filter((std) => {
+                                    if (!isTeacher || teacherClasses.length === 0) return true;
+                                    return teacherClasses.some((tc) => {
+                                        const m = String(tc).match(/\d+/);
+                                        return m && parseInt(m[0], 10) === Number(std);
+                                    });
+                                })
                                 .map((std) => (
                                     <option key={std} value={std}>
                                         {isGujarati ? `${std} ધોરણ` : `Std ${std}`}
                                     </option>
                                 ))}
                         </select>
+                        {isTeacher && teacherClasses.length > 0 && (
+                            <p className="mt-1 text-xs text-indigo-500 font-medium">
+                                🔒 Showing your assigned classes: {teacherClasses.join(", ")}
+                            </p>
+                        )}
                     </div>
 
                     <div>

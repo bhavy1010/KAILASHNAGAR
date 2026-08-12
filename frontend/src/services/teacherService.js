@@ -147,3 +147,13 @@ export const deleteTeacher = async (id) => {
     return response.data;
 
 };
+
+// ======================================================
+// Get My Teacher Scope (subjects & classes assigned to me)
+// Used by teacher-role frontend to filter dropdowns
+// ======================================================
+
+export const getMyTeacherScope = async () => {
+    const response = await api.get("/teachers/me/scope");
+    return response.data;
+};

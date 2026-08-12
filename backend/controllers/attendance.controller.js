@@ -1,9 +1,9 @@
-// controllers/attendance.controller.js
-
 const Attendance = require("../models/Attendance");
 const Student = require("../models/Student");
+const AcademicYear = require("../models/AcademicYear");
 const ExcelJS = require("exceljs");
 const { isClassTeacherOf } = require("../services/classTeacher.service");
+const { checkTeacherPermission } = require("../services/teacherPermission.service");
 // ======================================================
 // Mark / Update Class Attendance (Upsert)
 // POST /api/attendance/class
@@ -21,8 +21,28 @@ const markClassAttendance = async (req, res) => {
             academicYearId
         } = req.body;
 
-        // Only admins, or the teacher formally assigned as this
-        // class's Class Teacher, can mark attendance for it.
+        let finalAcademicYearId = academicYearId;
+
+        if (!finalAcademicYearId) {
+            const activeYear = await AcademicYear.findOne({ isActive: true });
+            if (activeYear) {
+                finalAcademicYearId = activeYear._id;
+            } else {
+                const anyYear = await AcademicYear.findOne().sort({ createdAt: -1 });
+                if (anyYear) {
+                    finalAcademicYearId = anyYear._id;
+                } else {
+                    const defaultYear = await AcademicYear.create({
+                        yearName: "2025-2026",
+                        startDate: new Date("2025-06-01"),
+                        endDate: new Date("2026-05-31"),
+                        isActive: true
+                    });
+                    finalAcademicYearId = defaultYear._id;
+                }
+            }
+        }
+
         if (req.user.role === "teacher") {
 
             const authorized = await isClassTeacherOf(
@@ -32,12 +52,19 @@ const markClassAttendance = async (req, res) => {
             );
 
             if (!authorized) {
-
-                return res.status(403).json({
-                    success: false,
-                    message: `You are not the assigned Class Teacher for Standard ${standard} - ${division}, so you can't mark attendance for this class.`
+                const perm = await checkTeacherPermission({
+                    teacherId: req.user.id,
+                    role: req.user.role,
+                    standard,
+                    division
                 });
 
+                if (!perm.authorized) {
+                    return res.status(403).json({
+                        success: false,
+                        message: `You are not authorized to mark attendance for Standard ${standard} - ${division}.`
+                    });
+                }
             }
 
         }
@@ -56,7 +83,7 @@ const markClassAttendance = async (req, res) => {
                 standard,
                 division,
                 records,
-                academicYearId,
+                academicYearId: finalAcademicYearId,
 
                 markedBy: req.user.id,
                 markedByRole: req.user.role

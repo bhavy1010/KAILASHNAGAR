@@ -6,6 +6,7 @@ import {
     CalendarDays,
     ClipboardList,
     GraduationCap,
+    HelpCircle,
     Home,
     LogOut,
     Menu,
@@ -19,13 +20,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { getPhotoUrl } from "../../utils/photoUrl";
 
 const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const { t, language, toggleLanguage } = useLanguage();
 
-    const role = user?.role || "";
+    const role = (user?.role || "").toLowerCase();
 
     const navItems = [
         {
@@ -71,7 +73,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             roles: ["admin", "teacher", "student"]
         },
         {
-            label: t("sidebar.library"),
+            label: t("library.title", "Library"),
             path: "/library",
             icon: LibraryBig,
             roles: ["admin", "teacher", "student"]
@@ -80,6 +82,12 @@ const Sidebar = ({ isOpen, onClose }) => {
             label: t("sidebar.exams"),
             path: "/exams",
             icon: ClipboardList,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("quiz.title", "Quiz"),
+            path: "/quiz",
+            icon: HelpCircle,
             roles: ["admin", "teacher", "student"]
         },
         {
@@ -97,7 +105,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     ];
 
     const visibleNavItems = navItems.filter((item) =>
-        item.roles.includes(role)
+        item.roles.some((r) => r.toLowerCase() === role)
     );
 
     const handleLogout = () => {
@@ -199,22 +207,37 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </span>
                     </button>
 
-                    <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500 font-bold text-white">
-                            {(user?.fullName || user?.name || "U")
-                                .charAt(0)
-                                .toUpperCase()}
+                    <NavLink
+                        to="/profile"
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl bg-white/5 p-3 hover:bg-white/10 transition group"
+                    >
+                        <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden ring-2 ring-indigo-400/50 group-hover:ring-indigo-300/70 transition">
+                            {user?.photo ? (
+                                <img
+                                    src={getPhotoUrl(user.photo, role)}
+                                    alt={user?.fullName || user?.name || "User"}
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                />
+                            ) : null}
+                            <div
+                                className="h-full w-full items-center justify-center bg-indigo-500 font-bold text-white text-sm"
+                                style={{ display: user?.photo ? 'none' : 'flex' }}
+                            >
+                                {(user?.fullName || user?.name || "U").charAt(0).toUpperCase()}
+                            </div>
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-bold text-white">
+                            <p className="truncate text-sm font-bold text-white group-hover:text-indigo-200 transition">
                                 {user?.fullName || user?.name || "User"}
                             </p>
-                            <p className="truncate text-xs capitalize text-indigo-200">
-                                {role}
+                            <p className="truncate text-xs capitalize text-indigo-300">
+                                {role} • View Profile
                             </p>
                         </div>
-                    </div>
+                    </NavLink>
 
                     <button
                         type="button"

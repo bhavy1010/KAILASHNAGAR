@@ -14,6 +14,17 @@ import {
 } from "../../services/teacherService";
 import { uploadTeacherPhoto } from "../../services/uploadService";
 
+const AVAILABLE_CLASSES = [
+    "Std 1", "Std 2", "Std 3", "Std 4", "Std 5", "Std 6",
+    "Std 7", "Std 8", "Std 9", "Std 10", "Std 11", "Std 12"
+];
+
+const AVAILABLE_SUBJECTS = [
+    "Mathematics", "Science", "Gujarati", "English",
+    "Social Science", "Hindi", "Sanskrit", "Computer",
+    "Physics", "Chemistry", "Biology", "Economics", "Account"
+];
+
 const EditTeacher = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -48,7 +59,6 @@ const EditTeacher = () => {
         subject: gu ? "મુખ્ય વિષય" : "Main Subject",
         experience: gu ? "અનુભવ (વર્ષ)" : "Experience (Years)",
         salary: gu ? "પગાર" : "Salary",
-        classes: gu ? "ભણાવવાના વર્ગો" : "Classes Handled",
         joining: gu ? "જોડાવાની તારીખ" : "Joining Date",
         address: gu ? "સરનામું" : "Address",
         status: gu ? "સ્થિતિ" : "Status",
@@ -62,15 +72,8 @@ const EditTeacher = () => {
 
     const getPhotoUrl = (photo) => {
         if (!photo) return "";
-
-        if (photo.startsWith("http://") || photo.startsWith("https://")) {
-            return photo;
-        }
-
-        if (photo.startsWith("/")) {
-            return `${serverUrl}${photo}`;
-        }
-
+        if (photo.startsWith("http://") || photo.startsWith("https://")) return photo;
+        if (photo.startsWith("/")) return `${serverUrl}${photo}`;
         return `${serverUrl}/uploads/teachers/${photo}`;
     };
 
@@ -88,13 +91,12 @@ const EditTeacher = () => {
                     gender: teacher.gender || "",
                     qualification: teacher.qualification || "",
                     subject: teacher.subject || "",
+                    subjectsHandled: teacher.subjectsHandled || [],
+                    classesHandled: teacher.classesHandled || [],
                     experience: teacher.experience || 0,
                     salary: teacher.salary || 0,
-                    classesHandled: (teacher.classesHandled || []).join(", "),
                     joiningDate: teacher.joiningDate
-                        ? new Date(teacher.joiningDate)
-                              .toISOString()
-                              .split("T")[0]
+                        ? new Date(teacher.joiningDate).toISOString().split("T")[0]
                         : "",
                     address: teacher.address || "",
                     status: teacher.status || "Active",
@@ -120,28 +122,39 @@ const EditTeacher = () => {
         }));
     };
 
+    const toggleSubject = (sub) => {
+        setForm((prev) => {
+            const current = prev.subjectsHandled || [];
+            const next = current.includes(sub)
+                ? current.filter((s) => s !== sub)
+                : [...current, sub];
+            return { ...prev, subjectsHandled: next };
+        });
+    };
+
+    const toggleClass = (cls) => {
+        setForm((prev) => {
+            const current = prev.classesHandled || [];
+            const next = current.includes(cls)
+                ? current.filter((c) => c !== cls)
+                : [...current, cls];
+            return { ...prev, classesHandled: next };
+        });
+    };
+
     const handlePhoto = (event) => {
         const file = event.target.files?.[0];
-
         if (!file) return;
 
-        const allowedTypes = [
-            "image/jpeg",
-            "image/jpg",
-            "image/png",
-            "image/webp"
-        ];
-
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
         if (!allowedTypes.includes(file.type)) {
             setMessage("Only JPG, PNG and WEBP images are allowed.");
             return;
         }
-
         if (file.size > 2 * 1024 * 1024) {
             setMessage("Image size must be less than 2 MB.");
             return;
         }
-
         setSelectedPhoto(file);
         setPreview(URL.createObjectURL(file));
         setMessage("");
@@ -160,10 +173,8 @@ const EditTeacher = () => {
                 ...teacherData,
                 experience: Number(form.experience) || 0,
                 salary: Number(form.salary) || 0,
-                classesHandled: form.classesHandled
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean)
+                subjectsHandled: form.subjectsHandled || [],
+                classesHandled: form.classesHandled || []
             });
 
             if (selectedPhoto) {
@@ -173,8 +184,7 @@ const EditTeacher = () => {
             navigate("/teachers");
         } catch (error) {
             setMessage(
-                error.response?.data?.message ||
-                    "Unable to update teacher."
+                error.response?.data?.message || "Unable to update teacher."
             );
         } finally {
             setSaving(false);
@@ -204,9 +214,7 @@ const EditTeacher = () => {
                     <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">
                         {labels.title}
                     </h1>
-                    <p className="mt-2 text-slate-500">
-                        {labels.subtitle}
-                    </p>
+                    <p className="mt-2 text-slate-500">{labels.subtitle}</p>
                 </div>
             </div>
 
@@ -218,27 +226,20 @@ const EditTeacher = () => {
 
             <form onSubmit={handleSubmit}>
                 <div className="rounded-3xl bg-white p-5 shadow sm:p-8">
-                    <h2 className="mb-8 text-2xl font-bold">
-                        {labels.info}
-                    </h2>
+                    <h2 className="mb-8 text-2xl font-bold">{labels.info}</h2>
 
+                    {/* Photo */}
                     <div className="mb-10 flex flex-col items-center">
                         <div className="relative">
                             {preview || form.existingPhoto ? (
                                 <img
-                                    src={
-                                        preview ||
-                                        getPhotoUrl(form.existingPhoto)
-                                    }
+                                    src={preview || getPhotoUrl(form.existingPhoto)}
                                     alt={form.fullName}
                                     className="h-32 w-32 rounded-full border-4 border-white object-cover shadow-xl sm:h-40 sm:w-40"
                                 />
                             ) : (
                                 <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-slate-100 to-slate-200 shadow-xl sm:h-40 sm:w-40">
-                                    <Camera
-                                        size={44}
-                                        className="text-slate-400"
-                                    />
+                                    <Camera size={44} className="text-slate-400" />
                                 </div>
                             )}
 
@@ -257,12 +258,12 @@ const EditTeacher = () => {
                                 onChange={handlePhoto}
                             />
                         </div>
-
                         <p className="mt-4 text-center text-sm text-slate-500">
                             {labels.photo}: JPG, PNG or WEBP, maximum 2 MB.
                         </p>
                     </div>
 
+                    {/* Basic Fields */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <Field label={labels.fullName} name="fullName" form={form} onChange={handleChange} className={inputClass} required />
                         <Field label={labels.mobile} name="mobile" form={form} onChange={handleChange} className={inputClass} required />
@@ -270,15 +271,8 @@ const EditTeacher = () => {
                         <Field label={labels.password} name="password" type="password" form={form} onChange={handleChange} className={inputClass} />
 
                         <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                {labels.gender}
-                            </label>
-                            <select
-                                name="gender"
-                                value={form.gender}
-                                onChange={handleChange}
-                                className={inputClass}
-                            >
+                            <label className="mb-2 block text-sm font-semibold">{labels.gender}</label>
+                            <select name="gender" value={form.gender} onChange={handleChange} className={inputClass}>
                                 <option value="Male">{gu ? "પુરુષ" : "Male"}</option>
                                 <option value="Female">{gu ? "સ્ત્રી" : "Female"}</option>
                                 <option value="Other">{gu ? "અન્ય" : "Other"}</option>
@@ -289,32 +283,74 @@ const EditTeacher = () => {
                         <Field label={labels.subject} name="subject" form={form} onChange={handleChange} className={inputClass} />
                         <Field label={labels.experience} name="experience" type="number" form={form} onChange={handleChange} className={inputClass} />
                         <Field label={labels.salary} name="salary" type="number" form={form} onChange={handleChange} className={inputClass} />
-                        <Field label={labels.classes} name="classesHandled" form={form} onChange={handleChange} className={inputClass} />
                         <Field label={labels.joining} name="joiningDate" type="date" form={form} onChange={handleChange} className={inputClass} />
 
                         <div>
-                            <label className="mb-2 block text-sm font-semibold">
-                                {labels.status}
-                            </label>
-                            <select
-                                name="status"
-                                value={form.status}
-                                onChange={handleChange}
-                                className={inputClass}
-                            >
-                                <option value="Active">
-                                    {gu ? "સક્રિય" : "Active"}
-                                </option>
-                                <option value="Inactive">
-                                    {gu ? "નિષ્ક્રિય" : "Inactive"}
-                                </option>
+                            <label className="mb-2 block text-sm font-semibold">{labels.status}</label>
+                            <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
+                                <option value="Active">{gu ? "સક્રિય" : "Active"}</option>
+                                <option value="Inactive">{gu ? "નિષ્ક્રિય" : "Inactive"}</option>
                             </select>
                         </div>
 
-                        <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-semibold">
-                                {labels.address}
+                        {/* Assigned Subjects Pill Picker */}
+                        <div className="md:col-span-2 rounded-2xl bg-indigo-50/60 p-5 border border-indigo-100">
+                            <label className="mb-1 block text-sm font-bold text-indigo-900">
+                                📚 {gu ? "સોંપાયેલ વિષયો" : "Assigned Subjects"} — {gu ? "આ વિષયો માટે ક્વિઝ, ગૃહકાર્ય બનાવી શકે" : "Teacher can create quiz, homework & exams for these"}
                             </label>
+                            <p className="text-xs text-slate-500 mb-3">{gu ? "વિષયો પસંદ કરવા ક્લિક કરો" : "Click to select/deselect subjects"}:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {AVAILABLE_SUBJECTS.map((sub) => {
+                                    const isSelected =
+                                        (form.subjectsHandled || []).includes(sub) ||
+                                        form.subject === sub;
+                                    return (
+                                        <button
+                                            key={sub}
+                                            type="button"
+                                            onClick={() => toggleSubject(sub)}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                                                isSelected
+                                                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                                                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                                            }`}
+                                        >
+                                            {isSelected ? "✓ " : "+ "}{sub}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Assigned Classes Pill Picker */}
+                        <div className="md:col-span-2 rounded-2xl bg-purple-50/60 p-5 border border-purple-100">
+                            <label className="mb-1 block text-sm font-bold text-purple-900">
+                                🏫 {gu ? "સોંપાયેલ વર્ગો" : "Assigned Handled Classes"} — {gu ? "આ વર્ગોની હાજરી અને ડેટા એક્સેસ" : "Teacher can access attendance & student data for these"}
+                            </label>
+                            <p className="text-xs text-slate-500 mb-3">{gu ? "વર્ગ પસંદ કરવા ક્લિક કરો" : "Click to select/deselect classes"}:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {AVAILABLE_CLASSES.map((cls) => {
+                                    const isSelected = (form.classesHandled || []).includes(cls);
+                                    return (
+                                        <button
+                                            key={cls}
+                                            type="button"
+                                            onClick={() => toggleClass(cls)}
+                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition border ${
+                                                isSelected
+                                                    ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                                                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                                            }`}
+                                        >
+                                            {isSelected ? "✓ " : "+ "}{cls}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold">{labels.address}</label>
                             <textarea
                                 name="address"
                                 value={form.address}
@@ -359,7 +395,7 @@ const Field = ({
         <input
             type={type}
             name={name}
-            value={form[name]}
+            value={form[name] ?? ""}
             onChange={onChange}
             required={required}
             className={className}

@@ -26,28 +26,13 @@ const notificationRoutes = require("./routes/notification.routes");
 const academicYearRoutes = require("./routes/academicYear.routes");
 const homeRoutes = require("./routes/home.routes");
 const libraryRoutes = require("./routes/library.routes");
+const quizRoutes = require("./routes/quiz.routes");
+const videoLibraryRoutes = require("./routes/videoLibrary.routes");
 
 const app = express();
 
 // ======================================================
 // Security headers (Helmet)
-//
-// This app is a pure JSON API + a static file server for
-// uploaded photos/documents — it never serves rendered HTML
-// pages itself (the React frontend is a separate origin).
-// Two of Helmet's defaults are tuned accordingly:
-//
-// - contentSecurityPolicy: off. CSP is designed to restrict
-//   what a *served HTML page* can load/execute. We don't
-//   serve HTML, so it adds no protection here and can only
-//   cause confusing header side effects on the static/API
-//   responses we do send.
-//
-// - crossOriginResourcePolicy: "cross-origin". The frontend
-//   (a different origin/port) loads uploaded images directly,
-//   e.g. <img src="http://api-host/uploads/students/xyz.jpg">.
-//   Helmet's default ("same-origin") would silently block the
-//   browser from rendering those images.
 // ======================================================
 
 app.use(
@@ -92,6 +77,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/academic-years", academicYearRoutes);
 app.use("/api/home", homeRoutes);
 app.use("/api/library", libraryRoutes);
+app.use("/api/quiz", quizRoutes);
+app.use("/api/video-library", videoLibraryRoutes);
 
 app.get("/", (req, res) => {
     res.json({

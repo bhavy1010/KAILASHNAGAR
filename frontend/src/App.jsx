@@ -14,6 +14,7 @@ import ForgotTeacherPassword from "./pages/auth/ForgotTeacherpassword";
 
 import Dashboard from "./pages/dashboard/Dashboard";
 
+import Settings from "./pages/settings/Settings";
 import Students from "./pages/students/Students";
 import AddStudent from "./pages/students/AddStudent";
 import EditStudent from "./pages/students/EditStudent";
@@ -65,9 +66,17 @@ import StudentNoticeBoard from "./pages/notices/StudentNoticeBoard";
 
 import HomeManagement from "./pages/home/HomeManagement";
 
-import Settings from "./pages/settings/Settings";
 import TimetableDashboard from "./pages/timetable/TimetableDashboard";
 import Library from "./pages/library/Library";
+import Profile from "./pages/profile/Profile";
+
+import QuizDashboard from "./pages/quiz/QuizDashboard";
+import CreateManualQuiz from "./pages/quiz/CreateManualQuiz";
+import CreateAutoQuiz from "./pages/quiz/CreateAutoQuiz";
+import StudentQuizScreen from "./pages/quiz/StudentQuizScreen";
+import QuizResultView from "./pages/quiz/QuizResultView";
+import QuizRankBoard from "./pages/quiz/QuizRankBoard";
+import QuizPreviewEdit from "./pages/quiz/QuizPreviewEdit";
 
 const App = () => {
     return (
@@ -573,6 +582,74 @@ const App = () => {
                     }
                 />
                 <Route path="/library" element={<RoleRoute roles={["admin", "teacher", "student"]}><Library /></RoleRoute>} />
+                <Route path="/profile" element={<RoleRoute roles={["admin", "teacher", "student"]}><Profile /></RoleRoute>} />
+
+                {/* Quiz Module Routes */}
+                <Route
+                    path="/quiz"
+                    element={
+                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                            <QuizDashboard />
+                        </RoleRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/create-manual"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <CreateManualQuiz />
+                        </RoleRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/create-auto"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <CreateAutoQuiz />
+                        </RoleRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/attempt-screen/:id"
+                    element={
+                        <RoleRoute roles={["student"]}>
+                            <StudentQuizScreen />
+                        </RoleRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/result/:attemptId"
+                    element={
+                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                            <QuizResultView />
+                        </RoleRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/rank"
+                    element={
+                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                            <QuizRankBoard />
+                        </RoleRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/rank/:quizId"
+                    element={
+                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                            <QuizRankBoard />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/quiz/preview/:id"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <QuizPreviewEdit />
+                        </RoleRoute>
+                    }
+                />
 
                 <Route
                     path="/settings"

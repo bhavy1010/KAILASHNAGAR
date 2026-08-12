@@ -51,7 +51,7 @@ const markClassAttendanceSchema = z.object({
         })
         .min(1, "At least one student's attendance is required"),
 
-    academicYearId: objectId("Academic year ID")
+    academicYearId: objectId("Academic year ID").optional().or(z.literal(""))
 
 });
 

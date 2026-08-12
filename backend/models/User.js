@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["admin", "teacher", "student"],
         default: "student"
+    },
+
+    photo: {
+        type: String,
+        default: ""
     }
 
 }, {

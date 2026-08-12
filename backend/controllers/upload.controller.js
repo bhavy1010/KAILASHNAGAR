@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
+const User = require("../models/User");
 
 // ======================================================
 // Upload Student Photo
@@ -187,14 +188,104 @@ const uploadTeacherPhoto = async (req, res) => {
 
 };
 
+// ======================================================
+// Upload Admin Photo
+// ======================================================
 
+const uploadAdminPhoto = async (req, res) => {
 
+    try {
 
+        const { id } = req.params;
+
+        const admin = await User.findById(id);
+
+        if (!admin) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Admin Not Found"
+
+            });
+
+        }
+
+        if (!req.file) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: "Please select an image"
+
+            });
+
+        }
+
+        // Delete old photo if exists
+
+        if (admin.photo) {
+
+            const oldPhotoPath = path.join(
+
+                __dirname,
+
+                "../uploads/admins",
+
+                admin.photo
+
+            );
+
+            if (fs.existsSync(oldPhotoPath)) {
+
+                fs.unlinkSync(oldPhotoPath);
+
+            }
+
+        }
+
+        // Save new filename
+
+        admin.photo = req.file.filename;
+
+        await admin.save();
+
+        res.status(200).json({
+
+            success: true,
+
+            message: "Admin photo uploaded successfully",
+
+            photo: admin.photo,
+
+            imageUrl: `/uploads/admins/${admin.photo}`
+
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+};
 
 module.exports = {
 
     uploadStudentPhoto,
 
-    uploadTeacherPhoto
+    uploadTeacherPhoto,
+
+    uploadAdminPhoto
 
 };

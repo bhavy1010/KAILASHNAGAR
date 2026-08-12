@@ -1,9 +1,12 @@
 import {
     Bell,
     BookOpen,
+    LibraryBig,
     CalendarCheck2,
+    CalendarDays,
     ClipboardList,
     GraduationCap,
+    HelpCircle,
     Home,
     LogOut,
     Menu,
@@ -15,17 +18,90 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../context/AuthContext";
-import { useLanguage } from "../../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const { t, language, toggleLanguage } = useLanguage();
 
-    const role = user?.role || "admin";
+    const role = user?.role || "";
 
-    c
+    const navItems = [
+        {
+            label: t("sidebar.home"),
+            path: "/",
+            icon: Home,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.dashboard"),
+            path: "/dashboard",
+            icon: GraduationCap,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.students"),
+            path: "/students",
+            icon: Users,
+            roles: ["admin", "teacher"]
+        },
+        {
+            label: t("sidebar.teachers"),
+            path: "/teachers",
+            icon: UserPlus,
+            roles: ["admin"]
+        },
+        {
+            label: t("sidebar.attendance"),
+            path: "/attendance",
+            icon: CalendarCheck2,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("timetable.title"),
+            path: "/timetable",
+            icon: CalendarDays,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.homework"),
+            path: "/homework",
+            icon: BookOpen,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("library.title", "Library"),
+            path: "/library",
+            icon: LibraryBig,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.exams"),
+            path: "/exams",
+            icon: ClipboardList,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("quiz.title", "Quiz"),
+            path: "/quiz",
+            icon: HelpCircle,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.notices"),
+            path: "/notices",
+            icon: Bell,
+            roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: t("sidebar.homeManagement"),
+            path: "/home-management",
+            icon: Trophy,
+            roles: ["admin"]
+        }
+    ];
 
     const visibleNavItems = navItems.filter((item) =>
         item.roles.includes(role)

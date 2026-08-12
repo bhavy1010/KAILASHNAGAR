@@ -2,6 +2,7 @@ const Homework = require("../models/Homework");
 const HomeworkSubmission = require("../models/HomeworkSubmission");
 const Student = require("../models/Student");
 const { notifyStudentsByClass } = require("../services/notification.service");
+const { checkTeacherPermission } = require("../services/teacherPermission.service");
 
 // ======================================================
 // Create Homework
@@ -13,6 +14,20 @@ const createHomework = async (req, res) => {
     try {
 
         const homeworkData = { ...req.body };
+
+        // Teacher subject & class permission check
+        if (req.user && req.user.role === "teacher") {
+            const perm = await checkTeacherPermission({
+                teacherId: req.user.id,
+                role: req.user.role,
+                subject: homeworkData.subject,
+                standard: homeworkData.standard,
+                division: homeworkData.division
+            });
+            if (!perm.authorized) {
+                return res.status(403).json({ success: false, message: perm.message });
+            }
+        }
 
         if (req.file) {
 

@@ -116,10 +116,12 @@ const loginUser = async (req, res) => {
         let account = null;
         let user = null;
 
-        if (role === "student") {
+        const normalizedRole = (role || "").toLowerCase();
+
+        if (normalizedRole === "student") {
             account = await Student.findOne({
                 grNumber: identifier.trim(),
-                status: "Active"
+                status: { $ne: "Inactive" }
             });
 
             if (!account) {
@@ -147,10 +149,10 @@ const loginUser = async (req, res) => {
             };
         }
 
-        if (role === "teacher") {
+        if (normalizedRole === "teacher") {
             account = await Teacher.findOne({
                 mobile: identifier.trim(),
-                status: "Active"
+                status: { $ne: "Inactive" }
             });
 
             if (!account) {
@@ -178,7 +180,7 @@ const loginUser = async (req, res) => {
             };
         }
 
-        if (role === "admin") {
+        if (normalizedRole === "admin") {
             account = await User.findOne({
                 mobile: identifier.trim(),
                 role: "admin"
@@ -204,11 +206,12 @@ const loginUser = async (req, res) => {
                 id: account._id,
                 name: account.name,
                 mobile: account.mobile,
-                role: "admin"
+                role: "admin",
+                photo: account.photo || ""
             };
         }
 
-        if (!account) {
+        if (!account || !user) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid login role"
@@ -291,7 +294,7 @@ const resetAdminPassword = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Admin password updated successfully"
+            message: "Admin password reset successfully"
         });
 
     } catch (error) {
@@ -306,44 +309,20 @@ const resetAdminPassword = async (req, res) => {
 
 // ======================================================
 // Teacher Forgot Password
-// Teacher must enter mobile number + secret code
-//
-// Uses TEACHER_RESET_CODE, a SEPARATE secret from the
-// admin's ADMIN_SIGNUP_CODE (see .env.example). Keeping
-// them distinct means a teacher who learns this code can
-// only ever reset teacher passwords, never register or
-// reset an admin account.
+// Teacher must enter mobile number
 // ======================================================
 
 const resetTeacherPassword = async (req, res) => {
     try {
         const {
             mobile,
-            secretCode,
             newPassword
         } = req.body;
 
-        if (!mobile || !secretCode || !newPassword) {
+        if (!mobile || !newPassword) {
             return res.status(400).json({
                 success: false,
-                message: "Mobile number, secret code and new password are required"
-            });
-        }
-
-        // Misconfiguration guard: if the school hasn't set a
-        // TEACHER_RESET_CODE yet, fail clearly instead of every
-        // attempt silently failing with "Invalid secret code".
-        if (!process.env.TEACHER_RESET_CODE) {
-            return res.status(500).json({
-                success: false,
-                message: "Teacher password reset is not configured yet. Please contact the admin."
-            });
-        }
-
-        if (secretCode !== process.env.TEACHER_RESET_CODE) {
-            return res.status(403).json({
-                success: false,
-                message: "Invalid teacher secret code"
+                message: "Mobile number and new password are required"
             });
         }
 
@@ -370,7 +349,7 @@ const resetTeacherPassword = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Password updated successfully"
+            message: "Teacher password reset successfully"
         });
 
     } catch (error) {
@@ -421,14 +400,15 @@ const logoutUser = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         const { id, role } = req.user;
+        const normalizedRole = (role || "").toLowerCase();
 
         let account = null;
         let user = null;
 
-        if (role === "student") {
-            account = await Student.findOne({ _id: id, status: "Active" });
+        if (normalizedRole === "student") {
+            account = await Student.findById(id);
 
-            if (account) {
+            if (account && account.status !== "Inactive") {
                 user = {
                     id: account._id,
                     name: account.fullName,
@@ -439,10 +419,10 @@ const getMe = async (req, res) => {
             }
         }
 
-        if (role === "teacher") {
-            account = await Teacher.findOne({ _id: id, status: "Active" });
+        if (normalizedRole === "teacher") {
+            account = await Teacher.findById(id);
 
-            if (account) {
+            if (account && account.status !== "Inactive") {
                 user = {
                     id: account._id,
                     name: account.fullName,
@@ -453,15 +433,16 @@ const getMe = async (req, res) => {
             }
         }
 
-        if (role === "admin") {
-            account = await User.findOne({ _id: id, role: "admin" });
+        if (normalizedRole === "admin") {
+            account = await User.findById(id);
 
             if (account) {
                 user = {
                     id: account._id,
                     name: account.name,
                     mobile: account.mobile,
-                    role: "admin"
+                    role: "admin",
+                    photo: account.photo || ""
                 };
             }
         }

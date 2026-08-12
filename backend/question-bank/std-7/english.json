@@ -1,0 +1,2151 @@
+{
+  "standard": 7,
+  "subject": "English",
+  "chapters": [
+    {
+      "c": 1,
+      "title": "WATER"
+    },
+    {
+      "c": 2,
+      "title": "FAIRS AND FESTIVALS"
+    },
+    {
+      "c": 3,
+      "title": "THE GUARDIANS OF THE GREEN"
+    },
+    {
+      "c": 4,
+      "title": "SUCCESS"
+    },
+    {
+      "c": 5,
+      "title": "NATION FIRST"
+    },
+    {
+      "c": 6,
+      "title": "VALUE THE VALUES"
+    },
+    {
+      "c": 7,
+      "title": "TEAMWORK"
+    },
+    {
+      "c": 8,
+      "title": "EXPRESS YOURSELF"
+    },
+    {
+      "c": 9,
+      "title": "FEEL IT, LIVE IT"
+    },
+    {
+      "c": 10,
+      "title": "LIFE SKILLS"
+    }
+  ],
+  "question_count": 150,
+  "questions": [
+    {
+      "id": "e7c1q01",
+      "c": 1,
+      "q": "What is essential for life?",
+      "o": [
+        "Water",
+        [
+          "Smoke",
+          "Plastic",
+          "Noise"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q02",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is rainwater harvesting for?",
+      "o": [
+        "Saving and storing rainwater",
+        [
+          "Making smoke",
+          "Increasing waste",
+          "Making roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q03",
+      "c": 1,
+      "q": "પાઠ ‘WATER’ના સંદર્ભમાં: What is water pollution?",
+      "o": [
+        [
+          "Making water cold",
+          "Making water salty only",
+          "Making water disappear"
+        ],
+        "Making water dirty"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c1q04",
+      "c": 1,
+      "q": "‘WATER’ સાથે સંબંધિત સાચી માહિતી કઈ છે? What is essential for life?",
+      "o": [
+        "Water",
+        [
+          "Smoke",
+          "Plastic",
+          "Noise"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q05",
+      "c": 1,
+      "q": "What is rainwater harvesting for?",
+      "o": [
+        [
+          "Making smoke",
+          "Increasing waste",
+          "Making roads"
+        ],
+        "Saving and storing rainwater"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c1q06",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is water pollution?",
+      "o": [
+        [
+          "Making water cold",
+          "Making water salty only",
+          "Making water disappear"
+        ],
+        "Making water dirty"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c1q07",
+      "c": 1,
+      "q": "પાઠ ‘WATER’ના સંદર્ભમાં: What is essential for life?",
+      "o": [
+        "Water",
+        [
+          "Smoke",
+          "Plastic",
+          "Noise"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q08",
+      "c": 1,
+      "q": "‘WATER’ સાથે સંબંધિત સાચી માહિતી કઈ છે? What is rainwater harvesting for?",
+      "o": [
+        "Saving and storing rainwater",
+        [
+          "Making smoke",
+          "Increasing waste",
+          "Making roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q09",
+      "c": 1,
+      "q": "What is water pollution?",
+      "o": [
+        [
+          "Making water cold",
+          "Making water salty only",
+          "Making water disappear"
+        ],
+        "Making water dirty"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c1q10",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is essential for life?",
+      "o": [
+        "Water",
+        [
+          "Smoke",
+          "Plastic",
+          "Noise"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q11",
+      "c": 1,
+      "q": "પાઠ ‘WATER’ના સંદર્ભમાં: What is rainwater harvesting for?",
+      "o": [
+        "Saving and storing rainwater",
+        [
+          "Making smoke",
+          "Increasing waste",
+          "Making roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q12",
+      "c": 1,
+      "q": "‘WATER’ સાથે સંબંધિત સાચી માહિતી કઈ છે? What is water pollution?",
+      "o": [
+        "Making water dirty",
+        [
+          "Making water cold",
+          "Making water salty only",
+          "Making water disappear"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q13",
+      "c": 1,
+      "q": "What is essential for life?",
+      "o": [
+        "Water",
+        [
+          "Smoke",
+          "Plastic",
+          "Noise"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q14",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is rainwater harvesting for?",
+      "o": [
+        "Saving and storing rainwater",
+        [
+          "Making smoke",
+          "Increasing waste",
+          "Making roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c1q15",
+      "c": 1,
+      "q": "પાઠ ‘WATER’ના સંદર્ભમાં: What is water pollution?",
+      "o": [
+        "Making water dirty",
+        [
+          "Making water cold",
+          "Making water salty only",
+          "Making water disappear"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q01",
+      "c": 2,
+      "q": "What do fairs and festivals bring together?",
+      "o": [
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ],
+        "People and communities"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q02",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Festivals help preserve what?",
+      "o": [
+        "Culture and traditions",
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q03",
+      "c": 2,
+      "q": "પાઠ ‘FAIRS AND FESTIVALS’ના સંદર્ભમાં: What do fairs and festivals bring together?",
+      "o": [
+        "People and communities",
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q04",
+      "c": 2,
+      "q": "‘FAIRS AND FESTIVALS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Festivals help preserve what?",
+      "o": [
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ],
+        "Culture and traditions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q05",
+      "c": 2,
+      "q": "What do fairs and festivals bring together?",
+      "o": [
+        "People and communities",
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q06",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Festivals help preserve what?",
+      "o": [
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ],
+        "Culture and traditions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q07",
+      "c": 2,
+      "q": "પાઠ ‘FAIRS AND FESTIVALS’ના સંદર્ભમાં: What do fairs and festivals bring together?",
+      "o": [
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ],
+        "People and communities"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q08",
+      "c": 2,
+      "q": "‘FAIRS AND FESTIVALS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Festivals help preserve what?",
+      "o": [
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ],
+        "Culture and traditions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q09",
+      "c": 2,
+      "q": "What do fairs and festivals bring together?",
+      "o": [
+        "People and communities",
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q10",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Festivals help preserve what?",
+      "o": [
+        "Culture and traditions",
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q11",
+      "c": 2,
+      "q": "પાઠ ‘FAIRS AND FESTIVALS’ના સંદર્ભમાં: What do fairs and festivals bring together?",
+      "o": [
+        "People and communities",
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q12",
+      "c": 2,
+      "q": "‘FAIRS AND FESTIVALS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Festivals help preserve what?",
+      "o": [
+        "Culture and traditions",
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c2q13",
+      "c": 2,
+      "q": "What do fairs and festivals bring together?",
+      "o": [
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ],
+        "People and communities"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q14",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Festivals help preserve what?",
+      "o": [
+        [
+          "Traffic rules",
+          "Computer codes",
+          "Weather"
+        ],
+        "Culture and traditions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c2q15",
+      "c": 2,
+      "q": "પાઠ ‘FAIRS AND FESTIVALS’ના સંદર્ભમાં: What do fairs and festivals bring together?",
+      "o": [
+        [
+          "Only machines",
+          "Only animals",
+          "Only books"
+        ],
+        "People and communities"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q01",
+      "c": 3,
+      "q": "Who are guardians of the green?",
+      "o": [
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ],
+        "People who protect nature"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q02",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why protect trees?",
+      "o": [
+        "They support life and the environment",
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c3q03",
+      "c": 3,
+      "q": "પાઠ ‘THE GUARDIANS OF THE GREEN’ના સંદર્ભમાં: Who are guardians of the green?",
+      "o": [
+        "People who protect nature",
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c3q04",
+      "c": 3,
+      "q": "‘THE GUARDIANS OF THE GREEN’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why protect trees?",
+      "o": [
+        "They support life and the environment",
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c3q05",
+      "c": 3,
+      "q": "Who are guardians of the green?",
+      "o": [
+        "People who protect nature",
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c3q06",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why protect trees?",
+      "o": [
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ],
+        "They support life and the environment"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q07",
+      "c": 3,
+      "q": "પાઠ ‘THE GUARDIANS OF THE GREEN’ના સંદર્ભમાં: Who are guardians of the green?",
+      "o": [
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ],
+        "People who protect nature"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q08",
+      "c": 3,
+      "q": "‘THE GUARDIANS OF THE GREEN’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why protect trees?",
+      "o": [
+        "They support life and the environment",
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c3q09",
+      "c": 3,
+      "q": "Who are guardians of the green?",
+      "o": [
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ],
+        "People who protect nature"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q10",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why protect trees?",
+      "o": [
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ],
+        "They support life and the environment"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q11",
+      "c": 3,
+      "q": "પાઠ ‘THE GUARDIANS OF THE GREEN’ના સંદર્ભમાં: Who are guardians of the green?",
+      "o": [
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ],
+        "People who protect nature"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q12",
+      "c": 3,
+      "q": "‘THE GUARDIANS OF THE GREEN’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why protect trees?",
+      "o": [
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ],
+        "They support life and the environment"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q13",
+      "c": 3,
+      "q": "Who are guardians of the green?",
+      "o": [
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ],
+        "People who protect nature"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c3q14",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why protect trees?",
+      "o": [
+        "They support life and the environment",
+        [
+          "They increase waste",
+          "They stop all rain",
+          "They make roads"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c3q15",
+      "c": 3,
+      "q": "પાઠ ‘THE GUARDIANS OF THE GREEN’ના સંદર્ભમાં: Who are guardians of the green?",
+      "o": [
+        "People who protect nature",
+        [
+          "Only shopkeepers",
+          "Only drivers",
+          "Only athletes"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c4q01",
+      "c": 4,
+      "q": "What is important for success?",
+      "o": [
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ],
+        "Hard work and practice"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q02",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why is practice useful?",
+      "o": [
+        "It improves skills",
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c4q03",
+      "c": 4,
+      "q": "પાઠ ‘SUCCESS’ના સંદર્ભમાં: What is important for success?",
+      "o": [
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ],
+        "Hard work and practice"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q04",
+      "c": 4,
+      "q": "‘SUCCESS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why is practice useful?",
+      "o": [
+        "It improves skills",
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c4q05",
+      "c": 4,
+      "q": "What is important for success?",
+      "o": [
+        "Hard work and practice",
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c4q06",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why is practice useful?",
+      "o": [
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ],
+        "It improves skills"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q07",
+      "c": 4,
+      "q": "પાઠ ‘SUCCESS’ના સંદર્ભમાં: What is important for success?",
+      "o": [
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ],
+        "Hard work and practice"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q08",
+      "c": 4,
+      "q": "‘SUCCESS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why is practice useful?",
+      "o": [
+        "It improves skills",
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c4q09",
+      "c": 4,
+      "q": "What is important for success?",
+      "o": [
+        "Hard work and practice",
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c4q10",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why is practice useful?",
+      "o": [
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ],
+        "It improves skills"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q11",
+      "c": 4,
+      "q": "પાઠ ‘SUCCESS’ના સંદર્ભમાં: What is important for success?",
+      "o": [
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ],
+        "Hard work and practice"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q12",
+      "c": 4,
+      "q": "‘SUCCESS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why is practice useful?",
+      "o": [
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ],
+        "It improves skills"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q13",
+      "c": 4,
+      "q": "What is important for success?",
+      "o": [
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ],
+        "Hard work and practice"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q14",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why is practice useful?",
+      "o": [
+        [
+          "It removes learning",
+          "It stops progress",
+          "It wastes all time"
+        ],
+        "It improves skills"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c4q15",
+      "c": 4,
+      "q": "પાઠ ‘SUCCESS’ના સંદર્ભમાં: What is important for success?",
+      "o": [
+        "Hard work and practice",
+        [
+          "Laziness",
+          "Giving up",
+          "Ignoring feedback"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q01",
+      "c": 5,
+      "q": "What does Nation First emphasize?",
+      "o": [
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ],
+        "Responsibility toward the nation"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q02",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Good citizens should respect what?",
+      "o": [
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ],
+        "The country and its people"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q03",
+      "c": 5,
+      "q": "પાઠ ‘NATION FIRST’ના સંદર્ભમાં: What does Nation First emphasize?",
+      "o": [
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ],
+        "Responsibility toward the nation"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q04",
+      "c": 5,
+      "q": "‘NATION FIRST’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Good citizens should respect what?",
+      "o": [
+        "The country and its people",
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q05",
+      "c": 5,
+      "q": "What does Nation First emphasize?",
+      "o": [
+        "Responsibility toward the nation",
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q06",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Good citizens should respect what?",
+      "o": [
+        "The country and its people",
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q07",
+      "c": 5,
+      "q": "પાઠ ‘NATION FIRST’ના સંદર્ભમાં: What does Nation First emphasize?",
+      "o": [
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ],
+        "Responsibility toward the nation"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q08",
+      "c": 5,
+      "q": "‘NATION FIRST’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Good citizens should respect what?",
+      "o": [
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ],
+        "The country and its people"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q09",
+      "c": 5,
+      "q": "What does Nation First emphasize?",
+      "o": [
+        "Responsibility toward the nation",
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q10",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Good citizens should respect what?",
+      "o": [
+        "The country and its people",
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q11",
+      "c": 5,
+      "q": "પાઠ ‘NATION FIRST’ના સંદર્ભમાં: What does Nation First emphasize?",
+      "o": [
+        "Responsibility toward the nation",
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c5q12",
+      "c": 5,
+      "q": "‘NATION FIRST’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Good citizens should respect what?",
+      "o": [
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ],
+        "The country and its people"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q13",
+      "c": 5,
+      "q": "What does Nation First emphasize?",
+      "o": [
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ],
+        "Responsibility toward the nation"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q14",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Good citizens should respect what?",
+      "o": [
+        [
+          "Only money",
+          "Only games",
+          "Only advertisements"
+        ],
+        "The country and its people"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c5q15",
+      "c": 5,
+      "q": "પાઠ ‘NATION FIRST’ના સંદર્ભમાં: What does Nation First emphasize?",
+      "o": [
+        [
+          "Personal profit only",
+          "Entertainment",
+          "Travel"
+        ],
+        "Responsibility toward the nation"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q01",
+      "c": 6,
+      "q": "What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q02",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why are values important?",
+      "o": [
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ],
+        "They guide responsible actions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q03",
+      "c": 6,
+      "q": "પાઠ ‘VALUE THE VALUES’ના સંદર્ભમાં: What are values?",
+      "o": [
+        "Principles that guide behaviour",
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c6q04",
+      "c": 6,
+      "q": "‘VALUE THE VALUES’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why are values important?",
+      "o": [
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ],
+        "They guide responsible actions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q05",
+      "c": 6,
+      "q": "What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q06",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why are values important?",
+      "o": [
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ],
+        "They guide responsible actions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q07",
+      "c": 6,
+      "q": "પાઠ ‘VALUE THE VALUES’ના સંદર્ભમાં: What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q08",
+      "c": 6,
+      "q": "‘VALUE THE VALUES’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why are values important?",
+      "o": [
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ],
+        "They guide responsible actions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q09",
+      "c": 6,
+      "q": "What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q10",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why are values important?",
+      "o": [
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ],
+        "They guide responsible actions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q11",
+      "c": 6,
+      "q": "પાઠ ‘VALUE THE VALUES’ના સંદર્ભમાં: What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q12",
+      "c": 6,
+      "q": "‘VALUE THE VALUES’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why are values important?",
+      "o": [
+        "They guide responsible actions",
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c6q13",
+      "c": 6,
+      "q": "What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c6q14",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why are values important?",
+      "o": [
+        "They guide responsible actions",
+        [
+          "They increase noise",
+          "They prevent learning",
+          "They replace skills"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c6q15",
+      "c": 6,
+      "q": "પાઠ ‘VALUE THE VALUES’ના સંદર્ભમાં: What are values?",
+      "o": [
+        [
+          "Only numbers",
+          "Only games",
+          "Only subjects"
+        ],
+        "Principles that guide behaviour"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q01",
+      "c": 7,
+      "q": "What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q02",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: A good team member should?",
+      "o": [
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ],
+        "Cooperate and contribute"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q03",
+      "c": 7,
+      "q": "પાઠ ‘TEAMWORK’ના સંદર્ભમાં: What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q04",
+      "c": 7,
+      "q": "‘TEAMWORK’ સાથે સંબંધિત સાચી માહિતી કઈ છે? A good team member should?",
+      "o": [
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ],
+        "Cooperate and contribute"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q05",
+      "c": 7,
+      "q": "What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q06",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: A good team member should?",
+      "o": [
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ],
+        "Cooperate and contribute"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q07",
+      "c": 7,
+      "q": "પાઠ ‘TEAMWORK’ના સંદર્ભમાં: What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q08",
+      "c": 7,
+      "q": "‘TEAMWORK’ સાથે સંબંધિત સાચી માહિતી કઈ છે? A good team member should?",
+      "o": [
+        "Cooperate and contribute",
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q09",
+      "c": 7,
+      "q": "What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q10",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: A good team member should?",
+      "o": [
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ],
+        "Cooperate and contribute"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q11",
+      "c": 7,
+      "q": "પાઠ ‘TEAMWORK’ના સંદર્ભમાં: What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c7q12",
+      "c": 7,
+      "q": "‘TEAMWORK’ સાથે સંબંધિત સાચી માહિતી કઈ છે? A good team member should?",
+      "o": [
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ],
+        "Cooperate and contribute"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q13",
+      "c": 7,
+      "q": "What does teamwork mean?",
+      "o": [
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ],
+        "Working together toward a goal"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q14",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: A good team member should?",
+      "o": [
+        [
+          "Refuse to help",
+          "Ignore others",
+          "Stop communication"
+        ],
+        "Cooperate and contribute"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c7q15",
+      "c": 7,
+      "q": "પાઠ ‘TEAMWORK’ના સંદર્ભમાં: What does teamwork mean?",
+      "o": [
+        "Working together toward a goal",
+        [
+          "Working alone always",
+          "Avoiding cooperation",
+          "Competing with teammates"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q01",
+      "c": 8,
+      "q": "What is self-expression?",
+      "o": [
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ],
+        "Communicating thoughts and feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q02",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which skill helps expression?",
+      "o": [
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ],
+        "Speaking and writing clearly"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q03",
+      "c": 8,
+      "q": "પાઠ ‘EXPRESS YOURSELF’ના સંદર્ભમાં: What is self-expression?",
+      "o": [
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ],
+        "Communicating thoughts and feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q04",
+      "c": 8,
+      "q": "‘EXPRESS YOURSELF’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Which skill helps expression?",
+      "o": [
+        "Speaking and writing clearly",
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q05",
+      "c": 8,
+      "q": "What is self-expression?",
+      "o": [
+        "Communicating thoughts and feelings",
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q06",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which skill helps expression?",
+      "o": [
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ],
+        "Speaking and writing clearly"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q07",
+      "c": 8,
+      "q": "પાઠ ‘EXPRESS YOURSELF’ના સંદર્ભમાં: What is self-expression?",
+      "o": [
+        "Communicating thoughts and feelings",
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q08",
+      "c": 8,
+      "q": "‘EXPRESS YOURSELF’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Which skill helps expression?",
+      "o": [
+        "Speaking and writing clearly",
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q09",
+      "c": 8,
+      "q": "What is self-expression?",
+      "o": [
+        "Communicating thoughts and feelings",
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q10",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which skill helps expression?",
+      "o": [
+        "Speaking and writing clearly",
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c8q11",
+      "c": 8,
+      "q": "પાઠ ‘EXPRESS YOURSELF’ના સંદર્ભમાં: What is self-expression?",
+      "o": [
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ],
+        "Communicating thoughts and feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q12",
+      "c": 8,
+      "q": "‘EXPRESS YOURSELF’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Which skill helps expression?",
+      "o": [
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ],
+        "Speaking and writing clearly"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q13",
+      "c": 8,
+      "q": "What is self-expression?",
+      "o": [
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ],
+        "Communicating thoughts and feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q14",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which skill helps expression?",
+      "o": [
+        [
+          "Ignoring listeners",
+          "Avoiding language",
+          "Only memorising"
+        ],
+        "Speaking and writing clearly"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c8q15",
+      "c": 8,
+      "q": "પાઠ ‘EXPRESS YOURSELF’ના સંદર્ભમાં: What is self-expression?",
+      "o": [
+        "Communicating thoughts and feelings",
+        [
+          "Hiding every idea",
+          "Only solving sums",
+          "Only drawing maps"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q01",
+      "c": 9,
+      "q": "What does empathy involve?",
+      "o": [
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ],
+        "Understanding others’ feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q02",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why understand feelings?",
+      "o": [
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ],
+        "It improves relationships"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q03",
+      "c": 9,
+      "q": "પાઠ ‘FEEL IT, LIVE IT’ના સંદર્ભમાં: What does empathy involve?",
+      "o": [
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ],
+        "Understanding others’ feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q04",
+      "c": 9,
+      "q": "‘FEEL IT, LIVE IT’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why understand feelings?",
+      "o": [
+        "It improves relationships",
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q05",
+      "c": 9,
+      "q": "What does empathy involve?",
+      "o": [
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ],
+        "Understanding others’ feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q06",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why understand feelings?",
+      "o": [
+        "It improves relationships",
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q07",
+      "c": 9,
+      "q": "પાઠ ‘FEEL IT, LIVE IT’ના સંદર્ભમાં: What does empathy involve?",
+      "o": [
+        "Understanding others’ feelings",
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q08",
+      "c": 9,
+      "q": "‘FEEL IT, LIVE IT’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why understand feelings?",
+      "o": [
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ],
+        "It improves relationships"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q09",
+      "c": 9,
+      "q": "What does empathy involve?",
+      "o": [
+        "Understanding others’ feelings",
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q10",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why understand feelings?",
+      "o": [
+        "It improves relationships",
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q11",
+      "c": 9,
+      "q": "પાઠ ‘FEEL IT, LIVE IT’ના સંદર્ભમાં: What does empathy involve?",
+      "o": [
+        "Understanding others’ feelings",
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q12",
+      "c": 9,
+      "q": "‘FEEL IT, LIVE IT’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Why understand feelings?",
+      "o": [
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ],
+        "It improves relationships"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q13",
+      "c": 9,
+      "q": "What does empathy involve?",
+      "o": [
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ],
+        "Understanding others’ feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c9q14",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Why understand feelings?",
+      "o": [
+        "It improves relationships",
+        [
+          "It stops communication",
+          "It increases conflict",
+          "It prevents cooperation"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c9q15",
+      "c": 9,
+      "q": "પાઠ ‘FEEL IT, LIVE IT’ના સંદર્ભમાં: What does empathy involve?",
+      "o": [
+        [
+          "Ignoring others",
+          "Only winning",
+          "Only buying things"
+        ],
+        "Understanding others’ feelings"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q01",
+      "c": 10,
+      "q": "What do life skills help us do?",
+      "o": [
+        "Handle everyday situations effectively",
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c10q02",
+      "c": 10,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Decision-making is an example of?",
+      "o": [
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ],
+        "A life skill"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q03",
+      "c": 10,
+      "q": "પાઠ ‘LIFE SKILLS’ના સંદર્ભમાં: What do life skills help us do?",
+      "o": [
+        "Handle everyday situations effectively",
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c10q04",
+      "c": 10,
+      "q": "‘LIFE SKILLS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Decision-making is an example of?",
+      "o": [
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ],
+        "A life skill"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q05",
+      "c": 10,
+      "q": "What do life skills help us do?",
+      "o": [
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ],
+        "Handle everyday situations effectively"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q06",
+      "c": 10,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Decision-making is an example of?",
+      "o": [
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ],
+        "A life skill"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q07",
+      "c": 10,
+      "q": "પાઠ ‘LIFE SKILLS’ના સંદર્ભમાં: What do life skills help us do?",
+      "o": [
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ],
+        "Handle everyday situations effectively"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q08",
+      "c": 10,
+      "q": "‘LIFE SKILLS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Decision-making is an example of?",
+      "o": [
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ],
+        "A life skill"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q09",
+      "c": 10,
+      "q": "What do life skills help us do?",
+      "o": [
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ],
+        "Handle everyday situations effectively"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q10",
+      "c": 10,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Decision-making is an example of?",
+      "o": [
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ],
+        "A life skill"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q11",
+      "c": 10,
+      "q": "પાઠ ‘LIFE SKILLS’ના સંદર્ભમાં: What do life skills help us do?",
+      "o": [
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ],
+        "Handle everyday situations effectively"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q12",
+      "c": 10,
+      "q": "‘LIFE SKILLS’ સાથે સંબંધિત સાચી માહિતી કઈ છે? Decision-making is an example of?",
+      "o": [
+        "A life skill",
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ]
+      ],
+      "a": 0
+    },
+    {
+      "id": "e7c10q13",
+      "c": 10,
+      "q": "What do life skills help us do?",
+      "o": [
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ],
+        "Handle everyday situations effectively"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q14",
+      "c": 10,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Decision-making is an example of?",
+      "o": [
+        [
+          "A festival",
+          "A water source",
+          "A food"
+        ],
+        "A life skill"
+      ],
+      "a": 1
+    },
+    {
+      "id": "e7c10q15",
+      "c": 10,
+      "q": "પાઠ ‘LIFE SKILLS’ના સંદર્ભમાં: What do life skills help us do?",
+      "o": [
+        [
+          "Avoid responsibilities",
+          "Only pass exams",
+          "Only play games"
+        ],
+        "Handle everyday situations effectively"
+      ],
+      "a": 1
+    }
+  ],
+  "source_basis": "STD_7_English_SL.pdf",
+  "format_note": "id, c, q, o (4 options), a (0-based correct option index)"
+}

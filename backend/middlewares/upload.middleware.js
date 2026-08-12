@@ -76,6 +76,9 @@ const uploadStudent = upload;
 // Teacher photo upload
 const uploadTeacher = createUploader("teachers", IMAGE_TYPES, 2);
 
+// Admin photo upload
+const uploadAdmin = createUploader("admins", IMAGE_TYPES, 2);
+
 // School logo, achievement photo, and Today's Rose photo
 const uploadHome = createUploader("home", IMAGE_TYPES, 5);
 
@@ -105,6 +108,7 @@ module.exports = {
     upload,
     uploadStudent,
     uploadTeacher,
+    uploadAdmin,
     uploadHome,
     uploadHomework,
     uploadSubmission,

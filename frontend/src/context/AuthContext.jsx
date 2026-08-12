@@ -125,6 +125,15 @@ export const AuthProvider = ({ children }) => {
 
     };
 
+    const refreshUser = async () => {
+        const verifiedUser = await fetchCurrentUser();
+        if (verifiedUser) {
+            setUser(verifiedUser);
+            localStorage.setItem("user", JSON.stringify(verifiedUser));
+        }
+        return verifiedUser;
+    };
+
     return (
 
         <AuthContext.Provider
@@ -140,6 +149,8 @@ export const AuthProvider = ({ children }) => {
                 register,
 
                 logout,
+
+                refreshUser,
 
                 isAuthenticated: !!user
 

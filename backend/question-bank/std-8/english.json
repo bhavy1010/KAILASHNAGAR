@@ -1,0 +1,1667 @@
+{
+  "standard": 8,
+  "subject": "English",
+  "chapters": [
+    {
+      "c": 1,
+      "title": "Q for Question"
+    },
+    {
+      "c": 2,
+      "title": "LMBB: Learn more be brighter"
+    },
+    {
+      "c": 3,
+      "title": "What were You Doing?"
+    },
+    {
+      "c": 4,
+      "title": "Sun-Tour"
+    },
+    {
+      "c": 5,
+      "title": "I Will Be That"
+    },
+    {
+      "c": 6,
+      "title": "You Love English, Don't You?"
+    },
+    {
+      "c": 7,
+      "title": "Ah! Oh! Ouch!"
+    },
+    {
+      "c": 8,
+      "title": "Tell Me Why?"
+    },
+    {
+      "c": 9,
+      "title": "English Plus"
+    }
+  ],
+  "question_count": 135,
+  "questions": [
+    {
+      "id": "en8c1q01",
+      "c": 1,
+      "q": "Who is the interview subject in the opening activity?",
+      "o": [
+        "Mahatma Gandhi",
+        "Kiran Bedi",
+        "Sunita Williams",
+        "Vikram Sarabhai"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c1q02",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Where was Sunita Williams born?",
+      "o": [
+        "Gujarat",
+        "Delhi",
+        "London",
+        "Ohio"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c1q03",
+      "c": 1,
+      "q": "‘Q for Question’ના સંદર્ભમાં સાચી માહિતી કઈ છે? Where did Sunita graduate from?",
+      "o": [
+        "Florida Institute of Technology",
+        "Harvard University",
+        "Gujarat University",
+        "Oxford University"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c1q04",
+      "c": 1,
+      "q": "પાઠ ‘Q for Question’ માટે યોગ્ય જવાબ પસંદ કરો: What did Sunita take to space?",
+      "o": [
+        "A television",
+        "A bicycle",
+        "A cricket bat",
+        "The Bhagavad Gita, a Ganesha idol and a letter"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c1q05",
+      "c": 1,
+      "q": "સાચું શું છે? Who is the interview subject in the opening activity?",
+      "o": [
+        "Vikram Sarabhai",
+        "Kiran Bedi",
+        "Sunita Williams",
+        "Mahatma Gandhi"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c1q06",
+      "c": 1,
+      "q": "Where was Sunita Williams born?",
+      "o": [
+        "Delhi",
+        "Gujarat",
+        "London",
+        "Ohio"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c1q07",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Where did Sunita graduate from?",
+      "o": [
+        "Oxford University",
+        "Harvard University",
+        "Gujarat University",
+        "Florida Institute of Technology"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c1q08",
+      "c": 1,
+      "q": "‘Q for Question’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What did Sunita take to space?",
+      "o": [
+        "A television",
+        "A cricket bat",
+        "The Bhagavad Gita, a Ganesha idol and a letter",
+        "A bicycle"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c1q09",
+      "c": 1,
+      "q": "પાઠ ‘Q for Question’ માટે યોગ્ય જવાબ પસંદ કરો: Who is the interview subject in the opening activity?",
+      "o": [
+        "Mahatma Gandhi",
+        "Kiran Bedi",
+        "Vikram Sarabhai",
+        "Sunita Williams"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c1q10",
+      "c": 1,
+      "q": "સાચું શું છે? Where was Sunita Williams born?",
+      "o": [
+        "Gujarat",
+        "Delhi",
+        "London",
+        "Ohio"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c1q11",
+      "c": 1,
+      "q": "Where did Sunita graduate from?",
+      "o": [
+        "Florida Institute of Technology",
+        "Harvard University",
+        "Oxford University",
+        "Gujarat University"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c1q12",
+      "c": 1,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What did Sunita take to space?",
+      "o": [
+        "The Bhagavad Gita, a Ganesha idol and a letter",
+        "A television",
+        "A bicycle",
+        "A cricket bat"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c1q13",
+      "c": 1,
+      "q": "‘Q for Question’ના સંદર્ભમાં સાચી માહિતી કઈ છે? Who is the interview subject in the opening activity?",
+      "o": [
+        "Kiran Bedi",
+        "Vikram Sarabhai",
+        "Sunita Williams",
+        "Mahatma Gandhi"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c1q14",
+      "c": 1,
+      "q": "પાઠ ‘Q for Question’ માટે યોગ્ય જવાબ પસંદ કરો: Where was Sunita Williams born?",
+      "o": [
+        "Delhi",
+        "London",
+        "Ohio",
+        "Gujarat"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c1q15",
+      "c": 1,
+      "q": "સાચું શું છે? Where did Sunita graduate from?",
+      "o": [
+        "Oxford University",
+        "Harvard University",
+        "Florida Institute of Technology",
+        "Gujarat University"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c2q01",
+      "c": 2,
+      "q": "What is the central idea of the unit?",
+      "o": [
+        "An unrelated idea",
+        "Learning and knowledge",
+        "A different answer",
+        "None of these"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c2q02",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does 'brighter' suggest in the unit?",
+      "o": [
+        "More knowledgeable",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c2q03",
+      "c": 2,
+      "q": "‘LMBB: Learn more be brighter’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is the central idea of the unit?",
+      "o": [
+        "Learning and knowledge",
+        "A different answer",
+        "None of these",
+        "An unrelated idea"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c2q04",
+      "c": 2,
+      "q": "પાઠ ‘LMBB: Learn more be brighter’ માટે યોગ્ય જવાબ પસંદ કરો: What does 'brighter' suggest in the unit?",
+      "o": [
+        "None of these",
+        "An unrelated idea",
+        "A different answer",
+        "More knowledgeable"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c2q05",
+      "c": 2,
+      "q": "સાચું શું છે? What is the central idea of the unit?",
+      "o": [
+        "A different answer",
+        "None of these",
+        "An unrelated idea",
+        "Learning and knowledge"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c2q06",
+      "c": 2,
+      "q": "What does 'brighter' suggest in the unit?",
+      "o": [
+        "A different answer",
+        "None of these",
+        "An unrelated idea",
+        "More knowledgeable"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c2q07",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is the central idea of the unit?",
+      "o": [
+        "Learning and knowledge",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c2q08",
+      "c": 2,
+      "q": "‘LMBB: Learn more be brighter’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What does 'brighter' suggest in the unit?",
+      "o": [
+        "An unrelated idea",
+        "None of these",
+        "More knowledgeable",
+        "A different answer"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c2q09",
+      "c": 2,
+      "q": "પાઠ ‘LMBB: Learn more be brighter’ માટે યોગ્ય જવાબ પસંદ કરો: What is the central idea of the unit?",
+      "o": [
+        "An unrelated idea",
+        "None of these",
+        "A different answer",
+        "Learning and knowledge"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c2q10",
+      "c": 2,
+      "q": "સાચું શું છે? What does 'brighter' suggest in the unit?",
+      "o": [
+        "A different answer",
+        "None of these",
+        "An unrelated idea",
+        "More knowledgeable"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c2q11",
+      "c": 2,
+      "q": "What is the central idea of the unit?",
+      "o": [
+        "None of these",
+        "Learning and knowledge",
+        "An unrelated idea",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c2q12",
+      "c": 2,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does 'brighter' suggest in the unit?",
+      "o": [
+        "An unrelated idea",
+        "More knowledgeable",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c2q13",
+      "c": 2,
+      "q": "‘LMBB: Learn more be brighter’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is the central idea of the unit?",
+      "o": [
+        "An unrelated idea",
+        "None of these",
+        "A different answer",
+        "Learning and knowledge"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c2q14",
+      "c": 2,
+      "q": "પાઠ ‘LMBB: Learn more be brighter’ માટે યોગ્ય જવાબ પસંદ કરો: What does 'brighter' suggest in the unit?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "More knowledgeable",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c2q15",
+      "c": 2,
+      "q": "સાચું શું છે? What is the central idea of the unit?",
+      "o": [
+        "None of these",
+        "An unrelated idea",
+        "Learning and knowledge",
+        "A different answer"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c3q01",
+      "c": 3,
+      "q": "What is the unit mainly useful for?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "An unrelated idea",
+        "Talking about actions in progress"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c3q02",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "Past continuous",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c3q03",
+      "c": 3,
+      "q": "‘What were You Doing?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is the unit mainly useful for?",
+      "o": [
+        "Talking about actions in progress",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c3q04",
+      "c": 3,
+      "q": "પાઠ ‘What were You Doing?’ માટે યોગ્ય જવાબ પસંદ કરો: Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "None of these",
+        "Past continuous",
+        "A different answer",
+        "An unrelated idea"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c3q05",
+      "c": 3,
+      "q": "સાચું શું છે? What is the unit mainly useful for?",
+      "o": [
+        "A different answer",
+        "Talking about actions in progress",
+        "None of these",
+        "An unrelated idea"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c3q06",
+      "c": 3,
+      "q": "Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "A different answer",
+        "An unrelated idea",
+        "None of these",
+        "Past continuous"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c3q07",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is the unit mainly useful for?",
+      "o": [
+        "None of these",
+        "Talking about actions in progress",
+        "A different answer",
+        "An unrelated idea"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c3q08",
+      "c": 3,
+      "q": "‘What were You Doing?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "A different answer",
+        "Past continuous",
+        "An unrelated idea",
+        "None of these"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c3q09",
+      "c": 3,
+      "q": "પાઠ ‘What were You Doing?’ માટે યોગ્ય જવાબ પસંદ કરો: What is the unit mainly useful for?",
+      "o": [
+        "An unrelated idea",
+        "Talking about actions in progress",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c3q10",
+      "c": 3,
+      "q": "સાચું શું છે? Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "Past continuous",
+        "A different answer",
+        "An unrelated idea",
+        "None of these"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c3q11",
+      "c": 3,
+      "q": "What is the unit mainly useful for?",
+      "o": [
+        "Talking about actions in progress",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c3q12",
+      "c": 3,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "Past continuous",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c3q13",
+      "c": 3,
+      "q": "‘What were You Doing?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is the unit mainly useful for?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "Talking about actions in progress",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c3q14",
+      "c": 3,
+      "q": "પાઠ ‘What were You Doing?’ માટે યોગ્ય જવાબ પસંદ કરો: Which tense is commonly used for an action in progress in the past?",
+      "o": [
+        "None of these",
+        "Past continuous",
+        "An unrelated idea",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c3q15",
+      "c": 3,
+      "q": "સાચું શું છે? What is the unit mainly useful for?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "Talking about actions in progress",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q01",
+      "c": 4,
+      "q": "What is a tour?",
+      "o": [
+        "A journey/trip",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c4q02",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What skills can a tour unit develop?",
+      "o": [
+        "A different answer",
+        "Reading, speaking and describing",
+        "An unrelated idea",
+        "None of these"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c4q03",
+      "c": 4,
+      "q": "‘Sun-Tour’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is a tour?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "A journey/trip",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q04",
+      "c": 4,
+      "q": "પાઠ ‘Sun-Tour’ માટે યોગ્ય જવાબ પસંદ કરો: What skills can a tour unit develop?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "An unrelated idea",
+        "Reading, speaking and describing"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c4q05",
+      "c": 4,
+      "q": "સાચું શું છે? What is a tour?",
+      "o": [
+        "A different answer",
+        "An unrelated idea",
+        "A journey/trip",
+        "None of these"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q06",
+      "c": 4,
+      "q": "What skills can a tour unit develop?",
+      "o": [
+        "Reading, speaking and describing",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c4q07",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is a tour?",
+      "o": [
+        "A journey/trip",
+        "None of these",
+        "An unrelated idea",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c4q08",
+      "c": 4,
+      "q": "‘Sun-Tour’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What skills can a tour unit develop?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "Reading, speaking and describing",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q09",
+      "c": 4,
+      "q": "પાઠ ‘Sun-Tour’ માટે યોગ્ય જવાબ પસંદ કરો: What is a tour?",
+      "o": [
+        "None of these",
+        "A journey/trip",
+        "An unrelated idea",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c4q10",
+      "c": 4,
+      "q": "સાચું શું છે? What skills can a tour unit develop?",
+      "o": [
+        "A different answer",
+        "None of these",
+        "Reading, speaking and describing",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q11",
+      "c": 4,
+      "q": "What is a tour?",
+      "o": [
+        "A different answer",
+        "An unrelated idea",
+        "A journey/trip",
+        "None of these"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q12",
+      "c": 4,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What skills can a tour unit develop?",
+      "o": [
+        "An unrelated idea",
+        "Reading, speaking and describing",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c4q13",
+      "c": 4,
+      "q": "‘Sun-Tour’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is a tour?",
+      "o": [
+        "A journey/trip",
+        "None of these",
+        "A different answer",
+        "An unrelated idea"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c4q14",
+      "c": 4,
+      "q": "પાઠ ‘Sun-Tour’ માટે યોગ્ય જવાબ પસંદ કરો: What skills can a tour unit develop?",
+      "o": [
+        "An unrelated idea",
+        "A different answer",
+        "Reading, speaking and describing",
+        "None of these"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c4q15",
+      "c": 4,
+      "q": "સાચું શું છે? What is a tour?",
+      "o": [
+        "None of these",
+        "A journey/trip",
+        "An unrelated idea",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c5q01",
+      "c": 5,
+      "q": "Who wrote the poem 'I Will Be That'?",
+      "o": [
+        "D. J. Enright",
+        "Robert Frost",
+        "Brian Patten",
+        "William Shakespeare"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c5q02",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does the child want to become instead of a fixed profession?",
+      "o": [
+        "A pilot only",
+        "A doctor only",
+        "A lawyer only",
+        "A tree, ocean or mountain range"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c5q03",
+      "c": 5,
+      "q": "‘I Will Be That’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is the main message?",
+      "o": [
+        "Children should be allowed to imagine and choose",
+        "A lawyer only",
+        "A doctor only",
+        "A pilot only"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c5q04",
+      "c": 5,
+      "q": "પાઠ ‘I Will Be That’ માટે યોગ્ય જવાબ પસંદ કરો: Who wrote the poem 'I Will Be That'?",
+      "o": [
+        "D. J. Enright",
+        "William Shakespeare",
+        "Robert Frost",
+        "Brian Patten"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c5q05",
+      "c": 5,
+      "q": "સાચું શું છે? What does the child want to become instead of a fixed profession?",
+      "o": [
+        "A tree, ocean or mountain range",
+        "A lawyer only",
+        "A doctor only",
+        "A pilot only"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c5q06",
+      "c": 5,
+      "q": "What is the main message?",
+      "o": [
+        "A pilot only",
+        "A lawyer only",
+        "A doctor only",
+        "Children should be allowed to imagine and choose"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c5q07",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Who wrote the poem 'I Will Be That'?",
+      "o": [
+        "Brian Patten",
+        "William Shakespeare",
+        "Robert Frost",
+        "D. J. Enright"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c5q08",
+      "c": 5,
+      "q": "‘I Will Be That’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What does the child want to become instead of a fixed profession?",
+      "o": [
+        "A tree, ocean or mountain range",
+        "A lawyer only",
+        "A pilot only",
+        "A doctor only"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c5q09",
+      "c": 5,
+      "q": "પાઠ ‘I Will Be That’ માટે યોગ્ય જવાબ પસંદ કરો: What is the main message?",
+      "o": [
+        "A doctor only",
+        "A pilot only",
+        "A lawyer only",
+        "Children should be allowed to imagine and choose"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c5q10",
+      "c": 5,
+      "q": "સાચું શું છે? Who wrote the poem 'I Will Be That'?",
+      "o": [
+        "Robert Frost",
+        "William Shakespeare",
+        "D. J. Enright",
+        "Brian Patten"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c5q11",
+      "c": 5,
+      "q": "What does the child want to become instead of a fixed profession?",
+      "o": [
+        "A pilot only",
+        "A doctor only",
+        "A lawyer only",
+        "A tree, ocean or mountain range"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c5q12",
+      "c": 5,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is the main message?",
+      "o": [
+        "Children should be allowed to imagine and choose",
+        "A pilot only",
+        "A lawyer only",
+        "A doctor only"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c5q13",
+      "c": 5,
+      "q": "‘I Will Be That’ના સંદર્ભમાં સાચી માહિતી કઈ છે? Who wrote the poem 'I Will Be That'?",
+      "o": [
+        "Robert Frost",
+        "D. J. Enright",
+        "Brian Patten",
+        "William Shakespeare"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c5q14",
+      "c": 5,
+      "q": "પાઠ ‘I Will Be That’ માટે યોગ્ય જવાબ પસંદ કરો: What does the child want to become instead of a fixed profession?",
+      "o": [
+        "A pilot only",
+        "A lawyer only",
+        "A tree, ocean or mountain range",
+        "A doctor only"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c5q15",
+      "c": 5,
+      "q": "સાચું શું છે? What is the main message?",
+      "o": [
+        "Children should be allowed to imagine and choose",
+        "A doctor only",
+        "A pilot only",
+        "A lawyer only"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c6q01",
+      "c": 6,
+      "q": "Which language feature is highlighted in the title?",
+      "o": [
+        "isn't you?",
+        "Question tags",
+        "don't you?",
+        "won't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q02",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is the tag for 'You are happy'?",
+      "o": [
+        "don't you?",
+        "won't you?",
+        "isn't you?",
+        "aren't you?"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c6q03",
+      "c": 6,
+      "q": "‘You Love English, Don't You?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is a common use of a question tag?",
+      "o": [
+        "won't you?",
+        "To confirm information",
+        "don't you?",
+        "isn't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q04",
+      "c": 6,
+      "q": "પાઠ ‘You Love English, Don't You?’ માટે યોગ્ય જવાબ પસંદ કરો: Which language feature is highlighted in the title?",
+      "o": [
+        "Question tags",
+        "isn't you?",
+        "don't you?",
+        "won't you?"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c6q05",
+      "c": 6,
+      "q": "સાચું શું છે? What is the tag for 'You are happy'?",
+      "o": [
+        "isn't you?",
+        "aren't you?",
+        "won't you?",
+        "don't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q06",
+      "c": 6,
+      "q": "What is a common use of a question tag?",
+      "o": [
+        "don't you?",
+        "To confirm information",
+        "isn't you?",
+        "won't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q07",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: Which language feature is highlighted in the title?",
+      "o": [
+        "Question tags",
+        "don't you?",
+        "won't you?",
+        "isn't you?"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c6q08",
+      "c": 6,
+      "q": "‘You Love English, Don't You?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is the tag for 'You are happy'?",
+      "o": [
+        "won't you?",
+        "don't you?",
+        "isn't you?",
+        "aren't you?"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c6q09",
+      "c": 6,
+      "q": "પાઠ ‘You Love English, Don't You?’ માટે યોગ્ય જવાબ પસંદ કરો: What is a common use of a question tag?",
+      "o": [
+        "won't you?",
+        "isn't you?",
+        "To confirm information",
+        "don't you?"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c6q10",
+      "c": 6,
+      "q": "સાચું શું છે? Which language feature is highlighted in the title?",
+      "o": [
+        "isn't you?",
+        "Question tags",
+        "don't you?",
+        "won't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q11",
+      "c": 6,
+      "q": "What is the tag for 'You are happy'?",
+      "o": [
+        "isn't you?",
+        "aren't you?",
+        "won't you?",
+        "don't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q12",
+      "c": 6,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is a common use of a question tag?",
+      "o": [
+        "isn't you?",
+        "To confirm information",
+        "won't you?",
+        "don't you?"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c6q13",
+      "c": 6,
+      "q": "‘You Love English, Don't You?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? Which language feature is highlighted in the title?",
+      "o": [
+        "Question tags",
+        "isn't you?",
+        "won't you?",
+        "don't you?"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c6q14",
+      "c": 6,
+      "q": "પાઠ ‘You Love English, Don't You?’ માટે યોગ્ય જવાબ પસંદ કરો: What is the tag for 'You are happy'?",
+      "o": [
+        "don't you?",
+        "won't you?",
+        "isn't you?",
+        "aren't you?"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c6q15",
+      "c": 6,
+      "q": "સાચું શું છે? What is a common use of a question tag?",
+      "o": [
+        "isn't you?",
+        "don't you?",
+        "won't you?",
+        "To confirm information"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c7q01",
+      "c": 7,
+      "q": "What does 'Ouch!' usually express?",
+      "o": [
+        "Pain",
+        "Agreement",
+        "Sleep",
+        "Happiness"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c7q02",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: The unit includes expressions such as what?",
+      "o": [
+        "Sleep",
+        "Agreement",
+        "Happiness",
+        "Good job, Superb, Congratulations"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c7q03",
+      "c": 7,
+      "q": "‘Ah! Oh! Ouch!’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What is an interjection used for?",
+      "o": [
+        "Sleep",
+        "Happiness",
+        "Agreement",
+        "Expressing sudden feelings"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c7q04",
+      "c": 7,
+      "q": "પાઠ ‘Ah! Oh! Ouch!’ માટે યોગ્ય જવાબ પસંદ કરો: What does 'Ouch!' usually express?",
+      "o": [
+        "Agreement",
+        "Happiness",
+        "Pain",
+        "Sleep"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c7q05",
+      "c": 7,
+      "q": "સાચું શું છે? The unit includes expressions such as what?",
+      "o": [
+        "Agreement",
+        "Sleep",
+        "Happiness",
+        "Good job, Superb, Congratulations"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c7q06",
+      "c": 7,
+      "q": "What is an interjection used for?",
+      "o": [
+        "Sleep",
+        "Happiness",
+        "Expressing sudden feelings",
+        "Agreement"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c7q07",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does 'Ouch!' usually express?",
+      "o": [
+        "Sleep",
+        "Happiness",
+        "Pain",
+        "Agreement"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c7q08",
+      "c": 7,
+      "q": "‘Ah! Oh! Ouch!’ના સંદર્ભમાં સાચી માહિતી કઈ છે? The unit includes expressions such as what?",
+      "o": [
+        "Agreement",
+        "Sleep",
+        "Good job, Superb, Congratulations",
+        "Happiness"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c7q09",
+      "c": 7,
+      "q": "પાઠ ‘Ah! Oh! Ouch!’ માટે યોગ્ય જવાબ પસંદ કરો: What is an interjection used for?",
+      "o": [
+        "Expressing sudden feelings",
+        "Sleep",
+        "Happiness",
+        "Agreement"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c7q10",
+      "c": 7,
+      "q": "સાચું શું છે? What does 'Ouch!' usually express?",
+      "o": [
+        "Pain",
+        "Sleep",
+        "Agreement",
+        "Happiness"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c7q11",
+      "c": 7,
+      "q": "The unit includes expressions such as what?",
+      "o": [
+        "Good job, Superb, Congratulations",
+        "Sleep",
+        "Happiness",
+        "Agreement"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c7q12",
+      "c": 7,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What is an interjection used for?",
+      "o": [
+        "Expressing sudden feelings",
+        "Agreement",
+        "Happiness",
+        "Sleep"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c7q13",
+      "c": 7,
+      "q": "‘Ah! Oh! Ouch!’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What does 'Ouch!' usually express?",
+      "o": [
+        "Sleep",
+        "Happiness",
+        "Agreement",
+        "Pain"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c7q14",
+      "c": 7,
+      "q": "પાઠ ‘Ah! Oh! Ouch!’ માટે યોગ્ય જવાબ પસંદ કરો: The unit includes expressions such as what?",
+      "o": [
+        "Good job, Superb, Congratulations",
+        "Sleep",
+        "Happiness",
+        "Agreement"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c7q15",
+      "c": 7,
+      "q": "સાચું શું છે? What is an interjection used for?",
+      "o": [
+        "Happiness",
+        "Agreement",
+        "Sleep",
+        "Expressing sudden feelings"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c8q01",
+      "c": 8,
+      "q": "What does the unit encourage students to ask?",
+      "o": [
+        "Only price questions",
+        "Only colour questions",
+        "Why and reason-based questions",
+        "Only yes/no questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q02",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: The unit includes a story about what tree?",
+      "o": [
+        "Only colour questions",
+        "Only price questions",
+        "Only yes/no questions",
+        "A tree and its care"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c8q03",
+      "c": 8,
+      "q": "‘Tell Me Why?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What does the old man plant for others?",
+      "o": [
+        "Mango saplings",
+        "Only yes/no questions",
+        "Only price questions",
+        "Only colour questions"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c8q04",
+      "c": 8,
+      "q": "પાઠ ‘Tell Me Why?’ માટે યોગ્ય જવાબ પસંદ કરો: What does the unit encourage students to ask?",
+      "o": [
+        "Only yes/no questions",
+        "Why and reason-based questions",
+        "Only price questions",
+        "Only colour questions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c8q05",
+      "c": 8,
+      "q": "સાચું શું છે? The unit includes a story about what tree?",
+      "o": [
+        "Only colour questions",
+        "Only yes/no questions",
+        "A tree and its care",
+        "Only price questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q06",
+      "c": 8,
+      "q": "What does the old man plant for others?",
+      "o": [
+        "Only yes/no questions",
+        "Only price questions",
+        "Only colour questions",
+        "Mango saplings"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c8q07",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does the unit encourage students to ask?",
+      "o": [
+        "Only colour questions",
+        "Only price questions",
+        "Only yes/no questions",
+        "Why and reason-based questions"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c8q08",
+      "c": 8,
+      "q": "‘Tell Me Why?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? The unit includes a story about what tree?",
+      "o": [
+        "Only yes/no questions",
+        "Only colour questions",
+        "A tree and its care",
+        "Only price questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q09",
+      "c": 8,
+      "q": "પાઠ ‘Tell Me Why?’ માટે યોગ્ય જવાબ પસંદ કરો: What does the old man plant for others?",
+      "o": [
+        "Only yes/no questions",
+        "Only price questions",
+        "Only colour questions",
+        "Mango saplings"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c8q10",
+      "c": 8,
+      "q": "સાચું શું છે? What does the unit encourage students to ask?",
+      "o": [
+        "Only price questions",
+        "Only colour questions",
+        "Why and reason-based questions",
+        "Only yes/no questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q11",
+      "c": 8,
+      "q": "The unit includes a story about what tree?",
+      "o": [
+        "Only yes/no questions",
+        "Only colour questions",
+        "A tree and its care",
+        "Only price questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q12",
+      "c": 8,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does the old man plant for others?",
+      "o": [
+        "Only price questions",
+        "Only colour questions",
+        "Mango saplings",
+        "Only yes/no questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q13",
+      "c": 8,
+      "q": "‘Tell Me Why?’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What does the unit encourage students to ask?",
+      "o": [
+        "Only yes/no questions",
+        "Only price questions",
+        "Why and reason-based questions",
+        "Only colour questions"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c8q14",
+      "c": 8,
+      "q": "પાઠ ‘Tell Me Why?’ માટે યોગ્ય જવાબ પસંદ કરો: The unit includes a story about what tree?",
+      "o": [
+        "Only price questions",
+        "A tree and its care",
+        "Only colour questions",
+        "Only yes/no questions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c8q15",
+      "c": 8,
+      "q": "સાચું શું છે? What does the old man plant for others?",
+      "o": [
+        "Only colour questions",
+        "Mango saplings",
+        "Only yes/no questions",
+        "Only price questions"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c9q01",
+      "c": 9,
+      "q": "What does the shopping dialogue practise?",
+      "o": [
+        "A different answer",
+        "None of these",
+        "Asking for quantities and prices",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c9q02",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: How much is the glue bottle in the example?",
+      "o": [
+        "None of these",
+        "80 rupees",
+        "A different answer",
+        "An unrelated idea"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c9q03",
+      "c": 9,
+      "q": "‘English Plus’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What type of material is used for practical language?",
+      "o": [
+        "An unrelated idea",
+        "A different answer",
+        "Shopping and everyday situations",
+        "None of these"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c9q04",
+      "c": 9,
+      "q": "પાઠ ‘English Plus’ માટે યોગ્ય જવાબ પસંદ કરો: What does the shopping dialogue practise?",
+      "o": [
+        "None of these",
+        "An unrelated idea",
+        "A different answer",
+        "Asking for quantities and prices"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c9q05",
+      "c": 9,
+      "q": "સાચું શું છે? How much is the glue bottle in the example?",
+      "o": [
+        "A different answer",
+        "80 rupees",
+        "An unrelated idea",
+        "None of these"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c9q06",
+      "c": 9,
+      "q": "What type of material is used for practical language?",
+      "o": [
+        "Shopping and everyday situations",
+        "An unrelated idea",
+        "None of these",
+        "A different answer"
+      ],
+      "a": 0
+    },
+    {
+      "id": "en8c9q07",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What does the shopping dialogue practise?",
+      "o": [
+        "A different answer",
+        "An unrelated idea",
+        "Asking for quantities and prices",
+        "None of these"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c9q08",
+      "c": 9,
+      "q": "‘English Plus’ના સંદર્ભમાં સાચી માહિતી કઈ છે? How much is the glue bottle in the example?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "An unrelated idea",
+        "80 rupees"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c9q09",
+      "c": 9,
+      "q": "પાઠ ‘English Plus’ માટે યોગ્ય જવાબ પસંદ કરો: What type of material is used for practical language?",
+      "o": [
+        "None of these",
+        "An unrelated idea",
+        "A different answer",
+        "Shopping and everyday situations"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c9q10",
+      "c": 9,
+      "q": "સાચું શું છે? What does the shopping dialogue practise?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "Asking for quantities and prices",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c9q11",
+      "c": 9,
+      "q": "How much is the glue bottle in the example?",
+      "o": [
+        "A different answer",
+        "An unrelated idea",
+        "None of these",
+        "80 rupees"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c9q12",
+      "c": 9,
+      "q": "નીચેનામાંથી સાચો વિકલ્પ પસંદ કરો: What type of material is used for practical language?",
+      "o": [
+        "None of these",
+        "A different answer",
+        "Shopping and everyday situations",
+        "An unrelated idea"
+      ],
+      "a": 2
+    },
+    {
+      "id": "en8c9q13",
+      "c": 9,
+      "q": "‘English Plus’ના સંદર્ભમાં સાચી માહિતી કઈ છે? What does the shopping dialogue practise?",
+      "o": [
+        "None of these",
+        "An unrelated idea",
+        "A different answer",
+        "Asking for quantities and prices"
+      ],
+      "a": 3
+    },
+    {
+      "id": "en8c9q14",
+      "c": 9,
+      "q": "પાઠ ‘English Plus’ માટે યોગ્ય જવાબ પસંદ કરો: How much is the glue bottle in the example?",
+      "o": [
+        "None of these",
+        "80 rupees",
+        "An unrelated idea",
+        "A different answer"
+      ],
+      "a": 1
+    },
+    {
+      "id": "en8c9q15",
+      "c": 9,
+      "q": "સાચું શું છે? What type of material is used for practical language?",
+      "o": [
+        "None of these",
+        "An unrelated idea",
+        "Shopping and everyday situations",
+        "A different answer"
+      ],
+      "a": 2
+    }
+  ],
+  "source_basis": "Std-8 English Second Language 1St Sem.pdf + 8-English-Textbook-Second-Language-Sem-2.pdf",
+  "format_note": "Each question uses id, c (chapter), q (question), o (4 options), and a (0-based correct-option index)."
+}
