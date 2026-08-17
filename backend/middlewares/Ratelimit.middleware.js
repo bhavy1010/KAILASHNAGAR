@@ -71,9 +71,17 @@ const teacherResetPasswordLimiter = buildLimiter({
         "Too many password reset attempts. Please try again after an hour."
 });
 
+const globalLimiter = buildLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message:
+        "Too many requests. Please try again after 15 minutes."
+});
+
 module.exports = {
     loginLimiter,
     registerAdminLimiter,
     resetPasswordLimiter,
-    teacherResetPasswordLimiter
+    teacherResetPasswordLimiter,
+    globalLimiter
 };

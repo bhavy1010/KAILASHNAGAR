@@ -2,6 +2,39 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+// ======================================================
+// Magic number (file signature) verification
+// Prevents MIME type spoofing by checking actual file bytes
+// ======================================================
+
+const MAGIC_NUMBERS = {
+    "image/jpeg": { bytes: [0xFF, 0xD8, 0xFF], extensions: [".jpg", ".jpeg"] },
+    "image/png": { bytes: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], extensions: [".png"] },
+    "image/webp": { bytes: [0x52, 0x49, 0x46, 0x46], extensions: [".webp"] },
+    "application/pdf": { bytes: [0x25, 0x50, 0x44, 0x46], extensions: [".pdf"] },
+    "application/msword": { bytes: [0xD0, 0xCF, 0x11, 0xE0], extensions: [".doc"] },
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { bytes: [0x50, 0x4B, 0x03, 0x04], extensions: [".docx"] },
+    "application/vnd.ms-excel": { bytes: [0xD0, 0xCF, 0x11, 0xE0], extensions: [".xls"] },
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { bytes: [0x50, 0x4B, 0x03, 0x04], extensions: [".xlsx"] }
+};
+
+const verifyFileMagic = (buffer, mimetype) => {
+    const spec = MAGIC_NUMBERS[mimetype];
+    if (!spec) return true; // Unknown type, allow
+
+    if (buffer.length < spec.bytes.length) {
+        return false;
+    }
+
+    for (let i = 0; i < spec.bytes.length; i++) {
+        if (buffer[i] !== spec.bytes[i]) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
 const createUploader = (folderName, allowedTypes, maxSizeMB) => {
     const uploadPath = path.join(
         __dirname,
@@ -104,6 +137,30 @@ const uploadNotice = createUploader("notices", DOCUMENT_TYPES, 10);
 // images or PDF/Word/Excel, nothing executable.
 const uploadLeave = createUploader("leaves", DOCUMENT_TYPES, 10);
 
+// ======================================================
+// Post-upload verification middleware
+// Verifies file content matches declared MIME type
+// ======================================================
+
+const verifyUploadedFile = (req, res, next) => {
+    if (!req.file) {
+        return next();
+    }
+
+    const filePath = req.file.path;
+    const buffer = fs.readFileSync(filePath);
+
+    if (!verifyFileMagic(buffer, req.file.mimetype)) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({
+            success: false,
+            message: "File content does not match the expected file type. Upload rejected."
+        });
+    }
+
+    next();
+};
+
 module.exports = {
     upload,
     uploadStudent,
@@ -113,5 +170,6 @@ module.exports = {
     uploadHomework,
     uploadSubmission,
     uploadNotice,
-    uploadLeave
+    uploadLeave,
+    verifyUploadedFile
 };

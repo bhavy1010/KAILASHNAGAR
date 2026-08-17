@@ -8,7 +8,8 @@ const {
     resetAdminPassword,
     resetTeacherPassword,
     logoutUser,
-    getMe
+    getMe,
+    refreshToken
 } = require("../controllers/auth.controller");
 
 const authMiddleware = require("../middlewares/auth.middleware");
@@ -68,6 +69,12 @@ router.post(
 router.post(
     "/logout",
     logoutUser
+);
+
+// Refresh access token using refresh token
+router.post(
+    "/refresh-token",
+    refreshToken
 );
 
 // Returns the logged-in user based on the auth cookie

@@ -3,6 +3,9 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
+const compression = require("compression");
+
+const { globalLimiter } = require("./middlewares/Ratelimit.middleware");
 
 const authRoutes = require("./routes/auth.routes");
 const studentRoutes = require("./routes/student.routes");
@@ -31,29 +34,70 @@ const videoLibraryRoutes = require("./routes/videoLibrary.routes");
 
 const app = express();
 
+const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+
 // ======================================================
 // Security headers (Helmet)
 // ======================================================
 
 app.use(
     helmet({
-        contentSecurityPolicy: false,
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+                styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+                fontSrc: ["'self'", "https://fonts.gstatic.com"],
+                imgSrc: [
+                    "'self'",
+                    "data:",
+                    "https://res.cloudinary.com",
+                    "https://*.cloudinary.com"
+                ],
+                connectSrc: ["'self'", clientUrl, "https://api.cloudinary.com"],
+                frameSrc: ["'self'", "https://*.cloudinary.com"],
+                objectSrc: ["'none'"],
+                upgradeInsecureRequests: []
+            }
+        },
         crossOriginResourcePolicy: { policy: "cross-origin" }
     })
 );
 
+// ======================================================
+// CORS
+// ======================================================
+
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        origin: clientUrl,
         credentials: true
     })
 );
+
+// ======================================================
+// Global rate limiting
+// ======================================================
+
+app.use(globalLimiter);
+
+// ======================================================
+// Body parsing
+// ======================================================
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// ======================================================
+// Static files
+// ======================================================
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ======================================================
+// Routes
+// ======================================================
 
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
@@ -80,6 +124,10 @@ app.use("/api/library", libraryRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/video-library", videoLibraryRoutes);
 
+// ======================================================
+// Health check
+// ======================================================
+
 app.get("/", (req, res) => {
     res.json({
         success: true,
@@ -87,12 +135,20 @@ app.get("/", (req, res) => {
     });
 });
 
+// ======================================================
+// 404 handler
+// ======================================================
+
 app.use((req, res) => {
     res.status(404).json({
         success: false,
         message: "Route not found."
     });
 });
+
+// ======================================================
+// Error handler
+// ======================================================
 
 app.use((error, req, res, next) => {
     console.error(error);

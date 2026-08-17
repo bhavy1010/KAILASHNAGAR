@@ -8,7 +8,8 @@ const roleMiddleware = require("../middlewares/role.middleware");
 const {
     upload,
     uploadTeacher,
-    uploadAdmin
+    uploadAdmin,
+    verifyUploadedFile
 } = require("../middlewares/upload.middleware");
 
 const {
@@ -32,6 +33,8 @@ router.post(
 
     upload.single("photo"),
 
+    verifyUploadedFile,
+
     uploadStudentPhoto
 
 );
@@ -51,6 +54,8 @@ router.post(
 
     uploadTeacher.single("photo"),
 
+    verifyUploadedFile,
+
     uploadTeacherPhoto
 
 );
@@ -69,6 +74,8 @@ router.post(
     roleMiddleware("admin"),
 
     uploadAdmin.single("photo"),
+
+    verifyUploadedFile,
 
     uploadAdminPhoto
 

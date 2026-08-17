@@ -53,6 +53,8 @@ router.get(
 
     authMiddleware,
 
+    roleMiddleware("admin", "teacher"),
+
     getAllStudents
 
 );
@@ -62,6 +64,8 @@ router.get(
     "/search",
 
     authMiddleware,
+
+    roleMiddleware("admin", "teacher"),
 
     searchStudents
 
@@ -73,6 +77,8 @@ router.get(
 
     authMiddleware,
 
+    roleMiddleware("admin", "teacher"),
+
     getStudentsPagination
 
 );
@@ -82,6 +88,8 @@ router.get(
     "/:id",
 
     authMiddleware,
+
+    roleMiddleware("admin", "teacher"),
 
     getStudentById
 
@@ -118,6 +126,8 @@ router.get(
     "/gr/:grNumber",
 
     authMiddleware,
+
+    roleMiddleware("admin", "teacher"),
 
     getStudentByGR
 

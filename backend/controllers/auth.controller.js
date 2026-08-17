@@ -1,16 +1,14 @@
 const User = require("../models/User");
 const Student = require("../models/Student");
 const Teacher = require("../models/Teacher");
+const { generateRefreshToken, revokeRefreshToken } = require("../services/refreshToken.service");
 
 // ======================================================
 // Cookie options for the auth token
-// Stays valid until the user logs out (30 days),
-// httpOnly so client-side JS/XSS can't read the token.
 // ======================================================
 
 const AUTH_COOKIE_NAME = "token";
-
-const AUTH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
+const AUTH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 const getAuthCookieOptions = () => ({
     httpOnly: true,
@@ -220,6 +218,12 @@ const loginUser = async (req, res) => {
 
         const token = account.generateAuthToken();
 
+        const refreshToken = await generateRefreshToken(
+            account._id,
+            normalizedRole === "student" ? "Student" : normalizedRole === "teacher" ? "Teacher" : "User",
+            normalizedRole
+        );
+
         res.cookie(
             AUTH_COOKIE_NAME,
             token,
@@ -230,6 +234,7 @@ const loginUser = async (req, res) => {
             success: true,
             message: "Login successful",
             token,
+            refreshToken,
             user
         });
 
@@ -369,19 +374,19 @@ const resetTeacherPassword = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     try {
-        res.clearCookie(
-            AUTH_COOKIE_NAME,
-            getAuthCookieOptions()
-        );
+        const token = req.cookies?.token || req.body?.refreshToken;
+
+        if (token) {
+            await revokeRefreshToken(token);
+        }
+
+        res.clearCookie(AUTH_COOKIE_NAME);
 
         res.status(200).json({
             success: true,
             message: "Logged out successfully"
         });
-
     } catch (error) {
-        console.log(error);
-
         res.status(500).json({
             success: false,
             message: error.message
@@ -469,11 +474,63 @@ const getMe = async (req, res) => {
     }
 };
 
+// ======================================================
+// Refresh Access Token
+// POST /api/auth/refresh-token
+// ======================================================
+
+const refreshToken = async (req, res) => {
+    try {
+        const { refreshToken: token } = req.body;
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: "Refresh token is required"
+            });
+        }
+
+        const { user, userModel } = await validateRefreshToken(token);
+
+        let UserModel;
+        switch (userModel) {
+            case "User":
+                UserModel = require("../models/User");
+                break;
+            case "Teacher":
+                UserModel = require("../models/Teacher");
+                break;
+            case "Student":
+                UserModel = require("../models/Student");
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid user model"
+                });
+        }
+
+        const newAccessToken = user.generateAuthToken();
+
+        res.status(200).json({
+            success: true,
+            token: newAccessToken,
+            refreshToken: token
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message || "Invalid refresh token"
+        });
+    }
+};
+
 module.exports = {
     registerAdmin,
     loginUser,
     resetAdminPassword,
     resetTeacherPassword,
     logoutUser,
-    getMe
+    getMe,
+    refreshToken
 };

@@ -127,24 +127,24 @@ studentSchema.methods.comparePassword = async function (password) {
 // ======================================================
 // Generate JWT
 // ======================================================
-
 studentSchema.methods.generateAuthToken = function () {
 
     return jwt.sign(
 
         {
+
             id: this._id,
             role: "student"
+
         },
 
         process.env.JWT_SECRET,
 
         {
-            expiresIn: "30d"
+            expiresIn: "7d"
         }
 
     );
 
 };
-
 module.exports = mongoose.model("Student", studentSchema);

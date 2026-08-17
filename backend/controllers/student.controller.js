@@ -1,4 +1,5 @@
 const Student = require("../models/Student");
+const { checkTeacherPermission } = require("../services/teacherPermission.service");
 
 const createDobPassword = (dateOfBirth) => {
     const rawDate = String(dateOfBirth);
@@ -19,6 +20,39 @@ const createDobPassword = (dateOfBirth) => {
     const year = String(date.getUTCFullYear()).slice(-2);
 
     return `${day}${month}${year}`;
+};
+
+// ======================================================
+// Ownership check: teachers can only access students in
+// their assigned classes. Admins bypass this check.
+// ======================================================
+
+const ensureStudentAccess = async (student, req) => {
+    if (!req.user) {
+        return { authorized: false, message: "Unauthorized" };
+    }
+
+    if (req.user.role === "admin") {
+        return { authorized: true };
+    }
+
+    if (req.user.role === "teacher") {
+        const permission = await checkTeacherPermission({
+            teacherId: req.user.id,
+            role: req.user.role,
+            standard: student.standard,
+            division: student.division
+        });
+
+        if (!permission.authorized) {
+            return {
+                authorized: false,
+                message: "Access Denied: You can only view students from your assigned classes."
+            };
+        }
+    }
+
+    return { authorized: true };
 };
 
 const createStudent = async (req, res) => {
@@ -138,6 +172,15 @@ const getStudentById = async (req, res) => {
             });
         }
 
+        const access = await ensureStudentAccess(student, req);
+
+        if (!access.authorized) {
+            return res.status(403).json({
+                success: false,
+                message: access.message
+            });
+        }
+
         res.status(200).json({
             success: true,
             student
@@ -163,6 +206,15 @@ const getStudentByGR = async (req, res) => {
             });
         }
 
+        const access = await ensureStudentAccess(student, req);
+
+        if (!access.authorized) {
+            return res.status(403).json({
+                success: false,
+                message: access.message
+            });
+        }
+
         res.status(200).json({
             success: true,
             student
@@ -177,9 +229,13 @@ const getStudentByGR = async (req, res) => {
 
 const getStudentByName = async (req, res) => {
     try {
+        const rawName = String(req.params.fullName || "").trim();
+        const escaped = rawName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const keyword = escaped || ".";
+
         const students = await Student.find({
             fullName: {
-                $regex: req.params.fullName,
+                $regex: keyword,
                 $options: "i"
             }
         }).sort({ fullName: 1 });
@@ -199,7 +255,9 @@ const getStudentByName = async (req, res) => {
 
 const searchStudents = async (req, res) => {
     try {
-        const keyword = req.query.keyword || "";
+        const rawKeyword = String(req.query.keyword || "").trim();
+        const escaped = rawKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const keyword = escaped || ".";
 
         const students = await Student.find({
             $or: [
@@ -277,6 +335,15 @@ const updateStudent = async (req, res) => {
             });
         }
 
+        const access = await ensureStudentAccess(student, req);
+
+        if (!access.authorized) {
+            return res.status(403).json({
+                success: false,
+                message: access.message
+            });
+        }
+
         if (
             req.body.grNumber &&
             req.body.grNumber.trim() !== student.grNumber
@@ -345,7 +412,7 @@ const updateStudent = async (req, res) => {
 
 const deleteStudent = async (req, res) => {
     try {
-        const student = await Student.findByIdAndDelete(req.params.id);
+        const student = await Student.findById(req.params.id);
 
         if (!student) {
             return res.status(404).json({
@@ -353,6 +420,17 @@ const deleteStudent = async (req, res) => {
                 message: "Student not found."
             });
         }
+
+        const access = await ensureStudentAccess(student, req);
+
+        if (!access.authorized) {
+            return res.status(403).json({
+                success: false,
+                message: access.message
+            });
+        }
+
+        await student.deleteOne();
 
         res.status(200).json({
             success: true,
