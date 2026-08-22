@@ -7,17 +7,19 @@ const {
     loginUser,
     resetAdminPassword,
     resetTeacherPassword,
+    changePassword,
     logoutUser,
     getMe,
     refreshToken
 } = require("../controllers/auth.controller");
 
 const authMiddleware = require("../middlewares/auth.middleware");
+const { csrfMiddleware } = require("../middlewares/auth.middleware");
 const validate = require("../middlewares/validate.middleware");
 
 const {
-    loginLimiter,
     registerAdminLimiter,
+    loginLimiter,
     resetPasswordLimiter,
     teacherResetPasswordLimiter
 } = require("../middlewares/rateLimit.middleware");
@@ -26,11 +28,10 @@ const {
     registerAdminSchema,
     loginSchema,
     resetAdminPasswordSchema,
-    resetTeacherPasswordSchema
+    resetTeacherPasswordSchema,
+    changePasswordSchema
 } = require("../validators/auth.validator");
 
-// Create a new Admin account
-// Requires the secret code
 router.post(
     "/register-admin",
     registerAdminLimiter,
@@ -38,7 +39,6 @@ router.post(
     registerAdmin
 );
 
-// Login for Admin, Teacher and Student
 router.post(
     "/login",
     loginLimiter,
@@ -46,8 +46,6 @@ router.post(
     loginUser
 );
 
-// Admin forgot-password reset
-// Requires mobile number + secret code
 router.post(
     "/reset-admin-password",
     resetPasswordLimiter,
@@ -55,9 +53,6 @@ router.post(
     resetAdminPassword
 );
 
-// Teacher forgot-password reset
-// Requires mobile number + a SEPARATE 6-digit secret code
-// (TEACHER_RESET_CODE, distinct from the admin's code)
 router.post(
     "/reset-teacher-password",
     teacherResetPasswordLimiter,
@@ -65,20 +60,26 @@ router.post(
     resetTeacherPassword
 );
 
-// Logout: clears the auth cookie
+router.post(
+    "/change-password",
+    authMiddleware,
+    csrfMiddleware,
+    validate(changePasswordSchema),
+    changePassword
+);
+
 router.post(
     "/logout",
+    authMiddleware,
+    csrfMiddleware,
     logoutUser
 );
 
-// Refresh access token using refresh token
 router.post(
     "/refresh-token",
     refreshToken
 );
 
-// Returns the logged-in user based on the auth cookie
-// Used by the frontend to silently restore a session on refresh
 router.get(
     "/me",
     authMiddleware,

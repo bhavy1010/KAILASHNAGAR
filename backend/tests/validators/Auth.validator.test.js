@@ -64,7 +64,7 @@ describe("registerAdminSchema", () => {
     const valid = {
         name: "Jignesh",
         mobile: "9876543210",
-        password: "secret1",
+        password: "secret12",
         secretCode: "101005"
     };
 
@@ -81,7 +81,7 @@ describe("registerAdminSchema", () => {
         expect(result.success).toBe(false);
     });
 
-    it("rejects a password under 6 characters", () => {
+    it("rejects a password under 8 characters", () => {
         const result = registerAdminSchema.safeParse({
             ...valid,
             password: "123"

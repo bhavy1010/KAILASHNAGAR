@@ -2,6 +2,7 @@ const Exam = require("../models/Exam");
 const ExamSchedule = require("../models/ExamSchedule");
 const Result = require("../models/Result");
 const Student = require("../models/Student");
+const { canAccessClass, isAdmin, isTeacher } = require("../services/authorization.service");
 
 // ======================================================
 // Create Exam
@@ -11,6 +12,13 @@ const Student = require("../models/Student");
 const createExam = async (req, res) => {
 
     try {
+
+        if (isTeacher(req.user) && !await canAccessClass(req.user, req.body.standard, req.body.division)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to create exams for this class."
+            });
+        }
 
         const exam = await Exam.create(req.body);
 
@@ -73,6 +81,8 @@ const getAllExams = async (req, res) => {
             filter.standard = student.standard;
             filter.division = student.division;
 
+        } else if (isTeacher(req.user)) {
+
         } else {
 
             if (req.query.standard) filter.standard = Number(req.query.standard);
@@ -85,11 +95,23 @@ const getAllExams = async (req, res) => {
             .populate("academicYearId", "yearName")
             .sort({ startDate: -1 });
 
+        let finalExams = exams;
+
+        if (isTeacher(req.user)) {
+
+            finalExams = [];
+            for (const exam of exams) {
+                const canAccess = await canAccessClass(req.user, exam.standard, exam.division);
+                if (canAccess) finalExams.push(exam);
+            }
+
+        }
+
         res.status(200).json({
 
             success: true,
-            count: exams.length,
-            exams
+            count: finalExams.length,
+            exams: finalExams
 
         });
 
@@ -139,6 +161,19 @@ const getExamById = async (req, res) => {
                 String(student.standard) !== String(exam.standard) ||
                 String(student.division) !== String(exam.division)
             ) {
+
+                return res.status(403).json({
+
+                    success: false,
+                    message: "You are not allowed to view this exam."
+
+                });
+
+            }
+
+        } else if (isTeacher(req.user)) {
+
+            if (!await canAccessClass(req.user, exam.standard, exam.division)) {
 
                 return res.status(403).json({
 
@@ -199,6 +234,26 @@ const getExamById = async (req, res) => {
 const updateExam = async (req, res) => {
 
     try {
+
+        const existingExam = await Exam.findById(req.params.id);
+
+        if (!existingExam) {
+
+            return res.status(404).json({
+
+                success: false,
+                message: "Exam Not Found"
+
+            });
+
+        }
+
+        if (isTeacher(req.user) && !await canAccessClass(req.user, existingExam.standard, existingExam.division)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to update this exam."
+            });
+        }
 
         const exam = await Exam.findByIdAndUpdate(
 
@@ -262,6 +317,13 @@ const deleteExam = async (req, res) => {
 
         }
 
+        if (isTeacher(req.user) && !await canAccessClass(req.user, exam.standard, exam.division)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to delete this exam."
+            });
+        }
+
         await ExamSchedule.deleteMany({ examId: exam._id });
         await Result.deleteMany({ examId: exam._id });
         await exam.deleteOne();
@@ -295,27 +357,49 @@ const getExamDashboard = async (req, res) => {
 
     try {
 
-        const totalExams = await Exam.countDocuments();
-        const upcomingExams = await Exam.countDocuments({ status: "Upcoming" });
-        const ongoingExams = await Exam.countDocuments({ status: "Ongoing" });
-        const completedExams = await Exam.countDocuments({ status: "Completed" });
-        const totalResults = await Result.countDocuments();
+        let exams = await Exam.find();
 
-        const recentExams = await Exam.find()
-            .sort({ createdAt: -1 })
-            .limit(7);
+        if (isTeacher(req.user)) {
+            const filtered = [];
+            for (const exam of exams) {
+                if (await canAccessClass(req.user, exam.standard, exam.division)) {
+                    filtered.push(exam);
+                }
+            }
+            exams = filtered;
+        }
+
+        const totalExams = exams.length;
+        const upcomingExams = exams.filter(e => e.status === "Upcoming").length;
+        const ongoingExams = exams.filter(e => e.status === "Ongoing").length;
+        const completedExams = exams.filter(e => e.status === "Completed").length;
+
+        const examIds = exams.map(e => e._id);
+        const totalResults = examIds.length > 0
+            ? await Result.countDocuments({ examId: { $in: examIds } })
+            : 0;
+
+        const recentExams = exams
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(0, 7);
 
         // Exam type wise count
-        const examTypeWise = await Exam.aggregate([
-            { $group: { _id: "$examType", count: { $sum: 1 } } },
-            { $sort: { count: -1 } }
-        ]);
+        const examTypeMap = {};
+        exams.forEach(exam => {
+            const type = exam.examType || "Unknown";
+            examTypeMap[type] = (examTypeMap[type] || 0) + 1;
+        });
+        const examTypeWise = Object.entries(examTypeMap)
+            .map(([examType, count]) => ({ examType, count }))
+            .sort((a, b) => b.count - a.count);
 
         // Average percentage from results
-        const avgResult = await Result.aggregate([
-            { $group: { _id: null, avgPercentage: { $avg: "$percentage" } } }
-        ]);
-
+        const avgResult = examIds.length > 0
+            ? await Result.aggregate([
+                { $match: { examId: { $in: examIds } } },
+                { $group: { _id: null, avgPercentage: { $avg: "$percentage" } } }
+            ])
+            : [];
         const avgPercentage = avgResult.length > 0
             ? Math.round(avgResult[0].avgPercentage)
             : 0;

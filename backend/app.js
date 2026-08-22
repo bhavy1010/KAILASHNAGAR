@@ -6,6 +6,8 @@ const helmet = require("helmet");
 const compression = require("compression");
 
 const { globalLimiter } = require("./middlewares/Ratelimit.middleware");
+const authMiddleware = require("./middlewares/auth.middleware");
+const { csrfMiddleware } = require("./middlewares/auth.middleware");
 
 const authRoutes = require("./routes/auth.routes");
 const studentRoutes = require("./routes/student.routes");
@@ -31,6 +33,7 @@ const homeRoutes = require("./routes/home.routes");
 const libraryRoutes = require("./routes/library.routes");
 const quizRoutes = require("./routes/quiz.routes");
 const videoLibraryRoutes = require("./routes/videoLibrary.routes");
+const studentRiskRoutes = require("./routes/studentRisk.routes");
 
 const app = express();
 
@@ -90,16 +93,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ======================================================
-// Static files
+// CSRF token endpoint (frontend fetches this on load)
 // ======================================================
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.get("/api/csrf-token", authMiddleware, (req, res) => {
+    const { generateCsrfToken, setCsrfCookie } = require("./middlewares/auth.middleware");
+    const token = generateCsrfToken();
+    setCsrfCookie(res, token);
+    res.json({ csrfToken: token });
+});
 
 // ======================================================
 // Routes
 // ======================================================
 
 app.use("/api/auth", authRoutes);
+app.use(csrfMiddleware);
 app.use("/api/students", studentRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/attendance", attendanceRoutes);
@@ -123,6 +132,7 @@ app.use("/api/home", homeRoutes);
 app.use("/api/library", libraryRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/video-library", videoLibraryRoutes);
+app.use("/api/student-risk", studentRiskRoutes);
 
 // ======================================================
 // Health check

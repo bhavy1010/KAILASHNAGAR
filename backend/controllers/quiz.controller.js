@@ -5,6 +5,7 @@ const QuizAttempt = require("../models/QuizAttempt");
 const Student = require("../models/Student");
 const User = require("../models/User");
 const { checkTeacherPermission } = require("../services/teacherPermission.service");
+const { canManageQuiz, isAdmin, isTeacher, isStudent } = require("../services/authorization.service");
 
 // Helper to normalize subject name to file basename
 const getSubjectFileName = (subjectName) => {
@@ -329,14 +330,54 @@ exports.getQuizzes = async (req, res) => {
         const { standard, subject, quizType, status, search } = req.query;
         const filter = {};
 
-        // If user is a student, restrict to published quizzes for their standard
-        if (req.user.role === "student") {
+        if (isStudent(req.user)) {
             const student = await Student.findById(req.user.id);
             if (!student) {
                 return res.status(404).json({ success: false, message: "Student record not found." });
             }
             filter.standard = student.standard;
             filter.status = "published";
+        } else if (isTeacher(req.user) && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("subject subjectsHandled classesHandled");
+            if (!teacher) {
+                return res.status(403).json({ success: false, message: "Teacher not found." });
+            }
+
+            const assignedSubjects = [
+                teacher.subject,
+                ...(teacher.subjectsHandled || [])
+            ]
+                .filter(Boolean)
+                .map((s) => s.trim());
+
+            const classConditions = [];
+            if (teacher.classesHandled && teacher.classesHandled.length > 0) {
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        classConditions.push({ standard: stdNum, division: div });
+                    }
+                }
+            }
+
+            const Class = require("../models/Class");
+            const formalClasses = await Class.find({ classTeacher: req.user.id });
+            for (const cd of formalClasses) {
+                classConditions.push({ standard: cd.standard, division: cd.division });
+            }
+
+            if (classConditions.length > 0) {
+                filter.$or = [
+                    ...classConditions.map(c => ({ ...c })),
+                    ...(assignedSubjects.length > 0 ? [{ subject: { $in: assignedSubjects } }] : [])
+                ];
+            } else if (assignedSubjects.length > 0) {
+                filter.subject = { $in: assignedSubjects };
+            } else {
+                filter.createdBy = req.user.id;
+            }
         } else {
             if (standard) filter.standard = Number(standard);
             if (status) filter.status = status;
@@ -348,10 +389,9 @@ exports.getQuizzes = async (req, res) => {
 
         const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
 
-        // If student, sanitize questions from response
         const formattedQuizzes = quizzes.map(q => {
             const qObj = q.toObject();
-            if (req.user.role === "student") {
+            if (isStudent(req.user)) {
                 delete qObj.questions;
                 delete qObj.autoQuestionIds;
             }
@@ -381,7 +421,7 @@ exports.getQuizById = async (req, res) => {
             return res.status(404).json({ success: false, message: "Quiz not found." });
         }
 
-        if (req.user.role === "student") {
+        if (isStudent(req.user)) {
             const student = await Student.findById(req.user.id);
             if (!student || student.standard !== quiz.standard) {
                 return res.status(403).json({
@@ -396,13 +436,22 @@ exports.getQuizById = async (req, res) => {
                 });
             }
 
-            // Sanitize question answers for student preview
             const sanitizedQuiz = quiz.toObject();
             sanitizedQuiz.questions = sanitizedQuiz.questions.map(q => {
                 const { correctAnswer, ...rest } = q;
                 return rest;
             });
             return res.json({ success: true, quiz: sanitizedQuiz });
+        }
+
+        if (isTeacher(req.user) && !isAdmin(req.user)) {
+            const authorized = await canManageQuiz(req.user, quiz._id);
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view this quiz."
+                });
+            }
         }
 
         return res.json({ success: true, quiz });
@@ -640,6 +689,13 @@ exports.togglePublishStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Quiz not found." });
         }
 
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canManageQuiz(req.user, quiz._id);
+            if (!authorized) {
+                return res.status(403).json({ success: false, message: "You are not authorized to update this quiz." });
+            }
+        }
+
         quiz.status = quiz.status === "published" ? "draft" : "published";
         await quiz.save();
 
@@ -663,6 +719,13 @@ exports.updateQuiz = async (req, res) => {
         const quiz = await Quiz.findById(req.params.id);
         if (!quiz) {
             return res.status(404).json({ success: false, message: "Quiz not found." });
+        }
+
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canManageQuiz(req.user, quiz._id);
+            if (!authorized) {
+                return res.status(403).json({ success: false, message: "You are not authorized to update this quiz." });
+            }
         }
 
         if (title) quiz.title = title.trim();
@@ -705,10 +768,15 @@ exports.deleteQuiz = async (req, res) => {
             return res.status(404).json({ success: false, message: "Quiz not found." });
         }
 
-        // Delete Quiz document
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canManageQuiz(req.user, quiz._id);
+            if (!authorized) {
+                return res.status(403).json({ success: false, message: "You are not authorized to delete this quiz." });
+            }
+        }
+
         await Quiz.findByIdAndDelete(quizId);
 
-        // Memory cleanup: Delete all QuizAttempt documents for this quiz from MongoDB
         const deletedAttempts = await QuizAttempt.deleteMany({ quiz: quizId });
 
         return res.json({
@@ -728,8 +796,21 @@ exports.deleteQuiz = async (req, res) => {
 exports.getStudentAttempts = async (req, res) => {
     try {
         let studentId = req.user.id;
+
         if (req.user.role !== "student" && req.query.studentId) {
-            studentId = req.query.studentId;
+            if (isAdmin(req.user)) {
+                studentId = req.query.studentId;
+            } else if (isTeacher(req.user)) {
+                const student = await Student.findById(req.query.studentId);
+                if (!student) {
+                    return res.status(404).json({ success: false, message: "Student not found." });
+                }
+                const authorized = await require("../services/authorization.service").canAccessClass(req.user, student.standard, student.division);
+                if (!authorized) {
+                    return res.status(403).json({ success: false, message: "You are not authorized to view this student's attempts." });
+                }
+                studentId = req.query.studentId;
+            }
         }
 
         const filter = { student: studentId };
@@ -761,9 +842,15 @@ exports.getAttemptById = async (req, res) => {
             return res.status(404).json({ success: false, message: "Quiz attempt not found." });
         }
 
-        // Auth check: student can only view their own attempt
-        if (req.user.role === "student" && attempt.student.toString() !== req.user.id) {
+        if (isStudent(req.user) && attempt.student.toString() !== req.user.id) {
             return res.status(403).json({ success: false, message: "Unauthorized access to attempt." });
+        }
+
+        if (isTeacher(req.user) && !isAdmin(req.user)) {
+            const authorized = await canManageQuiz(req.user, attempt.quiz?._id);
+            if (!authorized) {
+                return res.status(403).json({ success: false, message: "You are not authorized to view this attempt." });
+            }
         }
 
         const quizObj = attempt.quiz || {};
@@ -807,7 +894,13 @@ exports.getQuizLeaderboard = async (req, res) => {
             return res.status(404).json({ success: false, message: "Quiz not found." });
         }
 
-        // Fetch completed attempts for this quiz
+        if (isTeacher(req.user) && !isAdmin(req.user)) {
+            const authorized = await canManageQuiz(req.user, quiz._id);
+            if (!authorized) {
+                return res.status(403).json({ success: false, message: "You are not authorized to view this leaderboard." });
+            }
+        }
+
         const attempts = await QuizAttempt.find({
             quiz: quizId,
             status: "completed"
@@ -825,7 +918,6 @@ exports.getQuizLeaderboard = async (req, res) => {
             });
         }
 
-        // Fetch student details to ensure fresh photos & names
         const studentIds = attempts.map(a => a.student);
         const students = await Student.find({ _id: { $in: studentIds } }, "fullName photo grNumber").lean();
         const studentMap = {};
@@ -833,7 +925,6 @@ exports.getQuizLeaderboard = async (req, res) => {
             studentMap[s._id.toString()] = s;
         });
 
-        // Group attempts by student to get each student's best attempt
         const bestAttemptMap = {};
         attempts.forEach(att => {
             const sId = att.student.toString();
@@ -843,7 +934,7 @@ exports.getQuizLeaderboard = async (req, res) => {
             } else {
                 if (
                     att.score > existing.score ||
-                    (att.score === existing.score && att.timeTakenSeconds < existing.timeTakenSeconds)
+                    (att.score === existing.score && (att.timeTakenSeconds || 0) < (existing.timeTakenSeconds || 0))
                 ) {
                     bestAttemptMap[sId] = att;
                 }
@@ -852,13 +943,11 @@ exports.getQuizLeaderboard = async (req, res) => {
 
         const uniqueAttempts = Object.values(bestAttemptMap);
 
-        // Sort by score descending, then timeTakenSeconds ascending
         uniqueAttempts.sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             return (a.timeTakenSeconds || 0) - (b.timeTakenSeconds || 0);
         });
 
-        // Format rankings list
         const formattedRankings = uniqueAttempts.map((att, index) => {
             const stInfo = studentMap[att.student.toString()] || {};
             return {
@@ -876,9 +965,9 @@ exports.getQuizLeaderboard = async (req, res) => {
         });
 
         const podium = {
-            first: formattedRankings[0] || null,  // 🥇 Gold
-            second: formattedRankings[1] || null, // 🥈 Silver
-            third: formattedRankings[2] || null   // 🥉 Bronze
+            first: formattedRankings[0] || null,
+            second: formattedRankings[1] || null,
+            third: formattedRankings[2] || null
         };
 
         const remainingRankings = formattedRankings.slice(3);
@@ -908,6 +997,49 @@ exports.getQuizAnalytics = async (req, res) => {
         const filter = {};
         if (standard) filter.standard = Number(standard);
         if (subject) filter.subject = new RegExp(subject, "i");
+
+        if (isTeacher(req.user) && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("subject subjectsHandled classesHandled");
+            if (!teacher) {
+                return res.status(403).json({ success: false, message: "Teacher not found." });
+            }
+
+            const assignedSubjects = [
+                teacher.subject,
+                ...(teacher.subjectsHandled || [])
+            ]
+                .filter(Boolean)
+                .map((s) => s.trim());
+
+            const classConditions = [];
+            if (teacher.classesHandled && teacher.classesHandled.length > 0) {
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        classConditions.push({ standard: stdNum, division: div });
+                    }
+                }
+            }
+
+            const Class = require("../models/Class");
+            const formalClasses = await Class.find({ classTeacher: req.user.id });
+            for (const cd of formalClasses) {
+                classConditions.push({ standard: cd.standard, division: cd.division });
+            }
+
+            if (classConditions.length > 0) {
+                filter.$or = [
+                    ...classConditions.map(c => ({ ...c })),
+                    ...(assignedSubjects.length > 0 ? [{ subject: { $in: assignedSubjects } }] : [])
+                ];
+            } else if (assignedSubjects.length > 0) {
+                filter.subject = { $in: assignedSubjects };
+            } else {
+                filter.createdBy = req.user.id;
+            }
+        }
 
         const totalQuizzes = await Quiz.countDocuments(filter);
         const publishedQuizzes = await Quiz.countDocuments({ ...filter, status: "published" });

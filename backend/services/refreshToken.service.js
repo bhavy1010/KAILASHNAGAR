@@ -11,7 +11,7 @@ const REFRESH_TOKEN_EXPIRY = "30d";
 
 const generateRefreshToken = async (userId, userModel, role) => {
     const token = crypto.randomBytes(40).toString("hex");
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     await RefreshToken.create({
         token,
@@ -62,7 +62,7 @@ const validateRefreshToken = async (token) => {
         throw new Error("User not found");
     }
 
-    return { user, userModel: record.userModel };
+    return { user, userModel: record.userModel, tokenRecord: record };
 };
 
 // ======================================================
@@ -81,9 +81,20 @@ const revokeAllUserTokens = async (userId, userModel) => {
     await RefreshToken.deleteMany({ userId, userModel });
 };
 
+// ======================================================
+// Rotate refresh token: invalidate old, create new
+// ======================================================
+
+const rotateRefreshToken = async (oldToken, userId, userModel, role) => {
+    await revokeRefreshToken(oldToken);
+    const newToken = await generateRefreshToken(userId, userModel, role);
+    return newToken;
+};
+
 module.exports = {
     generateRefreshToken,
     validateRefreshToken,
     revokeRefreshToken,
-    revokeAllUserTokens
+    revokeAllUserTokens,
+    rotateRefreshToken
 };

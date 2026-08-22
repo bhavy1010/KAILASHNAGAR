@@ -1,6 +1,7 @@
 jest.mock("../../models/Student");
 jest.mock("../../models/Teacher");
 jest.mock("../../models/User");
+jest.mock("../../services/refreshToken.service");
 
 const express = require("express");
 const request = require("supertest");
@@ -9,6 +10,7 @@ const cookieParser = require("cookie-parser");
 const Student = require("../../models/Student");
 const Teacher = require("../../models/Teacher");
 const User = require("../../models/User");
+const { generateRefreshToken } = require("../../services/refreshToken.service");
 
 const { loginUser } = require("../../controllers/auth.controller");
 
@@ -20,7 +22,8 @@ const buildApp = () => {
     return app;
 };
 
-// A fake Mongoose document with the instance methods loginUser calls
+generateRefreshToken.mockResolvedValue("fake-refresh-token");
+
 const fakeAccount = (overrides = {}) => ({
     _id: "account-id",
     comparePassword: jest.fn().mockResolvedValue(true),
@@ -50,7 +53,7 @@ describe("loginUser", () => {
         expect(response.body.user.role).toBe("student");
         expect(Student.findOne).toHaveBeenCalledWith({
             grNumber: "2024001",
-            status: "Active"
+            status: { $ne: "Inactive" }
         });
     });
 

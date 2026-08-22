@@ -3,6 +3,7 @@ const path = require("path");
 const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const User = require("../models/User");
+const { canUploadStudentPhoto, canUploadTeacherPhoto } = require("../services/authorization.service");
 
 // ======================================================
 // Upload Student Photo
@@ -13,6 +14,14 @@ const uploadStudentPhoto = async (req, res) => {
     try {
 
         const { id } = req.params;
+
+        const authorized = await canUploadStudentPhoto(req.user, id);
+        if (!authorized) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to upload a photo for this student."
+            });
+        }
 
         const student = await Student.findById(id);
 
@@ -40,8 +49,6 @@ const uploadStudentPhoto = async (req, res) => {
 
         }
 
-        // Delete old photo if exists
-
         if (student.photo) {
 
             const oldPhotoPath = path.join(
@@ -61,8 +68,6 @@ const uploadStudentPhoto = async (req, res) => {
             }
 
         }
-
-        // Save new filename
 
         student.photo = req.file.filename;
 
@@ -106,6 +111,14 @@ const uploadTeacherPhoto = async (req, res) => {
 
         const { id } = req.params;
 
+        const authorized = await canUploadTeacherPhoto(req.user, id);
+        if (!authorized) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to upload a photo for this teacher."
+            });
+        }
+
         const teacher = await Teacher.findById(id);
 
         if (!teacher) {
@@ -132,8 +145,6 @@ const uploadTeacherPhoto = async (req, res) => {
 
         }
 
-        // Delete old photo if exists
-
         if (teacher.photo) {
 
             const oldPhotoPath = path.join(
@@ -153,8 +164,6 @@ const uploadTeacherPhoto = async (req, res) => {
             }
 
         }
-
-        // Save new filename
 
         teacher.photo = req.file.filename;
 
@@ -198,6 +207,13 @@ const uploadAdminPhoto = async (req, res) => {
 
         const { id } = req.params;
 
+        if (req.user.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Only admins can upload admin photos."
+            });
+        }
+
         const admin = await User.findById(id);
 
         if (!admin) {
@@ -224,8 +240,6 @@ const uploadAdminPhoto = async (req, res) => {
 
         }
 
-        // Delete old photo if exists
-
         if (admin.photo) {
 
             const oldPhotoPath = path.join(
@@ -245,8 +259,6 @@ const uploadAdminPhoto = async (req, res) => {
             }
 
         }
-
-        // Save new filename
 
         admin.photo = req.file.filename;
 

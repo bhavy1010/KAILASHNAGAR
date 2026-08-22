@@ -87,4 +87,9 @@ const quizAttemptSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Index for student risk quiz analysis
+quizAttemptSchema.index(
+    { student: 1, standard: 1, completedAt: -1 }
+);
+
 module.exports = mongoose.model("QuizAttempt", quizAttemptSchema);

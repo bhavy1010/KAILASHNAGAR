@@ -2,6 +2,7 @@ const Result = require("../models/Result");
 const Exam = require("../models/Exam");
 const Student = require("../models/Student");
 const ExamSchedule = require("../models/ExamSchedule");
+const { canManageResult, canAccessClass, isAdmin, isTeacher } = require("../services/authorization.service");
 
 // ======================================================
 // Grade calculator helper
@@ -46,6 +47,13 @@ const saveResult = async (req, res) => {
 
             });
 
+        }
+
+        if (isTeacher(req.user) && !await canManageResult(req.user, examId)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to manage results for this exam."
+            });
         }
 
         // Validate up front - a subject with totalMarks <= 0 can't
@@ -158,6 +166,22 @@ const getClassResults = async (req, res) => {
 
     try {
 
+        const exam = await Exam.findById(req.params.examId);
+
+        if (!exam) {
+            return res.status(404).json({
+                success: false,
+                message: "Exam Not Found"
+            });
+        }
+
+        if (isTeacher(req.user) && !await canAccessClass(req.user, exam.standard, exam.division)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to view results for this exam."
+            });
+        }
+
         const results = await Result.find({
 
             examId: req.params.examId
@@ -235,6 +259,23 @@ const getStudentResult = async (req, res) => {
 
         }
 
+        if (req.user?.role === "student" && req.user.id !== req.params.studentId) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not allowed to view another student's result."
+            });
+        }
+
+        if (isTeacher(req.user)) {
+            const exam = result.examId;
+            if (!exam || !await canAccessClass(req.user, exam.standard, exam.division)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view this result."
+                });
+            }
+        }
+
         res.status(200).json({
 
             success: true,
@@ -283,11 +324,23 @@ const getAllResultsForStudent = async (req, res) => {
             .populate("examId", "examName examType startDate endDate standard division")
             .sort({ createdAt: -1 });
 
+        let finalResults = results;
+
+        if (isTeacher(req.user)) {
+            finalResults = [];
+            for (const result of results) {
+                const exam = result.examId;
+                if (exam && await canManageResult(req.user, exam._id)) {
+                    finalResults.push(result);
+                }
+            }
+        }
+
         res.status(200).json({
 
             success: true,
-            count: results.length,
-            results
+            count: finalResults.length,
+            results: finalResults
 
         });
 
@@ -324,6 +377,13 @@ const getMarksEntryData = async (req, res) => {
 
             });
 
+        }
+
+        if (isTeacher(req.user) && !await canAccessClass(req.user, exam.standard, exam.division)) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to view marks entry for this exam."
+            });
         }
 
         const students = await Student.find({
@@ -385,8 +445,19 @@ const getResultAnalytics = async (req, res) => {
         if (standard) filter.standard = Number(standard);
         if (division) filter.division = division;
 
-        const results = await Result.find(filter)
+        let results = await Result.find(filter)
             .populate("examId", "examName examType");
+
+        if (isTeacher(req.user)) {
+            const filtered = [];
+            for (const result of results) {
+                const exam = result.examId;
+                if (exam && await canManageResult(req.user, exam._id)) {
+                    filtered.push(result);
+                }
+            }
+            results = filtered;
+        }
 
         // Exam-wise average
         const examMap = {};

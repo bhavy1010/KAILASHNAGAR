@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
 
     password: {
         type: String,
-        required: true
+        required: true,
+        minlength: 8
     },
 
     role: {
@@ -29,6 +30,11 @@ const userSchema = new mongoose.Schema({
     photo: {
         type: String,
         default: ""
+    },
+
+    mustResetPassword: {
+        type: Boolean,
+        default: false
     }
 
 }, {
@@ -63,7 +69,7 @@ userSchema.methods.generateAuthToken = function () {
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: "7d"
+            expiresIn: "15m"
         }
     );
 

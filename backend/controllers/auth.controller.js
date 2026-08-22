@@ -1,21 +1,15 @@
 const User = require("../models/User");
 const Student = require("../models/Student");
 const Teacher = require("../models/Teacher");
-const { generateRefreshToken, revokeRefreshToken } = require("../services/refreshToken.service");
+const { generateRefreshToken, rotateRefreshToken, revokeRefreshToken, revokeAllUserTokens } = require("../services/refreshToken.service");
+const { generateCsrfToken, setCsrfCookie, getAuthCookieOptions, getCsrfCookieOptions } = require("../middlewares/auth.middleware");
+const { canUploadStudentPhoto, canUploadTeacherPhoto } = require("../services/authorization.service");
 
 // ======================================================
 // Cookie options for the auth token
 // ======================================================
 
 const AUTH_COOKIE_NAME = "token";
-const AUTH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-const getAuthCookieOptions = () => ({
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: AUTH_COOKIE_MAX_AGE
-});
 
 // ======================================================
 // Create Admin Account
@@ -68,6 +62,13 @@ const registerAdmin = async (req, res) => {
             role: "admin"
         });
 
+        const token = admin.generateAuthToken();
+        const refreshToken = await generateRefreshToken(admin._id, "User", "admin");
+        const csrfToken = generateCsrfToken();
+
+        res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
+        setCsrfCookie(res, csrfToken);
+
         res.status(201).json({
             success: true,
             message: "Admin account created successfully",
@@ -80,20 +81,19 @@ const registerAdmin = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.error("Register admin error:", error);
 
         res.status(500).json({
             success: false,
-            message: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
         });
     }
 };
 
 // ======================================================
 // Login: Admin / Teacher / Student
-// Admin   -> Mobile Number + Password
-// Teacher -> Mobile Number + Password
-// Student -> GR Number + DOB Password
 // ======================================================
 
 const loginUser = async (req, res) => {
@@ -143,7 +143,8 @@ const loginUser = async (req, res) => {
                 name: account.fullName,
                 grNumber: account.grNumber,
                 role: "student",
-                photo: account.photo || ""
+                photo: account.photo || "",
+                mustResetPassword: account.mustResetPassword || false
             };
         }
 
@@ -174,7 +175,8 @@ const loginUser = async (req, res) => {
                 name: account.fullName,
                 mobile: account.mobile,
                 role: "teacher",
-                photo: account.photo || ""
+                photo: account.photo || "",
+                mustResetPassword: account.mustResetPassword || false
             };
         }
 
@@ -205,7 +207,8 @@ const loginUser = async (req, res) => {
                 name: account.name,
                 mobile: account.mobile,
                 role: "admin",
-                photo: account.photo || ""
+                photo: account.photo || "",
+                mustResetPassword: account.mustResetPassword || false
             };
         }
 
@@ -217,40 +220,37 @@ const loginUser = async (req, res) => {
         }
 
         const token = account.generateAuthToken();
-
         const refreshToken = await generateRefreshToken(
             account._id,
             normalizedRole === "student" ? "Student" : normalizedRole === "teacher" ? "Teacher" : "User",
             normalizedRole
         );
+        const csrfToken = generateCsrfToken();
 
-        res.cookie(
-            AUTH_COOKIE_NAME,
-            token,
-            getAuthCookieOptions()
-        );
+        res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
+        setCsrfCookie(res, csrfToken);
 
         res.status(200).json({
             success: true,
             message: "Login successful",
-            token,
-            refreshToken,
-            user
+            user,
+            csrfToken
         });
 
     } catch (error) {
-        console.log(error);
+        console.error("Login error:", error);
 
         res.status(500).json({
             success: false,
-            message: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
         });
     }
 };
 
 // ======================================================
 // Admin Forgot Password
-// Admin must enter mobile number + secret code
 // ======================================================
 
 const resetAdminPassword = async (req, res) => {
@@ -268,6 +268,13 @@ const resetAdminPassword = async (req, res) => {
             });
         }
 
+        if (!process.env.ADMIN_SIGNUP_CODE) {
+            return res.status(500).json({
+                success: false,
+                message: "Admin secret code is not configured on the server"
+            });
+        }
+
         if (secretCode !== process.env.ADMIN_SIGNUP_CODE) {
             return res.status(403).json({
                 success: false,
@@ -275,10 +282,10 @@ const resetAdminPassword = async (req, res) => {
             });
         }
 
-        if (newPassword.length < 6) {
+        if (newPassword.length < 8) {
             return res.status(400).json({
                 success: false,
-                message: "Password must contain at least 6 characters"
+                message: "Password must contain at least 8 characters"
             });
         }
 
@@ -295,6 +302,7 @@ const resetAdminPassword = async (req, res) => {
         }
 
         admin.password = newPassword;
+        admin.mustResetPassword = false;
         await admin.save();
 
         res.status(200).json({
@@ -303,38 +311,62 @@ const resetAdminPassword = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.error("Reset admin password error:", error);
 
         res.status(500).json({
             success: false,
-            message: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
         });
     }
 };
 
 // ======================================================
 // Teacher Forgot Password
-// Teacher must enter mobile number
+// Requires mobile number + TEACHER_RESET_CODE
 // ======================================================
 
 const resetTeacherPassword = async (req, res) => {
     try {
         const {
             mobile,
+            secretCode,
             newPassword
         } = req.body;
 
-        if (!mobile || !newPassword) {
+        if (!mobile || !secretCode || !newPassword) {
             return res.status(400).json({
                 success: false,
-                message: "Mobile number and new password are required"
+                message: "Mobile number, secret code and new password are required"
             });
         }
 
-        if (newPassword.length < 6) {
+        if (!process.env.TEACHER_RESET_CODE) {
+            return res.status(500).json({
+                success: false,
+                message: "Teacher reset code is not configured on the server"
+            });
+        }
+
+        if (secretCode !== process.env.TEACHER_RESET_CODE) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid teacher reset code"
+            });
+        }
+
+        if (secretCode === process.env.ADMIN_SIGNUP_CODE) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid teacher reset code"
+            });
+        }
+
+        if (newPassword.length < 8) {
             return res.status(400).json({
                 success: false,
-                message: "Password must contain at least 6 characters"
+                message: "Password must contain at least 8 characters"
             });
         }
 
@@ -350,6 +382,7 @@ const resetTeacherPassword = async (req, res) => {
         }
 
         teacher.password = newPassword;
+        teacher.mustResetPassword = false;
         await teacher.save();
 
         res.status(200).json({
@@ -358,29 +391,118 @@ const resetTeacherPassword = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.error("Reset teacher password error:", error);
 
         res.status(500).json({
             success: false,
-            message: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
+        });
+    }
+};
+
+// ======================================================
+// Change Password (authenticated user)
+// ======================================================
+
+const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Current password and new password are required"
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: "New password must contain at least 8 characters"
+            });
+        }
+
+        const { id, role } = req.user;
+        const normalizedRole = (role || "").toLowerCase();
+
+        let account = null;
+        let UserModel;
+
+        if (normalizedRole === "student") {
+            UserModel = Student;
+        } else if (normalizedRole === "teacher") {
+            UserModel = Teacher;
+        } else {
+            UserModel = User;
+        }
+
+        account = await UserModel.findById(id);
+
+        if (!account) {
+            return res.status(404).json({
+                success: false,
+                message: "Account not found"
+            });
+        }
+
+        const isMatch = await account.comparePassword(currentPassword);
+
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Current password is incorrect"
+            });
+        }
+
+        account.password = newPassword;
+        account.mustResetPassword = false;
+        await account.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        });
+
+    } catch (error) {
+        console.error("Change password error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
         });
     }
 };
 
 // ======================================================
 // Logout
-// Clears the auth cookie so the session actually ends
 // ======================================================
 
 const logoutUser = async (req, res) => {
     try {
-        const token = req.cookies?.token || req.body?.refreshToken;
+        const token = req.cookies?.token;
 
         if (token) {
-            await revokeRefreshToken(token);
+            const decoded = jwt.decode(token);
+            const userId = decoded?.id;
+            const userRole = decoded?.role;
+
+            if (userId && userRole) {
+                const userModel = userRole === "student"
+                    ? "Student"
+                    : userRole === "teacher"
+                        ? "Teacher"
+                        : "User";
+
+                await revokeAllUserTokens(userId, userModel);
+            }
         }
 
         res.clearCookie(AUTH_COOKIE_NAME);
+        res.clearCookie("XSRF-TOKEN");
 
         res.status(200).json({
             success: true,
@@ -389,17 +511,15 @@ const logoutUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
         });
     }
 };
 
 // ======================================================
 // Get Current Logged-In User
-// Used by the frontend on page load/refresh to silently
-// restore the session from the httpOnly cookie, so the
-// user is never bounced back to the login page while the
-// cookie is still valid.
 // ======================================================
 
 const getMe = async (req, res) => {
@@ -419,7 +539,8 @@ const getMe = async (req, res) => {
                     name: account.fullName,
                     grNumber: account.grNumber,
                     role: "student",
-                    photo: account.photo || ""
+                    photo: account.photo || "",
+                    mustResetPassword: account.mustResetPassword || false
                 };
             }
         }
@@ -433,7 +554,8 @@ const getMe = async (req, res) => {
                     name: account.fullName,
                     mobile: account.mobile,
                     role: "teacher",
-                    photo: account.photo || ""
+                    photo: account.photo || "",
+                    mustResetPassword: account.mustResetPassword || false
                 };
             }
         }
@@ -447,7 +569,8 @@ const getMe = async (req, res) => {
                     name: account.name,
                     mobile: account.mobile,
                     role: "admin",
-                    photo: account.photo || ""
+                    photo: account.photo || "",
+                    mustResetPassword: account.mustResetPassword || false
                 };
             }
         }
@@ -465,18 +588,19 @@ const getMe = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.error("Get me error:", error);
 
         res.status(500).json({
             success: false,
-            message: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Internal server error."
+                : error.message
         });
     }
 };
 
 // ======================================================
-// Refresh Access Token
-// POST /api/auth/refresh-token
+// Refresh Access Token with rotation
 // ======================================================
 
 const refreshToken = async (req, res) => {
@@ -511,16 +635,24 @@ const refreshToken = async (req, res) => {
         }
 
         const newAccessToken = user.generateAuthToken();
+        const newRefreshToken = await rotateRefreshToken(
+            token,
+            user._id,
+            userModel,
+            userModel === "User" ? "admin" : userModel === "Teacher" ? "teacher" : "student"
+        );
 
         res.status(200).json({
             success: true,
             token: newAccessToken,
-            refreshToken: token
+            refreshToken: newRefreshToken
         });
     } catch (error) {
         res.status(401).json({
             success: false,
-            message: error.message || "Invalid refresh token"
+            message: process.env.NODE_ENV === "production"
+                ? "Invalid refresh token"
+                : (error.message || "Invalid refresh token")
         });
     }
 };
@@ -530,6 +662,7 @@ module.exports = {
     loginUser,
     resetAdminPassword,
     resetTeacherPassword,
+    changePassword,
     logoutUser,
     getMe,
     refreshToken

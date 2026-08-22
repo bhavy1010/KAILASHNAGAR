@@ -19,6 +19,8 @@ import Students from "./pages/students/Students";
 import AddStudent from "./pages/students/AddStudent";
 import EditStudent from "./pages/students/EditStudent";
 import StudentProfile from "./pages/students/StudentProfile";
+import StudentRiskDashboard from "./pages/studentRisk/StudentRiskDashboard";
+import StudentRiskDetails from "./pages/studentRisk/StudentRiskDetails";
 
 import Teachers from "./pages/teachers/Teachers";
 import AddTeacher from "./pages/teachers/AddTeacher";
@@ -124,6 +126,26 @@ const App = () => {
                             roles={["admin", "teacher", "student"]}
                         >
                             <Dashboard />
+                        </RoleRoute>
+                    }
+                />
+
+                {/* Student Risk & Early Warning */}
+
+                <Route
+                    path="/student-risk"
+                    element={
+                        <RoleRoute roles={["admin", "teacher"]}>
+                            <StudentRiskDashboard />
+                        </RoleRoute>
+                    }
+                />
+
+                <Route
+                    path="/student-risk/:studentId"
+                    element={
+                        <RoleRoute roles={["admin", "teacher", "student"]}>
+                            <StudentRiskDetails />
                         </RoleRoute>
                     }
                 />

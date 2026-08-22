@@ -1,8 +1,9 @@
 const Leave = require("../models/Leave");
 const Teacher = require("../models/Teacher");
 const User = require("../models/User");
+const Student = require("../models/Student");
 const { notifyUser } = require("../services/notification.service");
-const { isClassTeacherOf } = require("../services/classTeacher.service");
+const { canAccessClass, isAdmin } = require("../services/authorization.service");
 
 // ======================================================
 // Apply For Leave (Student only)
@@ -81,7 +82,71 @@ const getLeaves = async (req, res) => {
 
             filter.studentId = req.user.id;
 
-        } else if (req.query.studentId) {
+        } else if (req.user.role === "teacher") {
+
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("classesHandled");
+
+            const classConditions = [];
+
+            if (teacher && teacher.classesHandled && teacher.classesHandled.length > 0) {
+
+                for (const ch of teacher.classesHandled) {
+
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+
+                    const stdNum = parseInt(parts[0], 10);
+
+                    const div = parts[1] || "";
+
+                    if (!isNaN(stdNum) && div) {
+
+                        classConditions.push({ standard: stdNum, division: div });
+
+                    }
+
+                }
+
+            }
+
+            const Class = require("../models/Class");
+
+            const formalClasses = await Class.find({ classTeacher: req.user.id });
+
+            for (const cd of formalClasses) {
+
+                classConditions.push({ standard: cd.standard, division: cd.division });
+
+            }
+
+            if (req.query.studentId) {
+
+                const student = await Student.findById(req.query.studentId);
+
+                if (student && classConditions.some(cc => cc.standard === student.standard && cc.division === student.division)) {
+
+                    filter.studentId = req.query.studentId;
+
+                } else {
+
+                    filter.studentId = { $in: [] };
+
+                }
+
+            } else if (classConditions.length > 0) {
+
+                const studentsInClasses = await Student.find({ $or: classConditions }).select("_id");
+
+                const studentIds = studentsInClasses.map(s => s._id);
+
+                filter.studentId = { $in: studentIds };
+
+            } else {
+
+                filter.studentId = { $in: [] };
+
+            }
+
+        } else if (isAdmin(req.user) && req.query.studentId) {
 
             filter.studentId = req.query.studentId;
 
@@ -176,9 +241,9 @@ const updateLeaveStatus = async (req, res) => {
         // requesting student's Class Teacher, can approve/reject.
         if (req.user.role === "teacher") {
 
-            const authorized = await isClassTeacherOf(
+            const authorized = await canAccessClass(
 
-                req.user.id,
+                req.user,
                 existingLeave.studentId?.standard,
                 existingLeave.studentId?.division
 

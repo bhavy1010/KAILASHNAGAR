@@ -2,10 +2,10 @@ const HomeworkSubmission = require("../models/HomeworkSubmission");
 const Homework = require("../models/Homework");
 const Student = require("../models/Student");
 const { notifyUser } = require("../services/notification.service");
+const { canViewSubmission, canGradeSubmission, isAdmin, isStudent } = require("../services/authorization.service");
 
 // ======================================================
 // Submit Homework (student)
-// POST /api/homework-submission/submit
 // ======================================================
 
 const submitHomework = async (req, res) => {
@@ -14,9 +14,15 @@ const submitHomework = async (req, res) => {
 
         const {
             homeworkId,
-            studentId,
             answer
         } = req.body;
+
+        if (!homeworkId) {
+            return res.status(400).json({
+                success: false,
+                message: "Homework ID is required"
+            });
+        }
 
         const homework = await Homework.findById(homeworkId);
 
@@ -31,7 +37,25 @@ const submitHomework = async (req, res) => {
 
         }
 
-        // Check if already submitted
+        if (isStudent(req.user)) {
+            const student = await Student.findById(req.user.id);
+            if (!student) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Student record not found"
+                });
+            }
+
+            if (student.standard !== homework.standard || student.division !== homework.division) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to submit homework for this class."
+                });
+            }
+        }
+
+        const studentId = req.user.id;
+
         const existing = await HomeworkSubmission.findOne({
 
             homeworkId,
@@ -62,7 +86,6 @@ const submitHomework = async (req, res) => {
 
         if (existing) {
 
-            // Update existing submission
             submission = await HomeworkSubmission.findByIdAndUpdate(
 
                 existing._id,
@@ -103,13 +126,31 @@ const submitHomework = async (req, res) => {
 };
 
 // ======================================================
-// Get All Submissions For A Homework (teacher/admin)
-// GET /api/homework-submission/homework/:homeworkId
+// Get All Submissions For A Homework
 // ======================================================
 
 const getSubmissionsByHomework = async (req, res) => {
 
     try {
+
+        const homework = await Homework.findById(req.params.homeworkId);
+
+        if (!homework) {
+            return res.status(404).json({
+                success: false,
+                message: "Homework not found"
+            });
+        }
+
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canViewSubmission(req.user, { _id: homework._id, homeworkId: homework });
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view submissions for this homework."
+                });
+            }
+        }
 
         const submissions = await HomeworkSubmission.find({
 
@@ -147,16 +188,82 @@ const getSubmissionsByHomework = async (req, res) => {
 
 // ======================================================
 // Get Student's Own Submissions
-// GET /api/homework-submission/student/:studentId
 // ======================================================
 
 const getMySubmissions = async (req, res) => {
 
     try {
 
+        const studentId = req.user.id;
+
+        if (req.user.role !== "student") {
+            const requestedStudentId = req.params.studentId;
+            if (isAdmin(req.user)) {
+                const submissions = await HomeworkSubmission.find({
+
+                    studentId: requestedStudentId
+
+                })
+
+                    .populate(
+                        "homeworkId",
+                        "title subject dueDate totalMarks standard division"
+                    )
+
+                    .sort({ createdAt: -1 });
+
+                return res.status(200).json({
+
+                    success: true,
+                    count: submissions.length,
+                    submissions
+
+                });
+            }
+
+            const student = await Student.findById(requestedStudentId);
+            if (!student) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Student not found"
+                });
+            }
+
+            const Class = require("../models/Class");
+            const classDoc = await Class.findOne({ standard: student.standard, division: student.division });
+
+            if (!classDoc || classDoc.classTeacher?.toString() !== req.user.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are only authorized to view submissions for your own students."
+                });
+            }
+
+            const submissions = await HomeworkSubmission.find({
+
+                studentId: requestedStudentId
+
+            })
+
+                .populate(
+                    "homeworkId",
+                    "title subject dueDate totalMarks standard division"
+                )
+
+                .sort({ createdAt: -1 });
+
+            return res.status(200).json({
+
+                success: true,
+                count: submissions.length,
+                submissions
+
+            });
+        }
+
         const submissions = await HomeworkSubmission.find({
 
-            studentId: req.params.studentId
+            studentId: studentId
 
         })
 
@@ -190,7 +297,6 @@ const getMySubmissions = async (req, res) => {
 
 // ======================================================
 // Get Single Submission
-// GET /api/homework-submission/:id
 // ======================================================
 
 const getSubmissionById = async (req, res) => {
@@ -217,11 +323,26 @@ const getSubmissionById = async (req, res) => {
 
         }
 
-        res.status(200).json({
+        if (req.user.role === "student") {
+            if (req.user.id !== submission.studentId?.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You can only view your own submissions."
+                });
+            }
+        } else if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canViewSubmission(req.user, submission);
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view this submission."
+                });
+            }
+        }
 
+        res.status(200).json({
             success: true,
             submission
-
         });
 
     } catch (error) {
@@ -238,8 +359,7 @@ const getSubmissionById = async (req, res) => {
 };
 
 // ======================================================
-// Grade Submission (teacher/admin)
-// PUT /api/homework-submission/:id/grade
+// Grade Submission
 // ======================================================
 
 const gradeSubmission = async (req, res) => {
@@ -247,6 +367,16 @@ const gradeSubmission = async (req, res) => {
     try {
 
         const { grade, feedback } = req.body;
+
+        if (req.user.role === "teacher") {
+            const authorized = await canGradeSubmission(req.user, req.params.id);
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to grade submissions for this homework."
+                });
+            }
+        }
 
         const submission = await HomeworkSubmission.findByIdAndUpdate(
 
@@ -322,7 +452,6 @@ const gradeSubmission = async (req, res) => {
 
 // ======================================================
 // Get Homework Completion Stats
-// GET /api/homework-submission/completion/:homeworkId
 // ======================================================
 
 const getHomeworkCompletion = async (req, res) => {
@@ -336,12 +465,20 @@ const getHomeworkCompletion = async (req, res) => {
         if (!homework) {
 
             return res.status(404).json({
-
                 success: false,
                 message: "Homework Not Found"
-
             });
 
+        }
+
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canViewSubmission(req.user, { _id: homework._id, homeworkId: homework });
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view completion stats for this homework."
+                });
+            }
         }
 
         const totalStudents = await Student.countDocuments({

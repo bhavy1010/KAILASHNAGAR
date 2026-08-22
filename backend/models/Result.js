@@ -122,4 +122,9 @@ resultSchema.index(
     { unique: true }
 );
 
+// Index for student risk trend analysis
+resultSchema.index(
+    { studentId: 1, createdAt: -1 }
+);
+
 module.exports = mongoose.model("Result", resultSchema);

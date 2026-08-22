@@ -25,7 +25,7 @@ const teacherSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength: 6
+        minlength: 8
     },
 
     gender: {
@@ -86,6 +86,11 @@ const teacherSchema = new mongoose.Schema({
     photo: {
         type: String,
         default: ""
+    },
+
+    mustResetPassword: {
+        type: Boolean,
+        default: false
     }
 
 }, {
@@ -135,7 +140,7 @@ teacherSchema.methods.generateAuthToken = function () {
         process.env.JWT_SECRET,
 
         {
-            expiresIn: "7d"
+            expiresIn: "15m"
         }
 
     );

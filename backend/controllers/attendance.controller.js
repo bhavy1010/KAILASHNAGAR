@@ -1,9 +1,30 @@
 const Attendance = require("../models/Attendance");
 const Student = require("../models/Student");
+const Class = require("../models/Class");
 const AcademicYear = require("../models/AcademicYear");
 const ExcelJS = require("exceljs");
+const { canManageAttendance, isAdmin } = require("../services/authorization.service");
 const { isClassTeacherOf } = require("../services/classTeacher.service");
 const { checkTeacherPermission } = require("../services/teacherPermission.service");
+
+const getTeacherAuthorizedClasses = async (teacherId) => {
+    const allClasses = await Class.find({}).select("standard division");
+    const authorizedClasses = [];
+    for (const cls of allClasses) {
+        const canManage = await canManageAttendance(
+            { id: teacherId, role: "teacher" },
+            cls.standard,
+            cls.division
+        );
+        if (canManage) {
+            authorizedClasses.push({
+                standard: cls.standard,
+                division: cls.division
+            });
+        }
+    }
+    return authorizedClasses;
+};
 // ======================================================
 // Mark / Update Class Attendance (Upsert)
 // POST /api/attendance/class
@@ -43,30 +64,19 @@ const markClassAttendance = async (req, res) => {
             }
         }
 
-        if (req.user.role === "teacher") {
-
-            const authorized = await isClassTeacherOf(
-                req.user.id,
+        if (!isAdmin(req.user)) {
+            const authorized = await canManageAttendance(
+                req.user,
                 standard,
                 division
             );
 
             if (!authorized) {
-                const perm = await checkTeacherPermission({
-                    teacherId: req.user.id,
-                    role: req.user.role,
-                    standard,
-                    division
+                return res.status(403).json({
+                    success: false,
+                    message: `You are not authorized to mark attendance for Standard ${standard} - ${division}.`
                 });
-
-                if (!perm.authorized) {
-                    return res.status(403).json({
-                        success: false,
-                        message: `You are not authorized to mark attendance for Standard ${standard} - ${division}.`
-                    });
-                }
             }
-
         }
 
         const attendance = await Attendance.findOneAndUpdate(
@@ -133,6 +143,21 @@ const getClassAttendance = async (req, res) => {
     try {
 
         const { standard, division, date } = req.query;
+
+        if (!isAdmin(req.user)) {
+            const authorized = await canManageAttendance(
+                req.user,
+                Number(standard),
+                division
+            );
+
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: `You are not authorized to view attendance for Standard ${standard} - ${division}.`
+                });
+            }
+        }
 
         const attendance = await Attendance.findOne({
 
@@ -261,14 +286,30 @@ const getTodayAttendance = async (req, res) => {
         const nextDay = new Date(date);
         nextDay.setDate(date.getDate() + 1);
 
-        const attendanceDocs = await Attendance.find({
-
+        const baseFilter = {
             attendanceDate: {
                 $gte: date,
                 $lt: nextDay
             }
+        };
 
-        }).populate("markedBy", "fullName");
+        let attendanceDocs;
+
+        if (!isAdmin(req.user)) {
+            const authorizedClasses = await getTeacherAuthorizedClasses(req.user.id);
+
+            if (authorizedClasses.length > 0) {
+                baseFilter.$or = authorizedClasses.map((cls) => ({
+                    standard: cls.standard,
+                    division: cls.division
+                }));
+            } else {
+                baseFilter.standard = -1;
+            }
+        }
+
+        attendanceDocs = await Attendance.find(baseFilter)
+            .populate("markedBy", "fullName");
 
         const rows = [];
 
@@ -358,6 +399,19 @@ const getAttendanceHistory = async (req, res) => {
 
         }
 
+        if (!isAdmin(req.user) && !filter.standard) {
+            const authorizedClasses = await getTeacherAuthorizedClasses(req.user.id);
+
+            if (authorizedClasses.length > 0) {
+                filter.$or = authorizedClasses.map((cls) => ({
+                    standard: cls.standard,
+                    division: cls.division
+                }));
+            } else {
+                filter.standard = -1;
+            }
+        }
+
         const attendanceDocs = await Attendance.find(filter)
             .sort({ attendanceDate: -1 });
 
@@ -430,6 +484,30 @@ const getStudentAttendanceReport = async (req, res) => {
 
             });
 
+        }
+
+        const student = await Student.findById(studentId);
+
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found."
+            });
+        }
+
+        if (!isAdmin(req.user) && req.user.role === "teacher") {
+            const authorized = await canManageAttendance(
+                req.user,
+                student.standard,
+                student.division
+            );
+
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view this student's attendance report."
+                });
+            }
         }
 
         const filter = {
@@ -527,6 +605,21 @@ const getClassAttendanceReport = async (req, res) => {
     try {
 
         const { standard, division, month, year } = req.query;
+
+        if (!isAdmin(req.user)) {
+            const authorized = await canManageAttendance(
+                req.user,
+                Number(standard),
+                division
+            );
+
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: `You are not authorized to view attendance report for Standard ${standard} - ${division}.`
+                });
+            }
+        }
 
         const filter = {
             standard: Number(standard),
@@ -627,6 +720,39 @@ const getCalendarAttendance = async (req, res) => {
 
         const { studentId, month, year } = req.query;
 
+        if (isStudent(req.user) && req.user.id !== studentId) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not allowed to view another student's calendar."
+            });
+        }
+
+        let calendarStudent = null;
+
+        if (!isAdmin(req.user) && !isStudent(req.user)) {
+            calendarStudent = await Student.findById(studentId);
+
+            if (!calendarStudent) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Student not found."
+                });
+            }
+
+            const authorized = await canManageAttendance(
+                req.user,
+                calendarStudent.standard,
+                calendarStudent.division
+            );
+
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to view this student's calendar."
+                });
+            }
+        }
+
         const start = new Date(Number(year), Number(month) - 1, 1);
         const end = new Date(Number(year), Number(month), 1);
 
@@ -702,7 +828,22 @@ const getAttendanceAnalytics = async (req, res) => {
 
         }
 
-        const attendanceDocs = await Attendance.find(filter);
+        let attendanceDocs;
+
+        if (!isAdmin(req.user)) {
+            const authorizedClasses = await getTeacherAuthorizedClasses(req.user.id);
+
+            if (authorizedClasses.length > 0) {
+                filter.$or = authorizedClasses.map((cls) => ({
+                    standard: cls.standard,
+                    division: cls.division
+                }));
+            } else {
+                filter.standard = -1;
+            }
+        }
+
+        attendanceDocs = await Attendance.find(filter);
 
         // Class-wise comparison
 
@@ -844,6 +985,19 @@ const exportAttendanceExcel = async (req, res) => {
                 $gte: start,
                 $lt: end
             };
+        }
+
+        if (!isAdmin(req.user) && !filter.standard) {
+            const authorizedClasses = await getTeacherAuthorizedClasses(req.user.id);
+
+            if (authorizedClasses.length > 0) {
+                filter.$or = authorizedClasses.map((cls) => ({
+                    standard: cls.standard,
+                    division: cls.division
+                }));
+            } else {
+                filter.standard = -1;
+            }
         }
 
         const attendanceDocs = await Attendance.find(filter)

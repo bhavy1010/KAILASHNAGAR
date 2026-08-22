@@ -1,3 +1,4 @@
+const { isAdmin } = require("../services/authorization.service");
 const Notice = require("../models/Notice");
 const { notifyAudience } = require("../services/notification.service");
 const { isClassTeacherOfAnyClass } = require("../services/classTeacher.service");
@@ -14,7 +15,7 @@ const createNotice = async (req, res) => {
         // Only admins, or a teacher who is the assigned Class Teacher
         // for at least one class, can post notices. Regular subject
         // teachers who aren't a class teacher for any class can't.
-        if (req.user.role === "teacher") {
+        if (!isAdmin(req.user) && req.user.role === "teacher") {
 
             const authorized = await isClassTeacherOfAnyClass(req.user.id);
 
@@ -158,7 +159,7 @@ const updateNotice = async (req, res) => {
 
     try {
 
-        if (req.user.role === "teacher") {
+        if (!isAdmin(req.user) && req.user.role === "teacher") {
 
             const authorized = await isClassTeacherOfAnyClass(req.user.id);
 
@@ -220,6 +221,15 @@ const updateNotice = async (req, res) => {
 const deleteNotice = async (req, res) => {
 
     try {
+
+        if (!isAdmin(req.user)) {
+
+            return res.status(403).json({
+                success: false,
+                message: "Only Admin can delete notices."
+            });
+
+        }
 
         const notice = await Notice.findById(req.params.id);
 
@@ -340,6 +350,21 @@ const getNoticesByAudience = async (req, res) => {
 const archiveNotice = async (req, res) => {
 
     try {
+
+        if (!isAdmin(req.user) && req.user.role === "teacher") {
+
+            const authorized = await isClassTeacherOfAnyClass(req.user.id);
+
+            if (!authorized) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: "Only Admin or Class Teachers can archive notices."
+                });
+
+            }
+
+        }
 
         const notice = await Notice.findByIdAndUpdate(
             req.params.id,

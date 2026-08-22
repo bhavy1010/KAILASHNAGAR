@@ -49,14 +49,14 @@ const studentSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength: 6
+        minlength: 8
     },
 
     standard: {
         type: Number,
         required: true,
         min: 1,
-        max: 12
+        max: 8
     },
 
     division: {
@@ -64,12 +64,6 @@ const studentSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-
-    // classId: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Class",
-    //     required: true
-    // },
 
     address: {
         type: String,
@@ -91,6 +85,11 @@ const studentSchema = new mongoose.Schema({
     photo: {
         type: String,
         default: ""
+    },
+
+    mustResetPassword: {
+        type: Boolean,
+        default: false
     }
 
 }, {
@@ -127,6 +126,7 @@ studentSchema.methods.comparePassword = async function (password) {
 // ======================================================
 // Generate JWT
 // ======================================================
+
 studentSchema.methods.generateAuthToken = function () {
 
     return jwt.sign(
@@ -141,10 +141,11 @@ studentSchema.methods.generateAuthToken = function () {
         process.env.JWT_SECRET,
 
         {
-            expiresIn: "7d"
+            expiresIn: "15m"
         }
 
     );
 
 };
+
 module.exports = mongoose.model("Student", studentSchema);

@@ -1,25 +1,10 @@
 const Student = require("../models/Student");
+const crypto = require("crypto");
 const { checkTeacherPermission } = require("../services/teacherPermission.service");
+const { canManageStudent, canAccessClass, isAdmin } = require("../services/authorization.service");
 
-const createDobPassword = (dateOfBirth) => {
-    const rawDate = String(dateOfBirth);
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
-        const [year, month, day] = rawDate.split("-");
-        return `${day}${month}${year.slice(-2)}`;
-    }
-
-    const date = new Date(dateOfBirth);
-
-    if (Number.isNaN(date.getTime())) {
-        return null;
-    }
-
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const year = String(date.getUTCFullYear()).slice(-2);
-
-    return `${day}${month}${year}`;
+const generateTemporaryPassword = () => {
+    return crypto.randomBytes(8).toString("hex");
 };
 
 // ======================================================
@@ -32,19 +17,13 @@ const ensureStudentAccess = async (student, req) => {
         return { authorized: false, message: "Unauthorized" };
     }
 
-    if (req.user.role === "admin") {
+    if (isAdmin(req.user)) {
         return { authorized: true };
     }
 
     if (req.user.role === "teacher") {
-        const permission = await checkTeacherPermission({
-            teacherId: req.user.id,
-            role: req.user.role,
-            standard: student.standard,
-            division: student.division
-        });
-
-        if (!permission.authorized) {
+        const authorized = await canAccessClass(req.user, student.standard, student.division);
+        if (!authorized) {
             return {
                 authorized: false,
                 message: "Access Denied: You can only view students from your assigned classes."
@@ -91,15 +70,6 @@ const createStudent = async (req, res) => {
             });
         }
 
-        const password = createDobPassword(dateOfBirth);
-
-        if (!password) {
-            return res.status(400).json({
-                success: false,
-                message: "Please enter a valid date of birth."
-            });
-        }
-
         const existingStudent = await Student.findOne({
             grNumber: grNumber.trim()
         });
@@ -111,6 +81,8 @@ const createStudent = async (req, res) => {
             });
         }
 
+        const temporaryPassword = generateTemporaryPassword();
+
         const student = await Student.create({
             grNumber: grNumber.trim(),
             fullName: fullName.trim(),
@@ -119,20 +91,27 @@ const createStudent = async (req, res) => {
             gender,
             dateOfBirth,
             parentMobile: parentMobile.trim(),
-            password,
+            password: temporaryPassword,
             standard: Number(standard),
             division: division.trim().toUpperCase(),
             address: address.trim(),
             admissionDate: admissionDate || new Date(),
             status: status || "Active",
-            photo: photo || ""
+            photo: photo || "",
+            mustResetPassword: true
         });
 
         res.status(201).json({
             success: true,
-            message:
-                "Student created successfully. Password is generated from date of birth.",
-            student
+            message: "Student created successfully. A secure temporary password has been generated.",
+            student: {
+                id: student._id,
+                grNumber: student.grNumber,
+                fullName: student.fullName,
+                standard: student.standard,
+                division: student.division,
+                temporaryPassword
+            }
         });
     } catch (error) {
         console.error("Create student error:", error);
@@ -146,7 +125,40 @@ const createStudent = async (req, res) => {
 
 const getAllStudents = async (req, res) => {
     try {
-        const students = await Student.find().sort({ createdAt: -1 });
+        const filter = {};
+
+        if (req.user?.role === "teacher" && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("classesHandled");
+            if (teacher && teacher.classesHandled && teacher.classesHandled.length > 0) {
+                const classIds = [];
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        const classDoc = await require("../models/Class").findOne({ standard: stdNum, division: div });
+                        if (classDoc) classIds.push(classDoc._id);
+                    }
+                }
+                if (classIds.length > 0) {
+                    const studentsInClasses = [];
+                    for (const cid of classIds) {
+                        const classDoc = await require("../models/Class").findById(cid);
+                        if (classDoc) {
+                            studentsInClasses.push(
+                                ...(await Student.find({ standard: classDoc.standard, division: classDoc.division }).select("_id"))
+                            );
+                        }
+                    }
+                    const studentIds = studentsInClasses.map(s => s._id);
+                    filter._id = { $in: studentIds };
+                } else {
+                    filter._id = { $in: [] };
+                }
+            }
+        }
+
+        const students = await Student.find(filter).sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -233,12 +245,42 @@ const getStudentByName = async (req, res) => {
         const escaped = rawName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const keyword = escaped || ".";
 
-        const students = await Student.find({
-            fullName: {
-                $regex: keyword,
-                $options: "i"
+        const filter = { fullName: { $regex: keyword, $options: "i" } };
+
+        if (req.user?.role === "teacher" && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("classesHandled");
+            if (teacher && teacher.classesHandled && teacher.classesHandled.length > 0) {
+                const classIds = [];
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        const classDoc = await require("../models/Class").findOne({ standard: stdNum, division: div });
+                        if (classDoc) classIds.push(classDoc._id);
+                    }
+                }
+                if (classIds.length > 0) {
+                    const studentsInClasses = [];
+                    for (const cid of classIds) {
+                        const classDoc = await require("../models/Class").findById(cid);
+                        if (classDoc) {
+                            studentsInClasses.push(
+                                ...(await Student.find({ standard: classDoc.standard, division: classDoc.division }).select("_id"))
+                            );
+                        }
+                    }
+                    const studentIds = studentsInClasses.map(s => s._id);
+                    filter._id = { $in: studentIds };
+                } else {
+                    filter._id = { $in: [] };
+                }
+            } else {
+                filter._id = { $in: [] };
             }
-        }).sort({ fullName: 1 });
+        }
+
+        const students = await Student.find(filter).sort({ fullName: 1 });
 
         res.status(200).json({
             success: true,
@@ -259,28 +301,53 @@ const searchStudents = async (req, res) => {
         const escaped = rawKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const keyword = escaped || ".";
 
-        const students = await Student.find({
+        const baseFilter = {
             $or: [
-                {
-                    fullName: {
-                        $regex: keyword,
-                        $options: "i"
-                    }
-                },
-                {
-                    grNumber: {
-                        $regex: keyword,
-                        $options: "i"
-                    }
-                },
-                {
-                    parentMobile: {
-                        $regex: keyword,
-                        $options: "i"
+                { fullName: { $regex: keyword, $options: "i" } },
+                { grNumber: { $regex: keyword, $options: "i" } },
+                { parentMobile: { $regex: keyword, $options: "i" } }
+            ]
+        };
+
+        let filter = baseFilter;
+
+        if (req.user?.role === "teacher" && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("classesHandled");
+            if (teacher && teacher.classesHandled && teacher.classesHandled.length > 0) {
+                const classIds = [];
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        const classDoc = await require("../models/Class").findOne({ standard: stdNum, division: div });
+                        if (classDoc) classIds.push(classDoc._id);
                     }
                 }
-            ]
-        }).sort({ fullName: 1 });
+                if (classIds.length > 0) {
+                    const studentsInClasses = [];
+                    for (const cid of classIds) {
+                        const classDoc = await require("../models/Class").findById(cid);
+                        if (classDoc) {
+                            studentsInClasses.push(
+                                ...(await Student.find({ standard: classDoc.standard, division: classDoc.division }).select("_id"))
+                            );
+                        }
+                    }
+                    const studentIds = studentsInClasses.map(s => s._id);
+                    filter = {
+                        _id: { $in: studentIds },
+                        ...baseFilter
+                    };
+                } else {
+                    filter = { _id: { $in: [] } };
+                }
+            } else {
+                filter = { _id: { $in: [] } };
+            }
+        }
+
+        const students = await Student.find(filter).sort({ fullName: 1 });
 
         res.status(200).json({
             success: true,
@@ -301,9 +368,44 @@ const getStudentsPagination = async (req, res) => {
         const limit = Math.max(Number(req.query.limit) || 10, 1);
         const skip = (page - 1) * limit;
 
+        const filter = {};
+
+        if (req.user?.role === "teacher" && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("classesHandled");
+            if (teacher && teacher.classesHandled && teacher.classesHandled.length > 0) {
+                const classIds = [];
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        const classDoc = await require("../models/Class").findOne({ standard: stdNum, division: div });
+                        if (classDoc) classIds.push(classDoc._id);
+                    }
+                }
+                if (classIds.length > 0) {
+                    const studentsInClasses = [];
+                    for (const cid of classIds) {
+                        const classDoc = await require("../models/Class").findById(cid);
+                        if (classDoc) {
+                            studentsInClasses.push(
+                                ...(await Student.find({ standard: classDoc.standard, division: classDoc.division }).select("_id"))
+                            );
+                        }
+                    }
+                    const studentIds = studentsInClasses.map(s => s._id);
+                    filter._id = { $in: studentIds };
+                } else {
+                    filter._id = { $in: [] };
+                }
+            } else {
+                filter._id = { $in: [] };
+            }
+        }
+
         const [totalStudents, students] = await Promise.all([
-            Student.countDocuments(),
-            Student.find()
+            Student.countDocuments(filter),
+            Student.find(filter)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -361,17 +463,7 @@ const updateStudent = async (req, res) => {
         }
 
         if (req.body.dateOfBirth) {
-            const password = createDobPassword(req.body.dateOfBirth);
-
-            if (!password) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Please enter a valid date of birth."
-                });
-            }
-
             student.dateOfBirth = req.body.dateOfBirth;
-            student.password = password;
         }
 
         student.grNumber = req.body.grNumber?.trim() || student.grNumber;

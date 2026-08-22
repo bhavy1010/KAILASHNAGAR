@@ -1,8 +1,13 @@
 const Teacher = require("../models/Teacher");
+const crypto = require("crypto");
+const { canUploadTeacherPhoto, isAdmin } = require("../services/authorization.service");
+
+const generateTemporaryPassword = () => {
+    return crypto.randomBytes(8).toString("hex");
+};
 
 // ======================================================
 // Create Teacher
-// If password is empty, mobile number becomes password
 // ======================================================
 
 const createTeacher = async (req, res) => {
@@ -27,10 +32,33 @@ const createTeacher = async (req, res) => {
             });
         }
 
+        const password = req.body.password?.trim();
+
+        if (!password || password.length < 8) {
+            const temporaryPassword = generateTemporaryPassword();
+            const teacher = await Teacher.create({
+                ...req.body,
+                mobile,
+                password: temporaryPassword,
+                mustResetPassword: true
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Teacher Added Successfully. A secure temporary password has been generated.",
+                teacher: {
+                    id: teacher._id,
+                    fullName: teacher.fullName,
+                    mobile: teacher.mobile,
+                    temporaryPassword
+                }
+            });
+        }
+
         const teacher = await Teacher.create({
             ...req.body,
             mobile,
-            password: req.body.password?.trim() || mobile
+            password
         });
 
         res.status(201).json({
@@ -136,7 +164,6 @@ const getTeacherByMobile = async (req, res) => {
 
 // ======================================================
 // Update Teacher
-// Password is changed only when Admin enters a new one
 // ======================================================
 
 const updateTeacher = async (req, res) => {
@@ -185,6 +212,9 @@ const updateTeacher = async (req, res) => {
         teacher.subject =
             req.body.subject?.trim() || teacher.subject;
 
+        teacher.subjectsHandled =
+            req.body.subjectsHandled || teacher.subjectsHandled;
+
         teacher.experience =
             req.body.experience ?? teacher.experience;
 
@@ -206,10 +236,11 @@ const updateTeacher = async (req, res) => {
         teacher.photo =
             req.body.photo || teacher.photo;
 
-        // Teacher password can only be reset by Admin.
-        // Saving with .save() keeps the password encrypted.
+        // Teacher password can only be reset by Admin via change-password endpoint
+        // or through the admin-provided reset flow.
         if (req.body.password?.trim()) {
             teacher.password = req.body.password.trim();
+            teacher.mustResetPassword = false;
         }
 
         await teacher.save();

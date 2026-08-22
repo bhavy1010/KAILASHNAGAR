@@ -3,10 +3,10 @@ const HomeworkSubmission = require("../models/HomeworkSubmission");
 const Student = require("../models/Student");
 const { notifyStudentsByClass } = require("../services/notification.service");
 const { checkTeacherPermission } = require("../services/teacherPermission.service");
+const { canManageHomework, canDeleteHomework, isAdmin, isStudent } = require("../services/authorization.service");
 
 // ======================================================
 // Create Homework
-// POST /api/homework/add
 // ======================================================
 
 const createHomework = async (req, res) => {
@@ -15,8 +15,7 @@ const createHomework = async (req, res) => {
 
         const homeworkData = { ...req.body };
 
-        // Teacher subject & class permission check
-        if (req.user && req.user.role === "teacher") {
+        if (req.user.role === "teacher") {
             const perm = await checkTeacherPermission({
                 teacherId: req.user.id,
                 role: req.user.role,
@@ -27,14 +26,13 @@ const createHomework = async (req, res) => {
             if (!perm.authorized) {
                 return res.status(403).json({ success: false, message: perm.message });
             }
+
+            homeworkData.teacherId = req.user.id;
         }
 
         if (req.file) {
-
             homeworkData.attachment = req.file.filename;
-
             homeworkData.attachmentOriginalName = req.file.originalname;
-
         }
 
         const homework = await Homework.create(homeworkData);
@@ -76,8 +74,7 @@ const createHomework = async (req, res) => {
 };
 
 // ======================================================
-// Get All Homework (admin/teacher list)
-// GET /api/homework/all
+// Get All Homework
 // ======================================================
 
 const getAllHomework = async (req, res) => {
@@ -86,19 +83,63 @@ const getAllHomework = async (req, res) => {
 
         const filter = {};
 
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("subject subjectsHandled classesHandled");
+            if (!teacher) {
+                return res.status(403).json({ success: false, message: "Teacher not found" });
+            }
+
+            const assignedSubjects = [
+                teacher.subject,
+                ...(teacher.subjectsHandled || [])
+            ]
+                .filter(Boolean)
+                .map((s) => s.trim());
+
+            const classConditions = [];
+            if (teacher.classesHandled && teacher.classesHandled.length > 0) {
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        classConditions.push({ standard: stdNum, division: div });
+                    }
+                }
+            }
+
+            const formalClassTeacherClasses = [];
+            const Class = require("../models/Class");
+            const classDocs = await Class.find({ classTeacher: req.user.id });
+            for (const cd of classDocs) {
+                classConditions.push({ standard: cd.standard, division: cd.division });
+            }
+
+            if (classConditions.length > 0) {
+                filter.$or = [
+                    ...classConditions.map(c => ({ ...c })),
+                    ...(assignedSubjects.length > 0 ? [{ subject: { $in: assignedSubjects } }] : [])
+                ];
+            } else if (assignedSubjects.length > 0) {
+                filter.subject = { $in: assignedSubjects };
+            } else {
+                filter.teacherId = req.user.id;
+            }
+        }
+
         if (req.query.standard)
             filter.standard = Number(req.query.standard);
 
         if (req.query.division)
             filter.division = req.query.division;
 
-        if (req.query.subject)
+        if (req.query.subject && !isAdmin(req.user))
             filter.subject = req.query.subject;
 
         if (req.query.status)
             filter.status = req.query.status;
 
-        if (req.query.teacherId)
+        if (req.query.teacherId && isAdmin(req.user))
             filter.teacherId = req.query.teacherId;
 
         const homework = await Homework.find(filter)
@@ -134,7 +175,6 @@ const getAllHomework = async (req, res) => {
 
 // ======================================================
 // Get Homework By ID
-// GET /api/homework/:id
 // ======================================================
 
 const getHomeworkById = async (req, res) => {
@@ -160,7 +200,6 @@ const getHomeworkById = async (req, res) => {
 
         }
 
-        // Submission stats
         const totalStudents = await Student.countDocuments({
 
             standard: homework.standard,
@@ -218,16 +257,41 @@ const getHomeworkById = async (req, res) => {
 
 // ======================================================
 // Get Homework By Class
-// GET /api/homework/class/:classId
 // ======================================================
 
 const getHomeworkByClass = async (req, res) => {
 
     try {
 
+        const classId = req.params.classId;
+        const Class = require("../models/Class");
+        const classDoc = await Class.findById(classId);
+
+        if (!classDoc) {
+            return res.status(404).json({
+                success: false,
+                message: "Class not found"
+            });
+        }
+
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const authorized = await canManageHomework(req.user, null);
+            if (!authorized) {
+                const perm = await checkTeacherPermission({
+                    teacherId: req.user.id,
+                    role: req.user.role,
+                    standard: classDoc.standard,
+                    division: classDoc.division
+                });
+                if (!perm.authorized) {
+                    return res.status(403).json({ success: false, message: perm.message });
+                }
+            }
+        }
+
         const homework = await Homework.find({
 
-            classId: req.params.classId
+            classId: classId
 
         })
 
@@ -258,7 +322,6 @@ const getHomeworkByClass = async (req, res) => {
 
 // ======================================================
 // Get Homework For Student (by their standard + division)
-// GET /api/homework/student/:studentId
 // ======================================================
 
 const getHomeworkForStudent = async (req, res) => {
@@ -278,6 +341,13 @@ const getHomeworkForStudent = async (req, res) => {
 
         }
 
+        if (isStudent(req.user) && req.user.id !== student._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "You can only view your own homework."
+            });
+        }
+
         const homework = await Homework.find({
 
             standard: student.standard,
@@ -290,7 +360,6 @@ const getHomeworkForStudent = async (req, res) => {
 
             .sort({ dueDate: 1 });
 
-        // Attach submission status for each homework
         const homeworkWithStatus = await Promise.all(
 
             homework.map(async (hw) => {
@@ -339,7 +408,6 @@ const getHomeworkForStudent = async (req, res) => {
 
 // ======================================================
 // Update Homework
-// PUT /api/homework/:id
 // ======================================================
 
 const updateHomework = async (req, res) => {
@@ -348,11 +416,35 @@ const updateHomework = async (req, res) => {
 
         const updateData = { ...req.body };
 
-        if (req.file) {
+        if (req.user.role === "teacher") {
+            if (!req.body.subject || !req.body.standard || !req.body.division) {
+                const existing = await Homework.findById(req.params.id);
+                if (existing) {
+                    updateData.subject = existing.subject;
+                    updateData.standard = existing.standard;
+                    updateData.division = existing.division;
+                }
+            }
 
+            const perm = await checkTeacherPermission({
+                teacherId: req.user.id,
+                role: req.user.role,
+                subject: updateData.subject,
+                standard: updateData.standard,
+                division: updateData.division
+            });
+            if (!perm.authorized) {
+                return res.status(403).json({ success: false, message: perm.message });
+            }
+
+            if (!updateData.teacherId) {
+                updateData.teacherId = req.user.id;
+            }
+        }
+
+        if (req.file) {
             updateData.attachment = req.file.filename;
             updateData.attachmentOriginalName = req.file.originalname;
-
         }
 
         const homework = await Homework.findByIdAndUpdate(
@@ -375,11 +467,9 @@ const updateHomework = async (req, res) => {
         }
 
         res.status(200).json({
-
             success: true,
             message: "Homework Updated",
             homework
-
         });
 
     } catch (error) {
@@ -399,12 +489,21 @@ const updateHomework = async (req, res) => {
 
 // ======================================================
 // Delete Homework
-// DELETE /api/homework/:id
 // ======================================================
 
 const deleteHomework = async (req, res) => {
 
     try {
+
+        if (req.user.role === "teacher") {
+            const authorized = await canDeleteHomework(req.user, req.params.id);
+            if (!authorized) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to delete this homework."
+                });
+            }
+        }
 
         const homework = await Homework.findById(req.params.id);
 
@@ -419,7 +518,6 @@ const deleteHomework = async (req, res) => {
 
         }
 
-        // Also delete all related submissions
         await HomeworkSubmission.deleteMany({
 
             homeworkId: homework._id
@@ -450,23 +548,69 @@ const deleteHomework = async (req, res) => {
 
 // ======================================================
 // Dashboard Stats
-// GET /api/homework/dashboard
 // ======================================================
 
 const getHomeworkDashboard = async (req, res) => {
 
     try {
 
-        const totalHomework = await Homework.countDocuments();
+        const filter = {};
+
+        if (req.user.role === "teacher" && !isAdmin(req.user)) {
+            const teacher = await require("../models/Teacher").findById(req.user.id).select("subject subjectsHandled classesHandled");
+            if (!teacher) {
+                return res.status(403).json({ success: false, message: "Teacher not found" });
+            }
+
+            const assignedSubjects = [
+                teacher.subject,
+                ...(teacher.subjectsHandled || [])
+            ]
+                .filter(Boolean)
+                .map((s) => s.trim());
+
+            const classConditions = [];
+            if (teacher.classesHandled && teacher.classesHandled.length > 0) {
+                for (const ch of teacher.classesHandled) {
+                    const parts = String(ch).trim().toLowerCase().replace(/std|class/gi, "").trim().split(/[\s-]+/);
+                    const stdNum = parseInt(parts[0], 10);
+                    const div = parts[1] || "";
+                    if (!isNaN(stdNum) && div) {
+                        classConditions.push({ standard: stdNum, division: div });
+                    }
+                }
+            }
+
+            const Class = require("../models/Class");
+            const classDocs = await Class.find({ classTeacher: req.user.id });
+            for (const cd of classDocs) {
+                classConditions.push({ standard: cd.standard, division: cd.division });
+            }
+
+            if (classConditions.length > 0) {
+                filter.$or = [
+                    ...classConditions.map(c => ({ ...c })),
+                    ...(assignedSubjects.length > 0 ? [{ subject: { $in: assignedSubjects } }] : [])
+                ];
+            } else if (assignedSubjects.length > 0) {
+                filter.subject = { $in: assignedSubjects };
+            } else {
+                filter.teacherId = req.user.id;
+            }
+        }
+
+        const totalHomework = await Homework.countDocuments(filter);
 
         const activeHomework = await Homework.countDocuments({
 
+            ...filter,
             status: "Active"
 
         });
 
         const overdueHomework = await Homework.countDocuments({
 
+            ...filter,
             status: "Active",
             dueDate: { $lt: new Date() }
 
@@ -484,8 +628,7 @@ const getHomeworkDashboard = async (req, res) => {
 
         });
 
-        // Recent homework (last 7)
-        const recentHomework = await Homework.find()
+        const recentHomework = await Homework.find(filter)
 
             .populate("teacherId", "fullName")
 
@@ -493,9 +636,11 @@ const getHomeworkDashboard = async (req, res) => {
 
             .limit(7);
 
-        // Subject-wise count
         const subjectWise = await Homework.aggregate([
 
+            {
+                $match: filter
+            },
             {
                 $group: {
                     _id: "$subject",

@@ -11,6 +11,7 @@ import {
     LogOut,
     Menu,
     Settings2,
+    ShieldCheck,
     Trophy,
     UserPlus,
     Users,
@@ -83,6 +84,12 @@ const Sidebar = ({ isOpen, onClose }) => {
             path: "/exams",
             icon: ClipboardList,
             roles: ["admin", "teacher", "student"]
+        },
+        {
+            label: "Student Risk",
+            path: "/student-risk",
+            icon: ShieldCheck,
+            roles: ["admin", "teacher"]
         },
         {
             label: t("quiz.title", "Quiz"),

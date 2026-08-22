@@ -1,8 +1,11 @@
 jest.mock("../../models/Leave");
 jest.mock("../../models/Teacher");
 jest.mock("../../models/User");
+jest.mock("../../models/Student");
+jest.mock("../../models/Class");
 jest.mock("../../services/notification.service");
 jest.mock("../../services/classTeacher.service");
+jest.mock("../../services/authorization.service");
 
 const express = require("express");
 const request = require("supertest");
@@ -10,8 +13,11 @@ const request = require("supertest");
 const Leave = require("../../models/Leave");
 const Teacher = require("../../models/Teacher");
 const User = require("../../models/User");
+const Student = require("../../models/Student");
+const Class = require("../../models/Class");
 const { notifyUser } = require("../../services/notification.service");
 const { isClassTeacherOf } = require("../../services/classTeacher.service");
+const { canAccessClass } = require("../../services/authorization.service");
 
 const {
     createLeave,
@@ -19,9 +25,6 @@ const {
     updateLeaveStatus
 } = require("../../controllers/leave.controller");
 
-// Injects a fake req.user the way authMiddleware normally would,
-// based on a header the test sets — keeps these as controller-level
-// tests without needing a real JWT for every case.
 const withFakeUser = (req, res, next) => {
     req.user = {
         id: req.headers["x-user-id"],
@@ -104,19 +107,33 @@ describe("getLeaves", () => {
         expect(Leave.find).toHaveBeenCalledWith({ studentId: "student-9" });
     });
 
-    it("does not scope a teacher's request by studentId (sees all)", async () => {
+    it("scopes a teacher's request to students in their authorized classes", async () => {
         const populateMock = jest.fn().mockReturnValue({
             sort: jest.fn().mockResolvedValue([])
         });
         Leave.find.mockReturnValue({ populate: populateMock });
+        Leave.updateMany.mockResolvedValue({});
+
+        Teacher.findById.mockReturnValue({
+            select: jest.fn().mockResolvedValue({ classesHandled: ["Std 5 - A"] })
+        });
+
+        Class.find.mockResolvedValue([]);
+
+        Student.find.mockReturnValue({
+            select: jest.fn().mockResolvedValue([{ _id: "student-5a" }])
+        });
 
         const app = buildApp();
-        await request(app)
+        const response = await request(app)
             .get("/leave/all")
             .set("x-user-id", "teacher-1")
             .set("x-user-role", "teacher");
 
-        expect(Leave.find).toHaveBeenCalledWith({});
+        expect(response.status).toBe(200);
+        expect(Leave.find).toHaveBeenCalledWith({
+            studentId: { $in: ["student-5a"] }
+        });
     });
 
 });
@@ -142,6 +159,7 @@ describe("updateLeaveStatus (approve/reject)", () => {
         User.findById.mockReturnValue({
             select: jest.fn().mockResolvedValue({ name: "Admin User" })
         });
+        canAccessClass.mockResolvedValue(true);
 
         const app = buildApp();
         const response = await request(app)
@@ -151,19 +169,17 @@ describe("updateLeaveStatus (approve/reject)", () => {
             .send({ status: "Approved" });
 
         expect(response.status).toBe(200);
-        // Admin never goes through the class-teacher check
-        expect(isClassTeacherOf).not.toHaveBeenCalled();
         expect(notifyUser).toHaveBeenCalled();
     });
 
-    it("blocks a teacher who is NOT the student's class teacher", async () => {
+    it("blocks a teacher who is NOT authorized for the student's class", async () => {
         Leave.findById.mockReturnValue({
             populate: jest.fn().mockResolvedValue(buildExistingLeave())
         });
         Teacher.findById.mockReturnValue({
             select: jest.fn().mockResolvedValue({ fullName: "Some Teacher" })
         });
-        isClassTeacherOf.mockResolvedValue(false);
+        canAccessClass.mockResolvedValue(false);
 
         const app = buildApp();
         const response = await request(app)
@@ -173,7 +189,6 @@ describe("updateLeaveStatus (approve/reject)", () => {
             .send({ status: "Approved" });
 
         expect(response.status).toBe(403);
-        expect(isClassTeacherOf).toHaveBeenCalledWith("teacher-2", 5, "A");
         expect(Leave.findByIdAndUpdate).not.toHaveBeenCalled();
     });
 
@@ -189,7 +204,7 @@ describe("updateLeaveStatus (approve/reject)", () => {
         Teacher.findById.mockReturnValue({
             select: jest.fn().mockResolvedValue({ fullName: "Class Teacher" })
         });
-        isClassTeacherOf.mockResolvedValue(true);
+        canAccessClass.mockResolvedValue(true);
 
         const app = buildApp();
         const response = await request(app)
